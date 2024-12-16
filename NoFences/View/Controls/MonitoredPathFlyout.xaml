@@ -1,0 +1,81 @@
+﻿<Controls:Flyout x:Class="NoFences.View.MonitoredPathFlyout"
+            xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+            xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+            xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+            xmlns:local="clr-namespace:NoFences.View"
+            xmlns:Controls="http://metro.mahapps.com/winfx/xaml/controls"
+            xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+            mc:Ignorable="d" 
+            d:DesignHeight="450" d:DesignWidth="800"
+            CloseButtonIsCancel="True"
+            Header="Monitored path"
+            Position="Right"
+            Theme="Adapt" Loaded="Flyout_Loaded">
+
+    <StackPanel Margin="10" Orientation="Vertical" Width="512">
+        <Label Content="ID:" Grid.Row="0" Grid.Column="0"/>
+        <Label Content="{Binding SelectedMonitoredPath.Id}" Grid.Row="0" Grid.Column="0"/>
+        <Grid>
+            <Grid.Resources >
+                <Style TargetType="{x:Type Label}">
+                    <Setter Property="Margin" Value="3"/>
+                </Style>
+                <Style TargetType="{x:Type TextBox}">
+                    <Setter Property="Margin" Value="3"/>
+                </Style>
+                <Style TargetType="{x:Type TextBlock}">
+                    <Setter Property="Margin" Value="3"/>
+                </Style>
+                <Style TargetType="{x:Type ListBox}">
+                    <Setter Property="Margin" Value="3"/>
+                </Style>
+                <Style TargetType="{x:Type Controls:ToggleSwitch}">
+                    <Setter Property="Margin" Value="3"/>
+                </Style>
+            </Grid.Resources>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="150" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="100" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="40"/>
+                <RowDefinition Height="40"/>
+                <RowDefinition Height="40"/>
+                <RowDefinition Height="40"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <Label Content="Path:" Grid.Row="0" Grid.Column="0"/>
+            <TextBox x:Name="SelectedPath" Grid.Row="0" Grid.Column="1" Text="{Binding SelectedMonitoredPath.Path}" Height="30"/>
+            <Button Content="Select..." Grid.Row="0" Grid.Column="2" Margin="3" Width="90" Height="30" Click="SelectPath_Click"/>
+
+            <Label Content="Exclude:" Grid.Row="1" Grid.Column="0"/>
+            <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding SelectedMonitoredPath.Exclude}" Height="30"/>
+
+            <Label Content="Recursive:" Grid.Row="2" Grid.Column="0"/>
+            <Controls:ToggleSwitch Grid.Row="2" Grid.Column="1" IsOn="{Binding SelectedMonitoredPath.Recursive}" Height="30"/>
+
+            <Label Content="Configuration:" Grid.Row="3" Grid.Column="0" VerticalAlignment="Top"/>
+            <ListBox Grid.Row="3" Grid.Column="1" ItemsSource="{Binding SelectedMonitoredPath.FolderConfiguration}" SelectionMode="Single" SelectedItem="{Binding SelectedFolderConfiguration}" Height="30">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Margin="10" Orientation="Vertical">
+                            <Label Content="{Binding Name}" />
+                            <Label Content="{Binding Description}" />
+                            <Label Content="{Binding FileFilter}" />
+                            <Label Content="{Binding FolderInFileName}" />
+                            <Label Content="{Binding FolderNameProcessor}" />
+                            <Label Content="{Binding FileNameProcessor}" />
+                            <Label Content="{Binding MoveTo.Path}" />
+                        </StackPanel>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+            <Button Content="Add..." Grid.Row="3" Grid.Column="2" Margin="3" Width="90" Height="30" VerticalAlignment="Top" Click="FolderConfigurationClick" />
+
+            <Button Content="Save" Grid.Row="4" Grid.Column="2" Margin="3" Width="90" Height="30" VerticalAlignment="Top" Click="SaveMonitoredPath" />
+        </Grid>
+    </StackPanel>
+</Controls:Flyout>

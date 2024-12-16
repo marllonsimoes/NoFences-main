@@ -1,0 +1,61 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.33530.505
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NoFences", "NoFences\NoFences.csproj", "{9B7EC27E-0066-4455-987C-6DC88C4BEE54}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NoFencesExtensions", "NoFencesExtensions\NoFencesExtensions.csproj", "{92AA43B2-6DB1-45BB-85A6-F9FD3DD199E5}"
+EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "NoFencesInstaller", "NoFencesInstaller\NoFencesInstaller.vdproj", "{97C1712C-D6D1-4FE6-B99C-D85B0BAB4511}"
+	ProjectSection(ProjectDependencies) = postProject
+		{37EFFB9B-1FA1-4C95-9588-902587B59B85} = {37EFFB9B-1FA1-4C95-9588-902587B59B85}
+		{92AA43B2-6DB1-45BB-85A6-F9FD3DD199E5} = {92AA43B2-6DB1-45BB-85A6-F9FD3DD199E5}
+		{9B7EC27E-0066-4455-987C-6DC88C4BEE54} = {9B7EC27E-0066-4455-987C-6DC88C4BEE54}
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NoFencesCore", "NoFencesCore\NoFencesCore.csproj", "{37EFFB9B-1FA1-4C95-9588-902587B59B85}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NoFencesService", "NoFencesService\NoFencesService.csproj", "{CF267BA6-7DA1-46ED-8FC5-562C4EEA1AD0}"
+	ProjectSection(ProjectDependencies) = postProject
+		{37EFFB9B-1FA1-4C95-9588-902587B59B85} = {37EFFB9B-1FA1-4C95-9588-902587B59B85}
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NoFencesDataLayer", "NoFencesDataLayer\NoFencesDataLayer.csproj", "{00D6D239-E7C3-4C4C-B4BA-F30AED4E8DD9}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{9B7EC27E-0066-4455-987C-6DC88C4BEE54}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9B7EC27E-0066-4455-987C-6DC88C4BEE54}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9B7EC27E-0066-4455-987C-6DC88C4BEE54}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9B7EC27E-0066-4455-987C-6DC88C4BEE54}.Release|Any CPU.Build.0 = Release|Any CPU
+		{92AA43B2-6DB1-45BB-85A6-F9FD3DD199E5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{92AA43B2-6DB1-45BB-85A6-F9FD3DD199E5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{92AA43B2-6DB1-45BB-85A6-F9FD3DD199E5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{92AA43B2-6DB1-45BB-85A6-F9FD3DD199E5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{97C1712C-D6D1-4FE6-B99C-D85B0BAB4511}.Debug|Any CPU.ActiveCfg = Debug
+		{97C1712C-D6D1-4FE6-B99C-D85B0BAB4511}.Release|Any CPU.ActiveCfg = Release
+		{37EFFB9B-1FA1-4C95-9588-902587B59B85}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{37EFFB9B-1FA1-4C95-9588-902587B59B85}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{37EFFB9B-1FA1-4C95-9588-902587B59B85}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{37EFFB9B-1FA1-4C95-9588-902587B59B85}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CF267BA6-7DA1-46ED-8FC5-562C4EEA1AD0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CF267BA6-7DA1-46ED-8FC5-562C4EEA1AD0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CF267BA6-7DA1-46ED-8FC5-562C4EEA1AD0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CF267BA6-7DA1-46ED-8FC5-562C4EEA1AD0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{00D6D239-E7C3-4C4C-B4BA-F30AED4E8DD9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{00D6D239-E7C3-4C4C-B4BA-F30AED4E8DD9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{00D6D239-E7C3-4C4C-B4BA-F30AED4E8DD9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{00D6D239-E7C3-4C4C-B4BA-F30AED4E8DD9}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {66F7F16F-431E-4369-84E4-CE9710089A4F}
+	EndGlobalSection
+EndGlobal
