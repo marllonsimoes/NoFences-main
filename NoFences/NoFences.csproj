@@ -73,9 +73,6 @@
     <TargetZone>LocalIntranet</TargetZone>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Forge.Forms">
-      <HintPath>..\..\..\_sort\Forge.Forms-master\Forge.Forms\src\Forge.Forms\bin\Debug\Forge.Forms.dll</HintPath>
-    </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
     <Reference Include="System" />

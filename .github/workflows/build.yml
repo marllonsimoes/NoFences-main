@@ -23,43 +23,48 @@ jobs:
       uses: microsoft/setup-msbuild@v1.3.1
       with:
         msbuild-architecture: x86
-
-    - name: Setup NuGet
-      uses: NuGet/setup-nuget@v1
-      
-    - name: Restore NuGet Packages
-      run: nuget restore $env:Solution_Name
-      
-    - name: Decode PFX
+    - name: Install, Build, Sign, and Package
       run: |
-        $pfx_cert_b64 = "${{ secrets.SIGNING_CERTIFICATE }}"
-        $pfx_password = "${{ secrets.CERTIFICATE_PASSWORD }}"
-        $pfx_path = Join-Path $env:TEMP "nofences.pfx"
-        [System.IO.File]::WriteAllBytes($pfx_path, [System.Convert]::FromBase64String($pfx_cert_b64))
-        echo "pfx_password=$pfx_password" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-        echo "pfx_path=$pfx_path" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-      shell: pwsh
-
-    - name: Build Solution
-      run: msbuild.exe $env:Solution_Name /p:Configuration=$env:Configuration /p:Platform="Any CPU"
-
-    - name: Sign Assemblies
-      run: |
-        $pfx_path = "${{ env.pfx_path }}"
-        $pfx_password = "${{ env.pfx_password }}"
-        $sign_tool_paths = Get-ChildItem -Path "C:\Program Files (x86)\Windows Kits\10\bin" -Recurse -Filter "signtool.exe" | Where-Object { $_.FullName -like '*x64*' } | Select-Object -ExpandProperty FullName
-        $sign_tool = $sign_tool_paths | Select-Object -First 1
-        Get-ChildItem -Path . -Recurse -Include *.exe, *.dll | ForEach-Object {
-          if ((Get-AuthenticodeSignature $_.FullName).Status -eq 'NotSigned') {
-            & $sign_tool sign /f $pfx_path /p $pfx_password /fd SHA256 /t http://timestamp.digicert.com $_.FullName
-          }
+        Invoke-WebRequest -Uri "https://marketplace.visualstudio.com/_apis/public/gallery/publishers/VisualStudioClient/vsextensions/MicrosoftVisualStudio2022InstallerProjects/2.0.1/vspackage" -OutFile "Microsoft.VisualStudio.InstallerProjects.vsix"
+        if (-not (Test-Path "Microsoft.VisualStudio.InstallerProjects.vsix")) {
+          Write-Error "VSIX file not downloaded."
+          exit 1
         }
-      shell: pwsh
-      
-    - name: Build Installer
-      run: |
+        Write-Host "VSIX file downloaded successfully."
+        $vsixInstallerPath = Get-ChildItem -Path "C:\Program Files\Microsoft Visual Studio\2022" -Recurse -Filter "VSIXInstaller.exe" | Select-Object -ExpandProperty FullName | Select-Object -First 1
+        if (-not $vsixInstallerPath) {
+          Write-Error "VSIXInstaller.exe not found."
+          exit 1
+        }
+        Write-Host "VSIXInstaller.exe found at: $vsixInstallerPath"
+        & $vsixInstallerPath /q /logFile:${{ runner.temp }}\vsix_install.log "Microsoft.VisualStudio.InstallerProjects.vsix"
+
+        msbuild.exe $env:Solution_Name -t:Restore
+        msbuild.exe $env:Solution_Name /p:Configuration=$env:Configuration /p:Platform="Any CPU" /p:UseSharedCompilation=false
+
+        $cert_path = "${{ runner.temp }}\signing_cert.pfx"
+        [System.IO.File]::WriteAllBytes($cert_path, [System.Convert]::FromBase64String("${{ secrets.SIGNING_CERTIFICATE }}"))
+        $signtool_path = Get-ChildItem -Path "C:\Program Files (x86)\Windows Kits\10\bin" -Recurse -Filter "signtool.exe" | Where-Object { $_.FullName -like "*x86*" -and $_.FullName -notlike "*arm*" } | Select-Object -ExpandProperty FullName | Select-Object -First 1
+        $files_to_sign = Get-ChildItem -Path .\ -Recurse -Include *.exe, *.dll | Where-Object { $_.FullName -like "*\bin\Release\*" }
+        foreach ($file in $files_to_sign) {
+          & $signtool_path sign /f $cert_path /p "${{ secrets.CERTIFICATE_PASSWORD }}" /fd SHA256 /t http://timestamp.digicert.com $file.FullName
+        }
+
         $devenv_path = (Get-ChildItem -Path "C:\Program Files\Microsoft Visual Studio\2022" -Recurse -Filter "devenv.com" | Select-Object -ExpandProperty FullName | Select-Object -First 1)
-        & $devenv_path "NoFencesInstaller\NoFencesInstaller.vdproj" /Build "$env:Configuration"
+        $vsInstance = & "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" -latest -property instanceId
+        $vsVersion = & "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" -latest -property installationVersion
+        $regPath = "HKCU:\SOFTWARE\Microsoft\VisualStudio\${vsVersion}.0_${vsInstance}_Config\MSBuild"
+        if (-not (Test-Path $regPath)) {
+          New-Item -Path $regPath -Force
+        }
+        Set-ItemProperty -Path $regPath -Name "EnableOutOfProcBuild" -Value 0 -Type DWord -Force
+        & $devenv_path "NoFencesInstaller\NoFencesInstaller.vdproj" /Build "$env:Configuration" /Log "$env:TEMP\installer_build.log"
+      shell: pwsh
+    - name: Upload Installer Build Log
+      uses: actions/upload-artifact@v4
+      with:
+        name: Installer-Build-Log
+        path: "${{ env.TEMP }}/installer_build.log"
         
     - name: Upload Build Artifacts
       uses: actions/upload-artifact@v4
