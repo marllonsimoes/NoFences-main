@@ -41,12 +41,6 @@
     <DelaySign>true</DelaySign>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Roler.Toolkit.File.Epub, Version=1.0.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Roler.Toolkit.File.Epub.1.0.1\lib\netstandard2.0\Roler.Toolkit.File.Epub.dll</HintPath>
-    </Reference>
-    <Reference Include="Roler.Toolkit.File.Mobi, Version=1.0.5.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Roler.Toolkit.File.Mobi.1.0.5\lib\netstandard2.0\Roler.Toolkit.File.Mobi.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
@@ -68,7 +62,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="NoFences_pl.snk" />
-    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <COMReference Include="Shell32">
@@ -80,6 +73,14 @@
       <Isolated>False</Isolated>
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </COMReference>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Roler.Toolkit.File.Epub">
+      <Version>1.0.1</Version>
+    </PackageReference>
+    <PackageReference Include="Roler.Toolkit.File.Mobi">
+      <Version>1.0.5</Version>
+    </PackageReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
