@@ -38,7 +38,7 @@
     <SignAssembly>true</SignAssembly>
   </PropertyGroup>
   <PropertyGroup>
-    <AssemblyOriginatorKeyFile>NoFences_cert.pfx</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>NoFences_pl.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
@@ -84,7 +84,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-    <None Include="NoFences_cert.pfx" />
+    <None Include="NoFences_pl.snk" />
     <None Include="packages.config" />
     <None Include="Properties\DataSources\NoFencesService.Repository.BackupConfig.datasource" />
     <None Include="Properties\DataSources\NoFencesService.Repository.MonitoredPath.datasource" />

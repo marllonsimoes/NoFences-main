@@ -35,7 +35,7 @@
     <SignAssembly>true</SignAssembly>
   </PropertyGroup>
   <PropertyGroup>
-    <AssemblyOriginatorKeyFile>NoFences_cert.pfx</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>NoFences_pl.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="ServerRegistrationManager, Version=2.7.2.0, Culture=neutral, PublicKeyToken=68bd4561cc3495fc, processorArchitecture=MSIL">
@@ -62,7 +62,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
-    <None Include="NoFences_cert.pfx" />
+    <None Include="NoFences_pl.snk" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

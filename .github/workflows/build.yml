@@ -51,23 +51,6 @@ jobs:
             Write-Warning "VSIXInstaller not found at expected path, installation may be incomplete"
         }
 
-    - name: Setup Strong Name Signing
-      shell: powershell
-      run: |
-        Write-Host "Setting up strong name signing..."
-        $snPath = "C:\Program Files (x86)\Microsoft SDKs\Windows\v10.0A\bin\NETFX 4.8 Tools\sn.exe"
-        
-        # Create a temporary strong name key
-        Write-Host "Creating temporary strong name key..."
-        & $snPath -k temp.snk
-        
-        # Install key to container
-        Write-Host "Installing key to container..."
-        & $snPath -i temp.snk VS_KEY_09166331D2880256
-        
-        # Clean up temporary file
-        Remove-Item temp.snk -Force
-      
     - name: Setup NuGet
       uses: NuGet/setup-nuget@v1
       

@@ -35,7 +35,10 @@
     <SignAssembly>true</SignAssembly>
   </PropertyGroup>
   <PropertyGroup>
-    <AssemblyOriginatorKeyFile>NoFences_cert.pfx</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>NoFences_pl.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
+  <PropertyGroup>
+    <DelaySign>true</DelaySign>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Roler.Toolkit.File.Epub, Version=1.0.1.0, Culture=neutral, processorArchitecture=MSIL">
@@ -64,7 +67,7 @@
     <Compile Include="Util\FileUtils.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="NoFences_cert.pfx" />
+    <None Include="NoFences_pl.snk" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
