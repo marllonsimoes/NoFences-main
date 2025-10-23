@@ -7,13 +7,13 @@
             xmlns:Controls="http://metro.mahapps.com/winfx/xaml/controls"
             xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
             mc:Ignorable="d" 
-            d:DesignHeight="450" d:DesignWidth="800"
+            d:DesignHeight="519" d:DesignWidth="800"
             CloseButtonIsCancel="True"
             Header="Monitored path"
             Position="Right"
             Theme="Adapt" Loaded="Flyout_Loaded">
 
-    <StackPanel Margin="10" Orientation="Vertical" Width="512">
+    <StackPanel Margin="10" Orientation="Vertical" Width="800">
         <Label Content="ID:" Grid.Row="0" Grid.Column="0"/>
         <Label Content="{Binding SelectedMonitoredPath.Id}" Grid.Row="0" Grid.Column="0"/>
         <Grid>
@@ -44,7 +44,8 @@
                 <RowDefinition Height="40"/>
                 <RowDefinition Height="40"/>
                 <RowDefinition Height="40"/>
-                <RowDefinition Height="*"/>
+                <RowDefinition Height="400"/>
+                <RowDefinition Height="40"/>
             </Grid.RowDefinitions>
 
             <Label Content="Path:" Grid.Row="0" Grid.Column="0"/>
@@ -58,24 +59,56 @@
             <Controls:ToggleSwitch Grid.Row="2" Grid.Column="1" IsOn="{Binding SelectedMonitoredPath.Recursive}" Height="30"/>
 
             <Label Content="Configuration:" Grid.Row="3" Grid.Column="0" VerticalAlignment="Top"/>
-            <ListBox Grid.Row="3" Grid.Column="1" ItemsSource="{Binding SelectedMonitoredPath.FolderConfiguration}" SelectionMode="Single" SelectedItem="{Binding SelectedFolderConfiguration}" Height="30">
+            <ListBox Grid.RowSpan="2" Grid.Row="3" Grid.Column="1" ItemsSource="{Binding FolderConfigurationList}" SelectionMode="Single" SelectedItem="{Binding SelectedFolderConfiguration}" Height="Auto">
                 <ListBox.ItemTemplate>
                     <DataTemplate>
-                        <StackPanel Margin="10" Orientation="Vertical">
-                            <Label Content="{Binding Name}" />
-                            <Label Content="{Binding Description}" />
-                            <Label Content="{Binding FileFilter}" />
-                            <Label Content="{Binding FolderInFileName}" />
-                            <Label Content="{Binding FolderNameProcessor}" />
-                            <Label Content="{Binding FileNameProcessor}" />
-                            <Label Content="{Binding MoveTo.Path}" />
-                        </StackPanel>
+                        <Grid Width="200">
+                            <Grid.Resources >
+                                <Style TargetType="{x:Type Label}">
+                                    <Setter Property="Margin" Value="0"/>
+                                    <Setter Property="HorizontalAlignment" Value="Right"/>
+                                </Style>
+                            </Grid.Resources>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="70" />
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="24"/>
+                                <RowDefinition Height="25"/>
+                                <RowDefinition Height="25"/>
+                                <RowDefinition Height="25"/>
+                                <RowDefinition Height="25"/>
+                                <RowDefinition Height="25"/>
+                            </Grid.RowDefinitions>
+                            <Label Content="Name:" Grid.Row="0" Grid.Column="0"/>
+                            <Label Content="{Binding Name}" Grid.Row="0" Grid.Column="1"/>
+                            
+                            <Label Content="Desc:" Grid.Row="1" Grid.Column="0"/>
+                            <Label Content="{Binding Description}" Grid.Row="1" Grid.Column="1"/>
+
+                            <Label Content="File filter:" Grid.Row="2" Grid.Column="0"/>
+                            <Label Content="{Binding FileFilter}" Grid.Row="2" Grid.Column="1"/>
+
+                            <Label Content="Folder in file name:" Grid.Row="3" Grid.Column="0"/>
+                            <Label Content="{Binding FolderInFileName}" Grid.Row="3" Grid.Column="1"/>
+
+                            <Label Content="Folder processor:" Grid.Row="4" Grid.Column="0"/>
+                            <Label Content="{Binding FolderNameProcessor}" Grid.Row="4" Grid.Column="1"/>
+
+                            <Label Content="File processor:" Grid.Row="5" Grid.Column="0"/>
+                            <Label Content="{Binding FileNameProcessor}" Grid.Row="5" Grid.Column="1"/>
+
+                            <Label Content="Movo to:" Grid.Row="6" Grid.Column="0"/>
+                            <Label Content="{Binding MoveTo.Path}" Grid.Row="6" Grid.Column="1"/>
+                        </Grid>
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>
             <Button Content="Add..." Grid.Row="3" Grid.Column="2" Margin="3" Width="90" Height="30" VerticalAlignment="Top" Click="FolderConfigurationClick" />
-
-            <Button Content="Save" Grid.Row="4" Grid.Column="2" Margin="3" Width="90" Height="30" VerticalAlignment="Top" Click="SaveMonitoredPath" />
+            <Button Content="Edit" IsEnabled="{Binding TargetNullValue=SelectedFolderConfiguration}" Grid.Row="4" Grid.Column="2" Margin="3" Width="90" Height="30" VerticalAlignment="Top" Click="EditFolderConfigurationClick" />
+            
+            <Button Content="Save" Grid.Row="5" Grid.Column="2" Margin="3" Width="90" Height="30" VerticalAlignment="Top" Click="SaveMonitoredPath" />
         </Grid>
     </StackPanel>
 </Controls:Flyout>

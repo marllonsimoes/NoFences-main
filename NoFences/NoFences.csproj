@@ -65,10 +65,10 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
   <PropertyGroup>
-    <ManifestCertificateThumbprint>318AC8591A559909763212E13A8ECBC8328C8BE6</ManifestCertificateThumbprint>
+    <ManifestCertificateThumbprint>8C952F991777D2C8DD21DD4E1EDEDC7F0AE3FA6F</ManifestCertificateThumbprint>
   </PropertyGroup>
   <PropertyGroup>
-    <ManifestKeyFile>NoFences_cert.pfx</ManifestKeyFile>
+    <ManifestKeyFile>NoFences_10-25.pfx</ManifestKeyFile>
   </PropertyGroup>
   <PropertyGroup>
     <GenerateManifests>true</GenerateManifests>
@@ -80,7 +80,7 @@
     <SignAssembly>true</SignAssembly>
   </PropertyGroup>
   <PropertyGroup>
-    <AssemblyOriginatorKeyFile>NoFences_cert.pfx</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>NoFences_10-25.pfx</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <PropertyGroup>
     <RunPostBuildEvent>OnOutputUpdated</RunPostBuildEvent>
@@ -348,6 +348,7 @@
       <DesignTime>True</DesignTime>
     </Compile>
     <None Include="app.manifest" />
+    <None Include="NoFences_10-25.pfx" />
     <None Include="NoFences_cert.pfx" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">

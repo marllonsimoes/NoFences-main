@@ -27,23 +27,15 @@ namespace NoFences.View.Modern
         #region IoC property listener
         protected override void OnActivated()
         {
-            Messenger.Register<FolderConfigurationViewModel, PropertyChangedMessage<object>>(this, (r, m) => r.Receive(m));
-
-            SelectedFolderConfiguration = new FolderConfiguration()
-            {
-                Name = "Test 123",
-                Description = "Desc",
-                FileFilter = "Filter 123",
-                FolderInFileName = true
-            };
+            Messenger.Register<FolderConfigurationViewModel, PropertyChangedMessage<FolderConfiguration>>(this, (r, m) => r.Receive(m));
         }
 
-        private void Receive(PropertyChangedMessage<object> message)
+        private void Receive(PropertyChangedMessage<FolderConfiguration> message)
         {
             if (message.Sender.GetType() == typeof(MonitoredPathViewModel)
                 && message.PropertyName.Equals(nameof(SelectedFolderConfiguration))) 
             {
-                SelectedFolderConfiguration = (FolderConfiguration) message.NewValue;
+                SelectedFolderConfiguration = message.NewValue;
             }
         }
         #endregion
@@ -51,6 +43,7 @@ namespace NoFences.View.Modern
         public void Save()
         {
             OnPropertyChanged(nameof(SelectedFolderConfiguration));
+            Messenger.Send(new PropertyChangedMessage<FolderConfiguration>(this, nameof(SelectedFolderConfiguration), SelectedFolderConfiguration, SelectedFolderConfiguration));
         }
     }
 }

@@ -38,11 +38,11 @@ namespace NoFences.View
 
         public IRelayCommand LoadMonitoredPathCommand { get; }
 
-        public ObservableCollection<NoFencesService.Repository.MonitoredPath> MonitoredPaths { get; } = new ObservableCollection<NoFencesService.Repository.MonitoredPath>();
+        public ObservableCollection<MonitoredPath> MonitoredPaths { get; } = new ObservableCollection<MonitoredPath>();
 
-        private NoFencesService.Repository.MonitoredPath _selectedMonitoredPath;
+        private MonitoredPath _selectedMonitoredPath;
 
-        public NoFencesService.Repository.MonitoredPath SelectedMonitoredPath
+        public MonitoredPath SelectedMonitoredPath
         {
             get { return _selectedMonitoredPath; }
             set
@@ -54,7 +54,7 @@ namespace NoFences.View
         public void LoadAll()
         {
             MonitoredPaths.Clear();
-            MonitoredPaths.Add(new NoFencesService.Repository.MonitoredPath());
+            MonitoredPaths.Add(new MonitoredPath());
             foreach (var mn in _monitoredPathService.List())
             {
                 MonitoredPaths.Add(mn);

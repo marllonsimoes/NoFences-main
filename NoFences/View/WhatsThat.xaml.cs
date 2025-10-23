@@ -53,7 +53,7 @@ namespace NoFences.View
         private void EditMonitoredPath(object sender, RoutedEventArgs e)
         {
             var tileDataContext = (sender as Tile).DataContext;
-            ViewModel.EditMonitoredPath((NoFencesService.Repository.MonitoredPath)tileDataContext);
+            ViewModel.EditMonitoredPath((MonitoredPath)tileDataContext);
         }
     }
 }

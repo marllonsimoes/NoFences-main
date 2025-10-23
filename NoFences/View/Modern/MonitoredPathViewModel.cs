@@ -11,6 +11,7 @@ using System.Text;
 using System.Threading.Tasks;
 using NoFences.View.Modern;
 using CommunityToolkit.Mvvm.DependencyInjection;
+using System.Collections.ObjectModel;
 
 namespace NoFences.View
 {
@@ -48,6 +49,9 @@ namespace NoFences.View
             }
         }
 
+        public ObservableCollection<FolderConfiguration> FolderConfigurationList { get; } = new ObservableCollection<FolderConfiguration>();
+
+
         #region IoC property listener
         protected override void OnActivated()
         {
@@ -57,27 +61,48 @@ namespace NoFences.View
 
         private void Receive(MonitoredPath viewModel)
         {
+            FolderConfigurationList.Clear();
             SelectedMonitoredPath = viewModel;
+            if (SelectedMonitoredPath != null)
+            {
+                if (SelectedMonitoredPath.FolderConfiguration == null)
+                {
+                    SelectedMonitoredPath.FolderConfiguration = new List<FolderConfiguration>();
+                }
+
+                foreach (var fc in SelectedMonitoredPath.FolderConfiguration)
+                {
+                    FolderConfigurationList.Add(fc);
+                }
+            }
         }
 
         private void ReceiveFolderConfiguration(PropertyChangedMessage<FolderConfiguration> message)
         {
             if (message.Sender.GetType() == typeof(FolderConfigurationViewModel) &&
-                message.Sender.Equals(nameof(SelectedFolderConfiguration)))
+                message.PropertyName.Equals(nameof(SelectedFolderConfiguration)))
             {
                 SelectedFolderConfiguration = message.NewValue;
+                OnPropertyChanged(nameof(SelectedMonitoredPath));
+                OnPropertyChanged(nameof(SelectedFolderConfiguration));
             }
         }
         #endregion
 
         public void Save()
         {
+            SelectedMonitoredPath.FolderConfiguration.Clear();
+            foreach (var fc in FolderConfigurationList)
+            {
+                SelectedMonitoredPath.FolderConfiguration.Add(fc);
+            }
+
             if (SelectedMonitoredPath.Id != 0)
             {
-                _monitoredPathService.Update(SelectedMonitoredPath);
+                _monitoredPathService.Update(_selectedMonitoredPath);
                 return;
             }
-            _monitoredPathService.Add(SelectedMonitoredPath);
+            _monitoredPathService.Add(_selectedMonitoredPath);
         }
 
         public DeviceInfo GetDeviceInfoOrCreate(string mountPoint)
@@ -133,18 +158,25 @@ namespace NoFences.View
 
         public void CreateNewFolderConfiguration()
         {
-            SelectedFolderConfiguration = new FolderConfiguration()
-            {
-                Name = "Test 123",
-                Description = "Desc",
-                FileFilter = "Filter 123",
-                FolderInFileName = true
-            };
+            SelectedFolderConfiguration = new FolderConfiguration();
+            Messenger.Send(new PropertyChangedMessage<FolderConfiguration>(this, nameof(SelectedFolderConfiguration), null, SelectedFolderConfiguration));
         }
 
-        internal void AddFolderConfiguration()
+        public void EditFolderConfiguration()
         {
-            SelectedMonitoredPath.FolderConfiguration.Add(SelectedFolderConfiguration);
+            Messenger.Send(new PropertyChangedMessage<FolderConfiguration>(this, nameof(SelectedFolderConfiguration), null, SelectedFolderConfiguration));
+        }
+
+        internal void AddFolderConfiguration(FolderConfiguration folderConfig)
+        {
+            if (folderConfig.Id != 0)
+            {
+                FolderConfigurationList[FolderConfigurationList.IndexOf(FolderConfigurationList.FirstOrDefault(fc => fc.Id == folderConfig.Id))] = folderConfig;
+            }
+            else
+            {
+                FolderConfigurationList.Add(SelectedFolderConfiguration);
+            }
             OnPropertyChanged(nameof(SelectedMonitoredPath));
         }
     }

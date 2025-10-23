@@ -20,7 +20,7 @@ namespace NoFences.View
         private void SaveMonitoredPath(object sender, RoutedEventArgs e)
         {
             ViewModel.Save();
-            this.IsOpen = false;
+            IsOpen = false;
         }
 
         private void FolderConfigurationClick(object sender, RoutedEventArgs e)
@@ -30,7 +30,18 @@ namespace NoFences.View
             var result = folderConfigView.ShowDialog();
             if (result.Value)
             {
-                ViewModel.AddFolderConfiguration();
+                ViewModel.AddFolderConfiguration(folderConfigView.ViewModel.SelectedFolderConfiguration);
+            }
+        }
+
+        private void EditFolderConfigurationClick(object sender, RoutedEventArgs e)
+        {
+            var folderConfigView = new FolderConfigurationView();
+            folderConfigView.ExecuteWhenLoaded(() => ViewModel.EditFolderConfiguration());
+            var result = folderConfigView.ShowDialog();
+            if (result.Value)
+            {
+                ViewModel.AddFolderConfiguration(folderConfigView.ViewModel.SelectedFolderConfiguration);
             }
         }
 
