@@ -14,82 +14,57 @@ jobs:
     env:
       Solution_Name: NoFences.sln
       Configuration: Release
-      CI: true
       
     steps:
     - name: Checkout
       uses: actions/checkout@v4
       
-    - name: Setup Visual Studio
-      uses: microsoft/setup-msbuild@v1.1
+    - name: Setup MSBuild
+      uses: microsoft/setup-msbuild@v1.3.1
       with:
-        vs-version: '17.8'
-        vs-prerelease: false
-        
-    - name: Install Visual Studio and Prerequisites
-      shell: powershell
-      run: |
-        Write-Host "Installing Visual Studio Community..."
-        Invoke-WebRequest -Uri "https://aka.ms/vs/17/release/vs_community.exe" -OutFile "$env:TEMP\vs_community.exe"
-        
-        Write-Host "Installing required workloads..."
-        & "$env:TEMP\vs_community.exe" install --quiet --wait --norestart --nocache `
-          --add Microsoft.VisualStudio.Workload.ManagedDesktop `
-          --add Microsoft.VisualStudio.Workload.NetWeb `
-          --add Microsoft.VisualStudio.Component.Windows10SDK.19041 `
-          --add Microsoft.VisualStudio.Workload.VisualStudioExtension
-        
-        Write-Host "Downloading VSIX Installer Projects extension..."
-        Invoke-WebRequest -Uri "https://marketplace.visualstudio.com/_apis/public/gallery/publishers/VisualStudioClient/vsextensions/MicrosoftVisualStudio2022InstallerProjects/Latest/vspackage" -OutFile "$env:TEMP\InstallerProjects.vsix"
-        
-        Write-Host "Installing VSIX extension..."
-        $vsixInstaller = "C:\Program Files (x86)\Microsoft Visual Studio\Installer\resources\app\ServiceHub\Services\Microsoft.VisualStudio.Setup.Service\VSIXInstaller.exe"
-        if (Test-Path $vsixInstaller) {
-            Write-Host "Found VSIXInstaller at: $vsixInstaller"
-            & $vsixInstaller /quiet /force "$env:TEMP\InstallerProjects.vsix"
-        } else {
-            Write-Warning "VSIXInstaller not found at expected path, installation may be incomplete"
-        }
+        msbuild-architecture: x86
 
     - name: Setup NuGet
       uses: NuGet/setup-nuget@v1
       
     - name: Restore NuGet Packages
-      run: |
-        Write-Host "Restoring NuGet packages..."
-        nuget restore $env:Solution_Name
-      shell: powershell
+      run: nuget restore $env:Solution_Name
       
+    - name: Decode PFX
+      run: |
+        $pfx_cert_b64 = "${{ secrets.SIGNING_CERTIFICATE }}"
+        $pfx_password = "${{ secrets.CERTIFICATE_PASSWORD }}"
+        $pfx_path = Join-Path $env:TEMP "nofences.pfx"
+        [System.IO.File]::WriteAllBytes($pfx_path, [System.Convert]::FromBase64String($pfx_cert_b64))
+        echo "pfx_password=$pfx_password" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+        echo "pfx_path=$pfx_path" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+      shell: pwsh
+
     - name: Build Solution
-      shell: powershell
+      run: msbuild.exe $env:Solution_Name /p:Configuration=$env:Configuration /p:Platform="Any CPU"
+
+    - name: Sign Assemblies
       run: |
-        Write-Host "Building solution..."
-        msbuild.exe $env:Solution_Name `
-          /p:platform="Any CPU" `
-          /p:configuration="$env:Configuration" `
-          /p:VisualStudioVersion=17.0 `
-          /verbosity:normal
-        Write-Host "Solution build completed"
-        
-    - name: Build Installer
-      shell: powershell
-      run: |
-        Write-Host "Building installer project..."
-        $devenvPath = "C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\devenv.com"
-        Write-Host "Using DevEnv at: $devenvPath"
-        
-        if (Test-Path $devenvPath) {
-            & $devenvPath NoFencesInstaller\NoFencesInstaller.vdproj /Build "$env:Configuration"
-            Write-Host "Installer build completed"
-        } else {
-            Write-Error "DevEnv not found at expected path"
-            exit 1
+        $pfx_path = "${{ env.pfx_path }}"
+        $pfx_password = "${{ env.pfx_password }}"
+        $sign_tool_paths = Get-ChildItem -Path "C:\Program Files (x86)\Windows Kits\10\bin" -Recurse -Filter "signtool.exe" | Where-Object { $_.FullName -like '*x64*' } | Select-Object -ExpandProperty FullName
+        $sign_tool = $sign_tool_paths | Select-Object -First 1
+        Get-ChildItem -Path . -Recurse -Include *.exe, *.dll | ForEach-Object {
+          if ((Get-AuthenticodeSignature $_.FullName).Status -eq 'NotSigned') {
+            & $sign_tool sign /f $pfx_path /p $pfx_password /fd SHA256 /t http://timestamp.digicert.com $_.FullName
+          }
         }
+      shell: pwsh
+      
+    - name: Build Installer
+      run: |
+        $devenv_path = (Get-ChildItem -Path "C:\Program Files\Microsoft Visual Studio\2022" -Recurse -Filter "devenv.com" | Select-Object -ExpandProperty FullName | Select-Object -First 1)
+        & $devenv_path "NoFencesInstaller\NoFencesInstaller.vdproj" /Build "$env:Configuration"
         
     - name: Upload Build Artifacts
       uses: actions/upload-artifact@v4
       with:
         name: NoFences-Installer
         path: |
-          NoFencesInstaller\${{ env.Configuration }}\*.msi
-          NoFencesInstaller\${{ env.Configuration }}\setup.exe
+          NoFencesInstaller/${{ env.Configuration }}/*.msi
+          NoFencesInstaller/${{ env.Configuration }}/setup.exe

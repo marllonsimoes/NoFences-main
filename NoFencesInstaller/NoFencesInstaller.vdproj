@@ -700,7 +700,7 @@
             }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_C881A2742496488284A0B533F3764249"
             {
-            "SourcePath" = "8:..\\NoFences\\bin\\Debug\\fibonacci.ico"
+            "SourcePath" = "8:..\\NoFences\\bin\\Release\\fibonacci.ico"
             "TargetName" = "8:fibonacci.ico"
             "Tag" = "8:"
             "Folder" = "8:_A25A3D001F154679ADABC5274247021D"
@@ -762,7 +762,7 @@
                     "Attributes" = "3:512"
                     }
                 }
-            "SourcePath" = "8:..\\NoFencesExtensions\\bin\\Debug\\ServerRegistrationManager.exe"
+            "SourcePath" = "8:..\\NoFencesExtensions\\bin\\Release\\ServerRegistrationManager.exe"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_A25A3D001F154679ADABC5274247021D"
@@ -1434,7 +1434,7 @@
         {
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_12EDE545CF2F423CAFF75C1D890FBEC1"
             {
-            "SourcePath" = "8:..\\NoFences\\obj\\Debug\\NoFences.exe"
+            
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_A25A3D001F154679ADABC5274247021D"
@@ -1452,7 +1452,7 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             "ProjectOutputGroupRegister" = "3:1"
-            "OutputConfiguration" = "8:"
+            "OutputConfiguration" = "8:Release|Any CPU"
             "OutputGroupCanonicalName" = "8:Built"
             "OutputProjectGuid" = "8:{9B7EC27E-0066-4455-987C-6DC88C4BEE54}"
             "ShowKeyOutput" = "11:TRUE"
