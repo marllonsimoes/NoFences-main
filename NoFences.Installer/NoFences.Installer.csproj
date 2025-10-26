@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net481</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="WixSharp" Version="1.26.0" />
+    <PackageReference Include="WixSharp_wix4" Version="2.8.0" />
+    <PackageReference Include="WixSharp_wix4.bin" Version="2.8.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\NoFencesService\NoFencesService.csproj" />
+    <ProjectReference Include="..\NoFences\NoFences.csproj" />
+  </ItemGroup>
+</Project>

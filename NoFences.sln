@@ -22,6 +22,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NoFencesService", "NoFences
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NoFencesDataLayer", "NoFencesDataLayer\NoFencesDataLayer.csproj", "{00D6D239-E7C3-4C4C-B4BA-F30AED4E8DD9}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NoFences.Installer", "NoFences.Installer\NoFences.Installer.csproj", "{B2C3D4E5-F6A7-8901-2345-67890ABCDEF1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -53,6 +54,10 @@ Global
 		{00D6D239-E7C3-4C4C-B4BA-F30AED4E8DD9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{00D6D239-E7C3-4C4C-B4BA-F30AED4E8DD9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{00D6D239-E7C3-4C4C-B4BA-F30AED4E8DD9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B2C3D4E5-F6A7-8901-2345-67890ABCDEF1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B2C3D4E5-F6A7-8901-2345-67890ABCDEF1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B2C3D4E5-F6A7-8901-2345-67890ABCDEF1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B2C3D4E5-F6A7-8901-2345-67890ABCDEF1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

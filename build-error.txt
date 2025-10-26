@@ -1,0 +1,659 @@
+Run msbuild.exe $env:Solution_Name -t:Restore
+  msbuild.exe $env:Solution_Name -t:Restore
+  msbuild.exe $env:Solution_Name /p:Configuration=$env:Configuration /p:Platform="Any CPU" /p:UseSharedCompilation=false
+  shell: C:\Program Files\PowerShell\7\pwsh.EXE -command ". '{0}'"
+  env:
+    Solution_Name: ***.sln
+    Configuration: Release
+MSBuild version 17.14.23+b0019275e for .NET Framework
+Build started 10/27/2025 11:20:50 AM.
+Project "D:\a\***-main\***-main\***.sln" on node 1 (Restore target(s)).
+ValidateSolutionConfiguration:
+  Building solution configuration "Release|Any CPU".
+ValidateProjects:
+  The project "***DataLayer" is not selected for building in solution configuration "Release|Any CPU".
+Restoring packages for C:\Users\runneradmin\AppData\Local\Temp\NuGetScratch\68d7a02a009b45daa8c1966bb13507df\3d7847b04bd347fc9a389eb558e3a11a.proj...
+  GET https://api.nuget.org/v3-flatcontainer/wixtoolset.sdk/index.json
+  OK https://api.nuget.org/v3-flatcontainer/wixtoolset.sdk/index.json 38ms
+  GET https://api.nuget.org/v3-flatcontainer/wixtoolset.sdk/6.0.0/wixtoolset.sdk.6.0.0.nupkg
+  OK https://api.nuget.org/v3-flatcontainer/wixtoolset.sdk/6.0.0/wixtoolset.sdk.6.0.0.nupkg 6ms
+Installed WixToolset.Sdk 6.0.0 from https://api.nuget.org/v3/index.json to C:\Users\runneradmin\.nuget\packages\wixtoolset.sdk\6.0.0 with content hash REQDL7L1ouGgFvHLpo4nnT/jx8gxsERJ7BZ5+QxvzXzgROHXtcWjKZ8ge6yfjqQcnPxdgp0yDbBgN6LlL67qHw==.
+  GET https://api.nuget.org/v3/vulnerabilities/index.json
+  OK https://api.nuget.org/v3/vulnerabilities/index.json 11ms
+  GET https://api.nuget.org/v3-vulnerabilities/2025.10.24.05.34.12/vulnerability.base.json
+  GET https://api.nuget.org/v3-vulnerabilities/2025.10.24.05.34.12/2025.10.27.05.24.12/vulnerability.update.json
+  OK https://api.nuget.org/v3-vulnerabilities/2025.10.24.05.34.12/vulnerability.base.json 3ms
+  OK https://api.nuget.org/v3-vulnerabilities/2025.10.24.05.34.12/2025.10.27.05.24.12/vulnerability.update.json 18ms
+_GetAllRestoreProjectPathItems:
+  Determining projects to restore...
+Restore:
+  Restoring packages for D:\a\***-main\***-main\***Core\***Core.csproj...
+  Restoring packages for D:\a\***-main\***-main\***DataLayer\***DataLayer.csproj...
+    GET https://api.nuget.org/v3-flatcontainer/roler.toolkit.file.mobi/index.json
+    GET https://api.nuget.org/v3-flatcontainer/roler.toolkit.file.epub/index.json
+    GET https://api.nuget.org/v3-flatcontainer/sqlite.codefirst/index.json
+    GET https://api.nuget.org/v3-flatcontainer/system.data.sqlite/index.json
+    GET https://api.nuget.org/v3-flatcontainer/entityframework/index.json
+    GET https://api.nuget.org/v3-flatcontainer/system.data.sqlite.ef6.migrations/index.json
+    OK https://api.nuget.org/v3-flatcontainer/roler.toolkit.file.epub/index.json 58ms
+    OK https://api.nuget.org/v3-flatcontainer/roler.toolkit.file.mobi/index.json 62ms
+    GET https://api.nuget.org/v3-flatcontainer/roler.toolkit.file.epub/1.0.1/roler.toolkit.file.epub.1.0.1.nupkg
+    GET https://api.nuget.org/v3-flatcontainer/roler.toolkit.file.mobi/1.0.5/roler.toolkit.file.mobi.1.0.5.nupkg
+    OK https://api.nuget.org/v3-flatcontainer/sqlite.codefirst/index.json 50ms
+    OK https://api.nuget.org/v3-flatcontainer/roler.toolkit.file.epub/1.0.1/roler.toolkit.file.epub.1.0.1.nupkg 4ms
+    OK https://api.nuget.org/v3-flatcontainer/roler.toolkit.file.mobi/1.0.5/roler.toolkit.file.mobi.1.0.5.nupkg 5ms
+    OK https://api.nuget.org/v3-flatcontainer/system.data.sqlite/index.json 54ms
+    OK https://api.nuget.org/v3-flatcontainer/entityframework/index.json 49ms
+    OK https://api.nuget.org/v3-flatcontainer/system.data.sqlite.ef6.migrations/index.json 75ms
+    GET https://api.nuget.org/v3-flatcontainer/sqlite.codefirst/1.7.0.36/sqlite.codefirst.1.7.0.36.nupkg
+    GET https://api.nuget.org/v3-flatcontainer/system.data.sqlite/1.0.118/system.data.sqlite.1.0.118.nupkg
+    GET https://api.nuget.org/v3-flatcontainer/entityframework/6.5.1/entityframework.6.5.1.nupkg
+    GET https://api.nuget.org/v3-flatcontainer/system.data.sqlite.ef6.migrations/1.0.113/system.data.sqlite.ef6.migrations.1.0.113.nupkg
+    OK https://api.nuget.org/v3-flatcontainer/system.data.sqlite/1.0.118/system.data.sqlite.1.0.118.nupkg 5ms
+    OK https://api.nuget.org/v3-flatcontainer/entityframework/6.5.1/entityframework.6.5.1.nupkg 3ms
+    OK https://api.nuget.org/v3-flatcontainer/sqlite.codefirst/1.7.0.36/sqlite.codefirst.1.7.0.36.nupkg 6ms
+    OK https://api.nuget.org/v3-flatcontainer/system.data.sqlite.ef6.migrations/1.0.113/system.data.sqlite.ef6.migrations.1.0.113.nupkg 4ms
+  Installed Roler.Toolkit.File.Mobi 1.0.5 from https://api.nuget.org/v3/index.json to C:\Users\runneradmin\.nuget\packages\roler.toolkit.file.mobi\1.0.5 with content hash P21AoSbalHI0QQTgI2FRuQ3P0EMoiooRO3tEMEA2FBhHlxZG1iDcK1n7ltw6FodUAsQOB3SCotDWH/K4OQG92w==.
+  Installed Roler.Toolkit.File.Epub 1.0.1 from https://api.nuget.org/v3/index.json to C:\Users\runneradmin\.nuget\packages\roler.toolkit.file.epub\1.0.1 with content hash IwJgaJKdQbTNiwJ1Ll5TDD7h5PYQ4ScR3a35OVcmfoL1fwgFTtzCvTv2rHVHJFKPnorGa16Y3iOwE/It5wEUJw==.
+    CACHE https://api.nuget.org/v3/vulnerabilities/index.json
+    CACHE https://api.nuget.org/v3-vulnerabilities/2025.10.24.05.34.12/vulnerability.base.json
+    CACHE https://api.nuget.org/v3-vulnerabilities/2025.10.24.05.34.12/2025.10.27.05.24.12/vulnerability.update.json
+  Generating MSBuild file D:\a\***-main\***-main\***Core\obj\***Core.csproj.nuget.g.props.
+    GET https://api.nuget.org/v3-flatcontainer/system.data.sqlite.linq/index.json
+    GET https://api.nuget.org/v3-flatcontainer/system.data.sqlite.ef6/index.json
+    GET https://api.nuget.org/v3-flatcontainer/system.data.sqlite.core/index.json
+  Generating MSBuild file D:\a\***-main\***-main\***Core\obj\***Core.csproj.nuget.g.targets.
+  Writing assets file to disk. Path: D:\a\***-main\***-main\***Core\obj\project.assets.json
+    OK https://api.nuget.org/v3-flatcontainer/system.data.sqlite.core/index.json 32ms
+    OK https://api.nuget.org/v3-flatcontainer/system.data.sqlite.linq/index.json 38ms
+    GET https://api.nuget.org/v3-flatcontainer/system.data.sqlite.core/1.0.118/system.data.sqlite.core.1.0.118.nupkg
+    GET https://api.nuget.org/v3-flatcontainer/system.data.sqlite.core/1.0.91/system.data.sqlite.core.1.0.91.nupkg
+    OK https://api.nuget.org/v3-flatcontainer/system.data.sqlite.ef6/index.json 40ms
+    GET https://api.nuget.org/v3-flatcontainer/system.data.sqlite.linq/1.0.118/system.data.sqlite.linq.1.0.118.nupkg
+    GET https://api.nuget.org/v3-flatcontainer/system.data.sqlite.linq/1.0.91/system.data.sqlite.linq.1.0.91.nupkg
+    OK https://api.nuget.org/v3-flatcontainer/system.data.sqlite.core/1.0.118/system.data.sqlite.core.1.0.118.nupkg 5ms
+    GET https://api.nuget.org/v3-flatcontainer/system.data.sqlite.ef6/1.0.118/system.data.sqlite.ef6.1.0.118.nupkg
+    OK https://api.nuget.org/v3-flatcontainer/system.data.sqlite.linq/1.0.118/system.data.sqlite.linq.1.0.118.nupkg 3ms
+    OK https://api.nuget.org/v3-flatcontainer/system.data.sqlite.ef6/1.0.118/system.data.sqlite.ef6.1.0.118.nupkg 4ms
+    GET https://api.nuget.org/v3-flatcontainer/system.data.sqlite.ef6/1.0.91/system.data.sqlite.ef6.1.0.91.nupkg
+    GET https://api.nuget.org/v3-flatcontainer/stub.system.data.sqlite.core.netframework/index.json
+    OK https://api.nuget.org/v3-flatcontainer/system.data.sqlite.ef6/1.0.91/system.data.sqlite.ef6.1.0.91.nupkg 5ms
+  Restored D:\a\***-main\***-main\***Core\***Core.csproj (in 457 ms).
+  Restoring packages for D:\a\***-main\***-main\***.Installer.Wix\***.Installer.Wix.wixproj...
+    GET https://api.nuget.org/v3-flatcontainer/wixtoolset.heat/index.json
+    OK https://api.nuget.org/v3-flatcontainer/system.data.sqlite.linq/1.0.91/system.data.sqlite.linq.1.0.91.nupkg 49ms
+    OK https://api.nuget.org/v3-flatcontainer/stub.system.data.sqlite.core.netframework/index.json 46ms
+    OK https://api.nuget.org/v3-flatcontainer/wixtoolset.heat/index.json 34ms
+    GET https://api.nuget.org/v3-flatcontainer/wixtoolset.heat/6.0.0/wixtoolset.heat.6.0.0.nupkg
+    GET https://api.nuget.org/v3-flatcontainer/stub.system.data.sqlite.core.netframework/1.0.118/stub.system.data.sqlite.core.netframework.1.0.118.nupkg
+    OK https://api.nuget.org/v3-flatcontainer/stub.system.data.sqlite.core.netframework/1.0.118/stub.system.data.sqlite.core.netframework.1.0.118.nupkg 3ms
+    OK https://api.nuget.org/v3-flatcontainer/system.data.sqlite.core/1.0.91/system.data.sqlite.core.1.0.91.nupkg 121ms
+    OK https://api.nuget.org/v3-flatcontainer/wixtoolset.heat/6.0.0/wixtoolset.heat.6.0.0.nupkg 107ms
+  Installed SQLite.CodeFirst 1.7.0.36 from https://api.nuget.org/v3/index.json to C:\Users\runneradmin\.nuget\packages\sqlite.codefirst\1.7.0.36 with content hash Dl9SqK5Jh5gULGYepHouw/UgMI4TdFOPj9Iq01owiqmA6GIgWxuh9Y01MKugkKiUR68wYNewukTous7zMf2Rog==.
+  Installed System.Data.SQLite.Linq 1.0.118.0 from https://api.nuget.org/v3/index.json to C:\Users\runneradmin\.nuget\packages\system.data.sqlite.linq\1.0.118 with content hash 8cPMubj5tEvoa5Mu/wQaisUnrG9NcoMGFh6B9zDUxnTXuGACi+vwEqIIX+njdFJYPIJrnmGEiHV1T+Lr3YH7jg==.
+  Installed System.Data.SQLite.Core 1.0.118.0 from https://api.nuget.org/v3/index.json to C:\Users\runneradmin\.nuget\packages\system.data.sqlite.core\1.0.118 with content hash 2V1PsfBeqWlZxF/VtB8lQKPfDBayCU8zD5Xc3Mq7cILOa2ZqpPDSwMP0fTfk1gtGSStSk//DxKiGy6zwCQs7Uw==.
+  Installed System.Data.SQLite.EF6.Migrations 1.0.113 from https://api.nuget.org/v3/index.json to C:\Users\runneradmin\.nuget\packages\system.data.sqlite.ef6.migrations\1.0.113 with content hash RPTrraA8IRrpnBd0EkmrXllD9JY7JBi6WwItmtZpcH+LVnRiVQX1N5eqjPlIBqpytVNkeo3afwT5Fvrnjj30eg==.
+  Installed System.Data.SQLite 1.0.118.0 from https://api.nuget.org/v3/index.json to C:\Users\runneradmin\.nuget\packages\system.data.sqlite\1.0.118 with content hash lm+Qc7SxuMNl/HpyAbJhQng+snqUs38jaC+GvKoYm5/w+RCTspvM6aFvdWXn6+yhntJR8FnbPWZ7oi2K4UL2vQ==.
+  Installed System.Data.SQLite.Linq 1.0.91.0 from https://api.nuget.org/v3/index.json to C:\Users\runneradmin\.nuget\packages\system.data.sqlite.linq\1.0.91 with content hash 5QbSrNpgTo26Ohp2vToP9z70opRNc6WR9qMD2G0wR2VXAgEw8u/NhWSz9k4U/L1h62QyF0jyyLueFxHbslLePg==.
+  Installed System.Data.SQLite.EF6 1.0.91.0 from https://api.nuget.org/v3/index.json to C:\Users\runneradmin\.nuget\packages\system.data.sqlite.ef6\1.0.91 with content hash 0wA1o1ypZ259mT97TjQXoV0tVtws9ZaN7f3Y7R9gj6ksqOWGLPAVuHJm9flrBwuqHdXpDAYsuXrBUrE55muRzQ==.
+  Installed System.Data.SQLite.EF6 1.0.118.0 from https://api.nuget.org/v3/index.json to C:\Users\runneradmin\.nuget\packages\system.data.sqlite.ef6\1.0.118 with content hash 6OqO3OA8tej0BidxjYxutfR2HlodiYAA3qU4BtYe/wQdXJ75rumiAr9inYJaxFkwgGb8jW1qyFy953ZFyCOe8A==.
+  Installed System.Data.SQLite.Core 1.0.91.0 from https://api.nuget.org/v3/index.json to C:\Users\runneradmin\.nuget\packages\system.data.sqlite.core\1.0.91 with content hash upnaBC8ruE3oocIJ2rffWVuuQ2Bd6L4ztllTUKWAKow1LQrW10jUHIKogcUhJYyJFKDqopexwdCwMHcqgdRaRA==.
+  Installed Stub.System.Data.SQLite.Core.NetFramework 1.0.118.0 from https://api.nuget.org/v3/index.json to C:\Users\runneradmin\.nuget\packages\stub.system.data.sqlite.core.netframework\1.0.118 with content hash oKvqJyhos18gUWQ7DphJwke15HsmXjcfaYm/qymJDkXHraqwDy0BqYMbbwDSJ/bmcbhug3jQEZ1N1FjynGFFyg==.
+  Installed EntityFramework 6.5.1 from https://api.nuget.org/v3/index.json to C:\Users\runneradmin\.nuget\packages\entityframework\6.5.1 with content hash sQRP2lWg1i3aAGWqdliAM8zrGx7LHMUk+9/MoxUjwfTZYGMXvZ2JYZTlyTm1PqDxvn3c9E3U76TWDON7Y5+CVA==.
+  Generating MSBuild file D:\a\***-main\***-main\***DataLayer\obj\***DataLayer.csproj.nuget.g.props.
+  Generating MSBuild file D:\a\***-main\***-main\***DataLayer\obj\***DataLayer.csproj.nuget.g.targets.
+  Writing assets file to disk. Path: D:\a\***-main\***-main\***DataLayer\obj\project.assets.json
+  Restored D:\a\***-main\***-main\***DataLayer\***DataLayer.csproj (in 2.74 sec).
+  Restoring packages for D:\a\***-main\***-main\***\***.csproj...
+    GET https://api.nuget.org/v3-flatcontainer/communitytoolkit.mvvm/index.json
+    GET https://api.nuget.org/v3-flatcontainer/microsoft.extensions.dependencyinjection/index.json
+    GET https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks/index.json
+    GET https://api.nuget.org/v3-flatcontainer/controlzex/index.json
+    GET https://api.nuget.org/v3-flatcontainer/mahapps.metro/index.json
+    OK https://api.nuget.org/v3-flatcontainer/communitytoolkit.mvvm/index.json 38ms
+    OK https://api.nuget.org/v3-flatcontainer/microsoft.extensions.dependencyinjection/index.json 38ms
+    OK https://api.nuget.org/v3-flatcontainer/controlzex/index.json 38ms
+    OK https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks/index.json 41ms
+    OK https://api.nuget.org/v3-flatcontainer/mahapps.metro/index.json 38ms
+    GET https://api.nuget.org/v3-flatcontainer/communitytoolkit.mvvm/8.3.2/communitytoolkit.mvvm.8.3.2.nupkg
+    GET https://api.nuget.org/v3-flatcontainer/microsoft.extensions.dependencyinjection/9.0.0/microsoft.extensions.dependencyinjection.9.0.0.nupkg
+    GET https://api.nuget.org/v3-flatcontainer/controlzex/5.0.2/controlzex.5.0.2.nupkg
+    OK https://api.nuget.org/v3-flatcontainer/microsoft.extensions.dependencyinjection/9.0.0/microsoft.extensions.dependencyinjection.9.0.0.nupkg 3ms
+    OK https://api.nuget.org/v3-flatcontainer/communitytoolkit.mvvm/8.3.2/communitytoolkit.mvvm.8.3.2.nupkg 6ms
+    GET https://api.nuget.org/v3-flatcontainer/mahapps.metro/2.4.10/mahapps.metro.2.4.10.nupkg
+    GET https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks/5.1.0/mahapps.metro.iconpacks.5.1.0.nupkg
+    OK https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks/5.1.0/mahapps.metro.iconpacks.5.1.0.nupkg 2ms
+    OK https://api.nuget.org/v3-flatcontainer/mahapps.metro/2.4.10/mahapps.metro.2.4.10.nupkg 17ms
+    GET https://api.nuget.org/v3-flatcontainer/system.runtime.compilerservices.unsafe/index.json
+    GET https://api.nuget.org/v3-flatcontainer/system.memory/index.json
+    OK https://api.nuget.org/v3-flatcontainer/controlzex/5.0.2/controlzex.5.0.2.nupkg 53ms
+    OK https://api.nuget.org/v3-flatcontainer/system.memory/index.json 35ms
+    OK https://api.nuget.org/v3-flatcontainer/system.runtime.compilerservices.unsafe/index.json 36ms
+    GET https://api.nuget.org/v3-flatcontainer/system.componentmodel.annotations/index.json
+    GET https://api.nuget.org/v3-flatcontainer/microsoft.bcl.asyncinterfaces/index.json
+    GET https://api.nuget.org/v3-flatcontainer/system.memory/4.5.5/system.memory.4.5.5.nupkg
+    GET https://api.nuget.org/v3-flatcontainer/system.runtime.compilerservices.unsafe/6.0.0/system.runtime.compilerservices.unsafe.6.0.0.nupkg
+    OK https://api.nuget.org/v3-flatcontainer/system.runtime.compilerservices.unsafe/6.0.0/system.runtime.compilerservices.unsafe.6.0.0.nupkg 6ms
+    OK https://api.nuget.org/v3-flatcontainer/system.memory/4.5.5/system.memory.4.5.5.nupkg 21ms
+    OK https://api.nuget.org/v3-flatcontainer/microsoft.bcl.asyncinterfaces/index.json 33ms
+    OK https://api.nuget.org/v3-flatcontainer/system.componentmodel.annotations/index.json 38ms
+    GET https://api.nuget.org/v3-flatcontainer/microsoft.bcl.asyncinterfaces/8.0.0/microsoft.bcl.asyncinterfaces.8.0.0.nupkg
+    GET https://api.nuget.org/v3-flatcontainer/system.componentmodel.annotations/5.0.0/system.componentmodel.annotations.5.0.0.nupkg
+    OK https://api.nuget.org/v3-flatcontainer/microsoft.bcl.asyncinterfaces/8.0.0/microsoft.bcl.asyncinterfaces.8.0.0.nupkg 3ms
+    OK https://api.nuget.org/v3-flatcontainer/system.componentmodel.annotations/5.0.0/system.componentmodel.annotations.5.0.0.nupkg 2ms
+    GET https://api.nuget.org/v3-flatcontainer/microsoft.xaml.behaviors.wpf/index.json
+    OK https://api.nuget.org/v3-flatcontainer/microsoft.xaml.behaviors.wpf/index.json 37ms
+    GET https://api.nuget.org/v3-flatcontainer/microsoft.xaml.behaviors.wpf/1.1.31/microsoft.xaml.behaviors.wpf.1.1.31.nupkg
+    OK https://api.nuget.org/v3-flatcontainer/microsoft.xaml.behaviors.wpf/1.1.31/microsoft.xaml.behaviors.wpf.1.1.31.nupkg 8ms
+    GET https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.bootstrapicons/index.json
+    GET https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.coolicons/index.json
+    GET https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.fontaudio/index.json
+    GET https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.fileicons/index.json
+    GET https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.feathericons/index.json
+    GET https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.entypo/index.json
+    GET https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.core/index.json
+    GET https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.evaicons/index.json
+    GET https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.codicons/index.json
+    GET https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.circumicons/index.json
+    GET https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.boxicons/index.json
+    GET https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.fontawesome/index.json
+    GET https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.material/index.json
+    GET https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.forkawesome/index.json
+    GET https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.microns/index.json
+    OK https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.bootstrapicons/index.json 37ms
+    GET https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.modern/index.json
+    GET https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.bootstrapicons/5.1.0/mahapps.metro.iconpacks.bootstrapicons.5.1.0.nupkg
+    GET https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.octicons/index.json
+    GET https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.phosphoricons/index.json
+    OK https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.coolicons/index.json 38ms
+    OK https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.entypo/index.json 39ms
+    OK https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.fontaudio/index.json 46ms
+    OK https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.feathericons/index.json 43ms
+    OK https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.core/index.json 42ms
+    GET https://api.nuget.org/v3-flatcontainer/system.runtime.compilerservices.unsafe/4.5.3/system.runtime.compilerservices.unsafe.4.5.3.nupkg
+    OK https://api.nuget.org/v3-flatcontainer/system.runtime.compilerservices.unsafe/4.5.3/system.runtime.compilerservices.unsafe.4.5.3.nupkg 3ms
+    GET https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.picolicons/index.json
+    OK https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.bootstrapicons/5.1.0/mahapps.metro.iconpacks.bootstrapicons.5.1.0.nupkg 25ms
+    GET https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.memoryicons/index.json
+    OK https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.codicons/index.json 59ms
+    OK https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.modern/index.json 36ms
+    OK https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.fontawesome/index.json 66ms
+    OK https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.boxicons/index.json 67ms
+    OK https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.evaicons/index.json 77ms
+    GET https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.fontisto/index.json
+    OK https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.circumicons/index.json 81ms
+    OK https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.material/index.json 70ms
+    OK https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.forkawesome/index.json 69ms
+    GET https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.materiallight/index.json
+    OK https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.microns/index.json 92ms
+    GET https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.coolicons/5.1.0/mahapps.metro.iconpacks.coolicons.5.1.0.nupkg
+    OK https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.fileicons/index.json 117ms
+    OK https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.octicons/index.json 85ms
+    GET https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.materialdesign/index.json
+    OK https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.memoryicons/index.json 59ms
+    OK https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.phosphoricons/index.json 169ms
+    GET https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.gameicons/index.json
+    OK https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.picolicons/index.json 155ms
+    GET https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.ionicons/index.json
+    OK https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.fontisto/index.json 186ms
+    GET https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.jamicons/index.json
+    GET https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.entypo/5.1.0/mahapps.metro.iconpacks.entypo.5.1.0.nupkg
+    OK https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.materiallight/index.json 177ms
+    GET https://api.nuget.org/v3-flatcontainer/system.numerics.vectors/index.json
+    OK https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.coolicons/5.1.0/mahapps.metro.iconpacks.coolicons.5.1.0.nupkg 196ms
+    GET https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.lucide/index.json
+    GET https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.core/5.1.0/mahapps.metro.iconpacks.core.5.1.0.nupkg
+    OK https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.materialdesign/index.json 223ms
+    GET https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.modern/5.1.0/mahapps.metro.iconpacks.modern.5.1.0.nupkg
+    GET https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.codicons/5.1.0/mahapps.metro.iconpacks.codicons.5.1.0.nupkg
+    OK https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.gameicons/index.json 149ms
+    OK https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.ionicons/index.json 147ms
+    OK https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.jamicons/index.json 132ms
+    GET https://api.nuget.org/v3-flatcontainer/system.buffers/index.json
+    OK https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.entypo/5.1.0/mahapps.metro.iconpacks.entypo.5.1.0.nupkg 159ms
+    OK https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.lucide/index.json 112ms
+    OK https://api.nuget.org/v3-flatcontainer/system.numerics.vectors/index.json 141ms
+    OK https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.core/5.1.0/mahapps.metro.iconpacks.core.5.1.0.nupkg 123ms
+    GET https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.material/5.1.0/mahapps.metro.iconpacks.material.5.1.0.nupkg
+    OK https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.material/5.1.0/mahapps.metro.iconpacks.material.5.1.0.nupkg 3ms
+    GET https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.octicons/5.1.0/mahapps.metro.iconpacks.octicons.5.1.0.nupkg
+    GET https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.phosphoricons/5.1.0/mahapps.metro.iconpacks.phosphoricons.5.1.0.nupkg
+    GET https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.materialdesign/5.1.0/mahapps.metro.iconpacks.materialdesign.5.1.0.nupkg
+    OK https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.octicons/5.1.0/mahapps.metro.iconpacks.octicons.5.1.0.nupkg 3ms
+    OK https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.phosphoricons/5.1.0/mahapps.metro.iconpacks.phosphoricons.5.1.0.nupkg 6ms
+    OK https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.materialdesign/5.1.0/mahapps.metro.iconpacks.materialdesign.5.1.0.nupkg 6ms
+    OK https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.codicons/5.1.0/mahapps.metro.iconpacks.codicons.5.1.0.nupkg 180ms
+    OK https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.modern/5.1.0/mahapps.metro.iconpacks.modern.5.1.0.nupkg 180ms
+    GET https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.fileicons/5.1.0/mahapps.metro.iconpacks.fileicons.5.1.0.nupkg
+    GET https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.picolicons/5.1.0/mahapps.metro.iconpacks.picolicons.5.1.0.nupkg
+    GET https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.memoryicons/5.1.0/mahapps.metro.iconpacks.memoryicons.5.1.0.nupkg
+    GET https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.materiallight/5.1.0/mahapps.metro.iconpacks.materiallight.5.1.0.nupkg
+    GET https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.fontisto/5.1.0/mahapps.metro.iconpacks.fontisto.5.1.0.nupkg
+    OK https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.memoryicons/5.1.0/mahapps.metro.iconpacks.memoryicons.5.1.0.nupkg 4ms
+    GET https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.fontaudio/5.1.0/mahapps.metro.iconpacks.fontaudio.5.1.0.nupkg
+    GET https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.feathericons/5.1.0/mahapps.metro.iconpacks.feathericons.5.1.0.nupkg
+    OK https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.materiallight/5.1.0/mahapps.metro.iconpacks.materiallight.5.1.0.nupkg 8ms
+    GET https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.circumicons/5.1.0/mahapps.metro.iconpacks.circumicons.5.1.0.nupkg
+    OK https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.fontaudio/5.1.0/mahapps.metro.iconpacks.fontaudio.5.1.0.nupkg 4ms
+    GET https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.evaicons/5.1.0/mahapps.metro.iconpacks.evaicons.5.1.0.nupkg
+    OK https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.feathericons/5.1.0/mahapps.metro.iconpacks.feathericons.5.1.0.nupkg 5ms
+    GET https://api.nuget.org/v3-flatcontainer/sharpshell/index.json
+    GET https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.gameicons/5.1.0/mahapps.metro.iconpacks.gameicons.5.1.0.nupkg
+    OK https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.evaicons/5.1.0/mahapps.metro.iconpacks.evaicons.5.1.0.nupkg 9ms
+    OK https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.circumicons/5.1.0/mahapps.metro.iconpacks.circumicons.5.1.0.nupkg 15ms
+    GET https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.boxicons/5.1.0/mahapps.metro.iconpacks.boxicons.5.1.0.nupkg
+    GET https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.lucide/5.1.0/mahapps.metro.iconpacks.lucide.5.1.0.nupkg
+    GET https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.radixicons/index.json
+    OK https://api.nuget.org/v3-flatcontainer/system.buffers/index.json 170ms
+    GET https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.ionicons/5.1.0/mahapps.metro.iconpacks.ionicons.5.1.0.nupkg
+    OK https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.gameicons/5.1.0/mahapps.metro.iconpacks.gameicons.5.1.0.nupkg 31ms
+    GET https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.remixicon/index.json
+    OK https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.picolicons/5.1.0/mahapps.metro.iconpacks.picolicons.5.1.0.nupkg 66ms
+    GET https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.microns/5.1.0/mahapps.metro.iconpacks.microns.5.1.0.nupkg
+    GET https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.jamicons/5.1.0/mahapps.metro.iconpacks.jamicons.5.1.0.nupkg
+    GET https://api.nuget.org/v3-flatcontainer/system.numerics.vectors/4.5.0/system.numerics.vectors.4.5.0.nupkg
+    OK https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.microns/5.1.0/mahapps.metro.iconpacks.microns.5.1.0.nupkg 4ms
+    OK https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.radixicons/index.json 35ms
+    GET https://api.nuget.org/v3-flatcontainer/serverregistrationmanager/index.json
+    OK https://api.nuget.org/v3-flatcontainer/sharpshell/index.json 61ms
+    OK https://api.nuget.org/v3-flatcontainer/system.numerics.vectors/4.5.0/system.numerics.vectors.4.5.0.nupkg 17ms
+    GET https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.pixelarticons/index.json
+    OK https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.boxicons/5.1.0/mahapps.metro.iconpacks.boxicons.5.1.0.nupkg 76ms
+    OK https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.remixicon/index.json 51ms
+    OK https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.lucide/5.1.0/mahapps.metro.iconpacks.lucide.5.1.0.nupkg 78ms
+    OK https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.fontisto/5.1.0/mahapps.metro.iconpacks.fontisto.5.1.0.nupkg 109ms
+    OK https://api.nuget.org/v3-flatcontainer/serverregistrationmanager/index.json 38ms
+    OK https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.fileicons/5.1.0/mahapps.metro.iconpacks.fileicons.5.1.0.nupkg 133ms
+    GET https://api.nuget.org/v3-flatcontainer/system.buffers/4.5.1/system.buffers.4.5.1.nupkg
+    GET https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.radixicons/5.1.0/mahapps.metro.iconpacks.radixicons.5.1.0.nupkg
+    OK https://api.nuget.org/v3-flatcontainer/system.buffers/4.5.1/system.buffers.4.5.1.nupkg 3ms
+    OK https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.pixelarticons/index.json 37ms
+    OK https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.radixicons/5.1.0/mahapps.metro.iconpacks.radixicons.5.1.0.nupkg 4ms
+    OK https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.ionicons/5.1.0/mahapps.metro.iconpacks.ionicons.5.1.0.nupkg 90ms
+    OK https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.jamicons/5.1.0/mahapps.metro.iconpacks.jamicons.5.1.0.nupkg 110ms
+    GET https://api.nuget.org/v3-flatcontainer/system.threading.tasks.extensions/index.json
+    GET https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.simpleicons/index.json
+    GET https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.fontawesome/5.1.0/mahapps.metro.iconpacks.fontawesome.5.1.0.nupkg
+    GET https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.typicons/index.json
+    GET https://api.nuget.org/v3-flatcontainer/microsoft.extensions.dependencyinjection.abstractions/index.json
+    GET https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.rpgawesome/index.json
+    GET https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.unicons/index.json
+    OK https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.fontawesome/5.1.0/mahapps.metro.iconpacks.fontawesome.5.1.0.nupkg 26ms
+    OK https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.simpleicons/index.json 37ms
+    GET https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.vaadinicons/index.json
+    GET https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.forkawesome/5.1.0/mahapps.metro.iconpacks.forkawesome.5.1.0.nupkg
+    GET https://api.nuget.org/v3-flatcontainer/microsoft.bcl.asyncinterfaces/9.0.0/microsoft.bcl.asyncinterfaces.9.0.0.nupkg
+    OK https://api.nuget.org/v3-flatcontainer/system.threading.tasks.extensions/index.json 53ms
+    OK https://api.nuget.org/v3-flatcontainer/microsoft.extensions.dependencyinjection.abstractions/index.json 36ms
+    OK https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.typicons/index.json 54ms
+    GET https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.pixelarticons/5.1.0/mahapps.metro.iconpacks.pixelarticons.5.1.0.nupkg
+    OK https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.rpgawesome/index.json 44ms
+    GET https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.zondicons/index.json
+    GET https://api.nuget.org/v3-flatcontainer/serverregistrationmanager/2.7.2/serverregistrationmanager.2.7.2.nupkg
+    GET https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.weathericons/index.json
+    GET https://api.nuget.org/v3-flatcontainer/sharpshell/2.7.2/sharpshell.2.7.2.nupkg
+    GET https://api.nuget.org/v3-flatcontainer/system.threading.tasks.extensions/4.5.4/system.threading.tasks.extensions.4.5.4.nupkg
+    GET https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.simpleicons/5.1.0/mahapps.metro.iconpacks.simpleicons.5.1.0.nupkg
+    GET https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.remixicon/5.1.0/mahapps.metro.iconpacks.remixicon.5.1.0.nupkg
+    OK https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.pixelarticons/5.1.0/mahapps.metro.iconpacks.pixelarticons.5.1.0.nupkg 19ms
+    OK https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.unicons/index.json 64ms
+    OK https://api.nuget.org/v3-flatcontainer/serverregistrationmanager/2.7.2/serverregistrationmanager.2.7.2.nupkg 24ms
+    OK https://api.nuget.org/v3-flatcontainer/sharpshell/2.7.2/sharpshell.2.7.2.nupkg 21ms
+    OK https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.remixicon/5.1.0/mahapps.metro.iconpacks.remixicon.5.1.0.nupkg 18ms
+    OK https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.zondicons/index.json 42ms
+    OK https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.weathericons/index.json 38ms
+    OK https://api.nuget.org/v3-flatcontainer/microsoft.bcl.asyncinterfaces/9.0.0/microsoft.bcl.asyncinterfaces.9.0.0.nupkg 65ms
+    OK https://api.nuget.org/v3-flatcontainer/system.threading.tasks.extensions/4.5.4/system.threading.tasks.extensions.4.5.4.nupkg 38ms
+    GET https://api.nuget.org/v3-flatcontainer/microsoft.extensions.dependencyinjection.abstractions/9.0.0/microsoft.extensions.dependencyinjection.abstractions.9.0.0.nupkg
+    GET https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.rpgawesome/5.1.0/mahapps.metro.iconpacks.rpgawesome.5.1.0.nupkg
+    GET https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.typicons/5.1.0/mahapps.metro.iconpacks.typicons.5.1.0.nupkg
+    OK https://api.nuget.org/v3-flatcontainer/microsoft.extensions.dependencyinjection.abstractions/9.0.0/microsoft.extensions.dependencyinjection.abstractions.9.0.0.nupkg 5ms
+    OK https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.rpgawesome/5.1.0/mahapps.metro.iconpacks.rpgawesome.5.1.0.nupkg 6ms
+    OK https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.forkawesome/5.1.0/mahapps.metro.iconpacks.forkawesome.5.1.0.nupkg 75ms
+    OK https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.vaadinicons/index.json 92ms
+    OK https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.simpleicons/5.1.0/mahapps.metro.iconpacks.simpleicons.5.1.0.nupkg 126ms
+    GET https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.vaadinicons/5.1.0/mahapps.metro.iconpacks.vaadinicons.5.1.0.nupkg
+    GET https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.zondicons/5.1.0/mahapps.metro.iconpacks.zondicons.5.1.0.nupkg
+    GET https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.weathericons/5.1.0/mahapps.metro.iconpacks.weathericons.5.1.0.nupkg
+    OK https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.vaadinicons/5.1.0/mahapps.metro.iconpacks.vaadinicons.5.1.0.nupkg 5ms
+    OK https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.weathericons/5.1.0/mahapps.metro.iconpacks.weathericons.5.1.0.nupkg 3ms
+    OK https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.typicons/5.1.0/mahapps.metro.iconpacks.typicons.5.1.0.nupkg 128ms
+    OK https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.zondicons/5.1.0/mahapps.metro.iconpacks.zondicons.5.1.0.nupkg 48ms
+    GET https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.unicons/5.1.0/mahapps.metro.iconpacks.unicons.5.1.0.nupkg
+    OK https://api.nuget.org/v3-flatcontainer/mahapps.metro.iconpacks.unicons/5.1.0/mahapps.metro.iconpacks.unicons.5.1.0.nupkg 4ms
+  Installed WixToolset.Heat 6.0.0 from https://api.nuget.org/v3/index.json to C:\Users\runneradmin\.nuget\packages\wixtoolset.heat\6.0.0 with content hash S59NZ8d0v1t+wbJV5zOKrzB3U3dNFJlnOTI1BMttSeOo64keE8PtJlY295leWDTCT/QNpeayvHChdJZOpqEjaw==.
+  Generating MSBuild file D:\a\***-main\***-main\***.Installer.Wix\obj\***.Installer.Wix.wixproj.nuget.g.props.
+  Generating MSBuild file D:\a\***-main\***-main\***.Installer.Wix\obj\***.Installer.Wix.wixproj.nuget.g.targets.
+  Writing assets file to disk. Path: D:\a\***-main\***-main\***.Installer.Wix\obj\project.assets.json
+  Restored D:\a\***-main\***-main\***.Installer.Wix\***.Installer.Wix.wixproj (in 4.09 sec).
+  Restoring packages for D:\a\***-main\***-main\***Service\***Service.csproj...
+    GET https://api.nuget.org/v3-flatcontainer/log4net/index.json
+    OK https://api.nuget.org/v3-flatcontainer/log4net/index.json 34ms
+    GET https://api.nuget.org/v3-flatcontainer/log4net/3.0.1/log4net.3.0.1.nupkg
+    OK https://api.nuget.org/v3-flatcontainer/log4net/3.0.1/log4net.3.0.1.nupkg 3ms
+  Installed log4net 3.0.1 from https://api.nuget.org/v3/index.json to C:\Users\runneradmin\.nuget\packages\log4net\3.0.1 with content hash ynz92jhFDUaMVBaGeOgE3W+l8AeBq9FOZOgS1QzkiDc4C84XbT4bgaAztoCVtFgRReqqf2z5RN+l+Tt//+Mm/w==.
+  Generating MSBuild file D:\a\***-main\***-main\***Service\obj\***Service.csproj.nuget.g.props.
+  Generating MSBuild file D:\a\***-main\***-main\***Service\obj\***Service.csproj.nuget.g.targets.
+  Writing assets file to disk. Path: D:\a\***-main\***-main\***Service\obj\project.assets.json
+  Restored D:\a\***-main\***-main\***Service\***Service.csproj (in 232 ms).
+  Installed MahApps.Metro.IconPacks.Microns 5.1.0 from https://api.nuget.org/v3/index.json to C:\Users\runneradmin\.nuget\packages\mahapps.metro.iconpacks.microns\5.1.0 with content hash UP8JY/5Vs2R/fFQacRGV0aAFbu1MUs1FHHC2zslVWiXuXvZN2X70vUWNXtmA8Ww58lpWAgpjXEh76nUxC0f2LQ==.
+  Restoring packages for D:\a\***-main\***-main\***Extensions\***Extensions.csproj...
+  Installed MahApps.Metro.IconPacks.FontAwesome 5.1.0 from https://api.nuget.org/v3/index.json to C:\Users\runneradmin\.nuget\packages\mahapps.metro.iconpacks.fontawesome\5.1.0 with content hash MZu5L29vYg97rXxvqOwDJAlmyq7gn0Vt07GdRdC0+DEY5uLBmutWOQPHexveE73X/m+1G4C5j4yZZ6SmjSWtvg==.
+  Installed ServerRegistrationManager 2.7.2 from https://api.nuget.org/v3/index.json to C:\Users\runneradmin\.nuget\packages\serverregistrationmanager\2.7.2 with content hash 3J/3W+GIHeTHRPkHjmnQeD3qS2upIQ0LDC2jDY+vCaoS1DeElLuHA+Xfk4kCkgdFFl7EBU0ZFcULydy61Wkjzg==.
+  Installed SharpShell 2.7.2 from https://api.nuget.org/v3/index.json to C:\Users\runneradmin\.nuget\packages\sharpshell\2.7.2 with content hash 2mExihaN8BBGG58xUrbdMwRjWlvcxCSFEZd30ChaO3rcTdlLQ9/aRaoqVJ/kIdz7pE+i+42wLQ83xOo7auTDFA==.
+  Installed Microsoft.Bcl.AsyncInterfaces 9.0.0 from https://api.nuget.org/v3/index.json to C:\Users\runneradmin\.nuget\packages\microsoft.bcl.asyncinterfaces\9.0.0 with content hash owmu2Cr3IQ8yQiBleBHlGk8dSQ12oaF2e7TpzwJKEl4m84kkZJjEY1n33L67Y3zM5jPOjmmbdHjbfiL0RqcMRQ==.
+  Installed MahApps.Metro.IconPacks.Core 5.1.0 from https://api.nuget.org/v3/index.json to C:\Users\runneradmin\.nuget\packages\mahapps.metro.iconpacks.core\5.1.0 with content hash DBvN+gsmx5iryZO4VCcrYH1iaV1o5Qwed+IZ4bElvfRqUcNs3+sqA6Y2lPYdzLDDtuEZ681fkWyEzlxe5f1pcQ==.
+  Installed MahApps.Metro.IconPacks.JamIcons 5.1.0 from https://api.nuget.org/v3/index.json to C:\Users\runneradmin\.nuget\packages\mahapps.metro.iconpacks.jamicons\5.1.0 with content hash QPVveu9Me7ny+ewPmRv6/gWXCM43FO+iAcvd1OqNZLdwqVQem7gGACRBMxGYBqGk+hbbk0WzYkluAwiN/sNePA==.
+  Installed Microsoft.Extensions.DependencyInjection 9.0.0 from https://api.nuget.org/v3/index.json to C:\Users\runneradmin\.nuget\packages\microsoft.extensions.dependencyinjection\9.0.0 with content hash MCPrg7v3QgNMr0vX4vzRXvkNGgLg8vKWX0nKCWUxu2uPyMsaRgiRc1tHBnbTcfJMhMKj2slE/j2M9oGkd25DNw==.
+  Installed MahApps.Metro.IconPacks.Lucide 5.1.0 from https://api.nuget.org/v3/index.json to C:\Users\runneradmin\.nuget\packages\mahapps.metro.iconpacks.lucide\5.1.0 with content hash 7nZgyQnpo3mkHagcVkI2VpcyPEau2QzP5ysem49hrFOIG8zp1AGOvitxoJAP2THK+MT8vYM9vreVuxJzSVDPNg==.
+  Installed System.Runtime.CompilerServices.Unsafe 4.5.3 from https://api.nuget.org/v3/index.json to C:\Users\runneradmin\.nuget\packages\system.runtime.compilerservices.unsafe\4.5.3 with content hash 3TIsJhD1EiiT0w2CcDMN/iSSwnNnsrnbzeVHSKkaEgV85txMprmuO+Yq2AdSbeVGcg28pdNDTPK87tJhX7VFHw==.
+  Installed System.Threading.Tasks.Extensions 4.5.4 from https://api.nuget.org/v3/index.json to C:\Users\runneradmin\.nuget\packages\system.threading.tasks.extensions\4.5.4 with content hash zteT+G8xuGu6mS+mzDzYXbzS7rd3K6Fjb9RiZlYlJPam2/hU7JCBZBVEcywNuR+oZ1ncTvc/cq0faRr3P01OVg==.
+  Installed MahApps.Metro.IconPacks.SimpleIcons 5.1.0 from https://api.nuget.org/v3/index.json to C:\Users\runneradmin\.nuget\packages\mahapps.metro.iconpacks.simpleicons\5.1.0 with content hash m3tdU4BzVHSpI8AfPXYHDm9VgLClgaHdhyGKvOlLFPmBPF8bT2ib26oldIFgZTensxDVy5Xq3FO/WI0ANR6n8Q==.
+  Installed System.Numerics.Vectors 4.5.0 from https://api.nuget.org/v3/index.json to C:\Users\runneradmin\.nuget\packages\system.numerics.vectors\4.5.0 with content hash QQTlPTl06J/iiDbJCiepZ4H//BVraReU4O4EoRw1U02H5TLUIT7xn3GnDp9AXPSlJUDyFs4uWjWafNX6WrAojQ==.
+  Generating MSBuild file D:\a\***-main\***-main\***Extensions\obj\***Extensions.csproj.nuget.g.props.
+  Generating MSBuild file D:\a\***-main\***-main\***Extensions\obj\***Extensions.csproj.nuget.g.targets.
+  Writing assets file to disk. Path: D:\a\***-main\***-main\***Extensions\obj\project.assets.json
+  Restored D:\a\***-main\***-main\***Extensions\***Extensions.csproj (in 1.74 sec).
+  Installed MahApps.Metro.IconPacks.FeatherIcons 5.1.0 from https://api.nuget.org/v3/index.json to C:\Users\runneradmin\.nuget\packages\mahapps.metro.iconpacks.feathericons\5.1.0 with content hash fuBDFMn2YUMVex12yDXdh+H1Fp1XzqaF66omMweiS7SkELPQeE7e9CXI9kXe6XQZvgwqRz2um4KbpHH1JZiyUw==.
+  Installed System.Memory 4.5.5 from https://api.nuget.org/v3/index.json to C:\Users\runneradmin\.nuget\packages\system.memory\4.5.5 with content hash XIWiDvKPXaTveaB7HVganDlOCRoj03l+jrwNvcge/t8vhGYKvqV+dMv6G4SAX2NoNmN0wZfVPTAlFwZcZvVOUw==.
+  Installed System.Runtime.CompilerServices.Unsafe 6.0.0 from https://api.nuget.org/v3/index.json to C:\Users\runneradmin\.nuget\packages\system.runtime.compilerservices.unsafe\6.0.0 with content hash /iUeP3tq1S0XdNNoMz5C9twLSrM/TH+qElHkXWaPvuNOt+99G75NrV0OS2EqHx5wMN7popYjpc8oTjC1y16DLg==.
+  Installed MahApps.Metro.IconPacks.MemoryIcons 5.1.0 from https://api.nuget.org/v3/index.json to C:\Users\runneradmin\.nuget\packages\mahapps.metro.iconpacks.memoryicons\5.1.0 with content hash vAEA+3xxMmKVHAd4SSuECVxOgG8BIrRaxMo43POAWka8P+H1oZZNheZtRnGa0nJvtcOzX630dke9DR0xQuo8HQ==.
+  Installed MahApps.Metro.IconPacks.Coolicons 5.1.0 from https://api.nuget.org/v3/index.json to C:\Users\runneradmin\.nuget\packages\mahapps.metro.iconpacks.coolicons\5.1.0 with content hash TqaeiTMhWZKXHB42sKc2bpBOKDK6m0dJzYtyBPdCsn+kYbxFSvpGlNOxWQ0iuDyfbo+Ouksxs6PH0G2QDPz+Ow==.
+  Installed MahApps.Metro.IconPacks.Octicons 5.1.0 from https://api.nuget.org/v3/index.json to C:\Users\runneradmin\.nuget\packages\mahapps.metro.iconpacks.octicons\5.1.0 with content hash IWMwHnfQ70dbfmxasgm+smPZN8z2kkRY0UBpi+S+PJMTPdG0y3TKq2hOvoot8Ob0gqj2ecY+wUGjglBFHYrwVw==.
+  Installed MahApps.Metro.IconPacks.Entypo 5.1.0 from https://api.nuget.org/v3/index.json to C:\Users\runneradmin\.nuget\packages\mahapps.metro.iconpacks.entypo\5.1.0 with content hash ePuwcIy6VDuD3Kc5Opu4dfCsdnt4Z2zImhas3UXnwj/tCpq6GFT8cI1MraWOhUaf5lhokHFsS2033qrPuhIupQ==.
+  Installed MahApps.Metro.IconPacks.Modern 5.1.0 from https://api.nuget.org/v3/index.json to C:\Users\runneradmin\.nuget\packages\mahapps.metro.iconpacks.modern\5.1.0 with content hash DdTbEAEv12OH8wi6Vle8jy1APeShdrCR5UPutL3QKkSplyZdy2Kr6rsr+6rocM+2eDe2vEMEllvljQXcV4NaEA==.
+  Installed MahApps.Metro.IconPacks.Ionicons 5.1.0 from https://api.nuget.org/v3/index.json to C:\Users\runneradmin\.nuget\packages\mahapps.metro.iconpacks.ionicons\5.1.0 with content hash TXM9az0HAdcF9UirpGbrZFCRs0UMFj7DBTnx/2EtiAwUV1rVpMmC0XhdbmlnDfCMuAGOUOYFueVb6Iah6FsHng==.
+  Installed ControlzEx 5.0.2 from https://api.nuget.org/v3/index.json to C:\Users\runneradmin\.nuget\packages\controlzex\5.0.2 with content hash f724LoDJ36LxaLR62G4ek9ZAJI8BiiYRJJ04furC/qjXSeIwU0qmHFIe19xB1/FwxyZjevdFguEr9ZUjf3dZgw==.
+  Installed MahApps.Metro.IconPacks.MaterialLight 5.1.0 from https://api.nuget.org/v3/index.json to C:\Users\runneradmin\.nuget\packages\mahapps.metro.iconpacks.materiallight\5.1.0 with content hash 887pN4nAIqVg+oS3O1MQY3lF4Xqj9vixNN4y4ji0wIWlZjUZoM0DeMnLo6eRSZSa1PC2k+SmOpXQWy3ahB/+Xg==.
+  Installed MahApps.Metro.IconPacks.MaterialDesign 5.1.0 from https://api.nuget.org/v3/index.json to C:\Users\runneradmin\.nuget\packages\mahapps.metro.iconpacks.materialdesign\5.1.0 with content hash YPe3yCobg+HHTsDIKbOcWj/k+nZL/JZTekZmQGxdK2SLXRb66VF8bkB1/459Tu+1kvo7qS/QPwk8jofUIkhRPA==.
+  Installed Microsoft.Extensions.DependencyInjection.Abstractions 9.0.0 from https://api.nuget.org/v3/index.json to C:\Users\runneradmin\.nuget\packages\microsoft.extensions.dependencyinjection.abstractions\9.0.0 with content hash +6f2qv2a3dLwd5w6JanPIPs47CxRbnk+ZocMJUhv9NxP88VlOcJYZs9jY+MYSjxvady08bUZn6qgiNh7DadGgg==.
+  Installed MahApps.Metro 2.4.10 from https://api.nuget.org/v3/index.json to C:\Users\runneradmin\.nuget\packages\mahapps.metro\2.4.10 with content hash 45exHKJCVYaD1/rNr3ekZPECEBM4uHOt6aYp6yNaJbliFMUo+d3z8Gi1xG+qEkbiHKITX+dlz+BW1FOsjAbl/w==.
+  Installed MahApps.Metro.IconPacks.VaadinIcons 5.1.0 from https://api.nuget.org/v3/index.json to C:\Users\runneradmin\.nuget\packages\mahapps.metro.iconpacks.vaadinicons\5.1.0 with content hash 4uzL65rIPuJtO1F1/5Pv4yMtOaonBROYho8VyJ+ifWbQzF7n+ElmEHQin0ntuIOmpB8bmb+2THptsRA+ICZxjA==.
+  Installed MahApps.Metro.IconPacks.Fontaudio 5.1.0 from https://api.nuget.org/v3/index.json to C:\Users\runneradmin\.nuget\packages\mahapps.metro.iconpacks.fontaudio\5.1.0 with content hash k9ttxX1LYz7IKXANBbdPWz9x/1Qn8jwki+N67+Vw9S8hanIrKZuoT63fqioRvmw+aHAmSuk2g1+uffydS9Ef6g==.
+  Installed System.ComponentModel.Annotations 5.0.0 from https://api.nuget.org/v3/index.json to C:\Users\runneradmin\.nuget\packages\system.componentmodel.annotations\5.0.0 with content hash dMkqfy2el8A8/I76n2Hi1oBFEbG1SfxD2l5nhwXV3XjlnOmwxJlQbYpJH4W51odnU9sARCSAgv7S3CyAFMkpYg==.
+  Installed MahApps.Metro.IconPacks.PhosphorIcons 5.1.0 from https://api.nuget.org/v3/index.json to C:\Users\runneradmin\.nuget\packages\mahapps.metro.iconpacks.phosphoricons\5.1.0 with content hash d1h663ZWkacOOBZyL/6kOTh+mX58zhsLdEqTSLnQQLtkz3FJ3cugdj2wZIm3mPpj3UMuJFgfnt5aMnvO+AZhIg==.
+  Installed MahApps.Metro.IconPacks.BoxIcons 5.1.0 from https://api.nuget.org/v3/index.json to C:\Users\runneradmin\.nuget\packages\mahapps.metro.iconpacks.boxicons\5.1.0 with content hash FcpJ8PZ6g6Vk/4ORknsb62AL22Gh+woWFUOp6FAs/msyTgCwz0xMEuLj+wVnvy4AK1JRzqAWfJciYC8zgtjtMw==.
+  Installed MahApps.Metro.IconPacks.CircumIcons 5.1.0 from https://api.nuget.org/v3/index.json to C:\Users\runneradmin\.nuget\packages\mahapps.metro.iconpacks.circumicons\5.1.0 with content hash YFUrBWVcCWZsLdWvFGN8m4XngakVhKpjRo62Ps7WaRnA3D8x0gMLpY+3lmgr42O3gIIUWjJ7u+UKKaAty4tUOg==.
+  Installed MahApps.Metro.IconPacks.Unicons 5.1.0 from https://api.nuget.org/v3/index.json to C:\Users\runneradmin\.nuget\packages\mahapps.metro.iconpacks.unicons\5.1.0 with content hash OZpt9quy7spHNcoNcuLXYBEaggUvDVQzrjw8ZaQnNDyqvT2IY/4EHAdYcrPXMhPSJGMYCxRB6uwSxsRKR9jMyA==.
+  Installed Microsoft.Bcl.AsyncInterfaces 8.0.0 from https://api.nuget.org/v3/index.json to C:\Users\runneradmin\.nuget\packages\microsoft.bcl.asyncinterfaces\8.0.0 with content hash 3WA9q9yVqJp222P3x1wYIGDAkpjAku0TMUaaQV22g6L67AI0LdOIrVS7Ht2vJfLHGSPVuqN94vIr15qn+HEkHw==.
+  Installed MahApps.Metro.IconPacks.EvaIcons 5.1.0 from https://api.nuget.org/v3/index.json to C:\Users\runneradmin\.nuget\packages\mahapps.metro.iconpacks.evaicons\5.1.0 with content hash 6JFvb9TTSbaKjHKFOWzroSqm+9RlagJJbOMNIo4va2wYWOdZT62Gjx+txW4gbRMlODV9lolQeUgikkm3I/M9ng==.
+  Installed MahApps.Metro.IconPacks.WeatherIcons 5.1.0 from https://api.nuget.org/v3/index.json to C:\Users\runneradmin\.nuget\packages\mahapps.metro.iconpacks.weathericons\5.1.0 with content hash McjFxvUcYo03Imut0/nxTrIfJyV7FR4V1ShDke427aNMTSLQ1+MYbVoX8XNPd2i6iXL5rO6qDnyIRYKsGxystA==.
+  Installed MahApps.Metro.IconPacks.PixelartIcons 5.1.0 from https://api.nuget.org/v3/index.json to C:\Users\runneradmin\.nuget\packages\mahapps.metro.iconpacks.pixelarticons\5.1.0 with content hash 5ciUi0PsIvfuOjxWQjTrbYPC1Hzdyxhpqwm9cP/+8D8JmxT5o7GdOQ361murKtXeY20DH36l0sXZFTixPKoEtQ==.
+  Installed MahApps.Metro.IconPacks.ForkAwesome 5.1.0 from https://api.nuget.org/v3/index.json to C:\Users\runneradmin\.nuget\packages\mahapps.metro.iconpacks.forkawesome\5.1.0 with content hash h9zsdYzXyA6ZpjqTg0ADnhTlxyCKzreBKgDS7cmO0aB1gBAt8dRYvuJGhYvcRlFbuY4GAXqBkfOVceQ5HbaFXw==.
+  Installed System.Buffers 4.5.1 from https://api.nuget.org/v3/index.json to C:\Users\runneradmin\.nuget\packages\system.buffers\4.5.1 with content hash Rw7ijyl1qqRS0YQD/WycNst8hUUMgrMH4FCn1nNm27M4VxchZ1js3fVjQaANHO5f3sN4isvP4a+Met9Y4YomAg==.
+  Installed CommunityToolkit.Mvvm 8.3.2 from https://api.nuget.org/v3/index.json to C:\Users\runneradmin\.nuget\packages\communitytoolkit.mvvm\8.3.2 with content hash m8EolE1A0Updj68WTsZSGI6VWb6mUqHPh7QFo0kt7+JPhYMNXRS1ch8TS/oITAdcxTLrwMOp3ku1KjeG1/Zdpg==.
+  Installed MahApps.Metro.IconPacks.PicolIcons 5.1.0 from https://api.nuget.org/v3/index.json to C:\Users\runneradmin\.nuget\packages\mahapps.metro.iconpacks.picolicons\5.1.0 with content hash 1gpm7uLF2CIxlV5I2T/oq7Fc+94WeB53ulCwjEN+Itz1oZtlcd98hqVHCByWwpf9kQCf6iDpmExO7LvwLIaNNQ==.
+  Installed MahApps.Metro.IconPacks.RadixIcons 5.1.0 from https://api.nuget.org/v3/index.json to C:\Users\runneradmin\.nuget\packages\mahapps.metro.iconpacks.radixicons\5.1.0 with content hash Y6f+8tZfmprzKyYXM6xqf+BbayMIwofN7ix+FJxtreU7Z4/X6y8YprFxhX5GU2zmSDtf0QxFLEtQsEPOikYhGw==.
+  Installed MahApps.Metro.IconPacks.BootstrapIcons 5.1.0 from https://api.nuget.org/v3/index.json to C:\Users\runneradmin\.nuget\packages\mahapps.metro.iconpacks.bootstrapicons\5.1.0 with content hash wdJqJbbko/lwFQvQhhnq2+cWW3KT5RyQ01brukJ+Xl4KxTsNv7ClGTLqFesG1gp+O81mIK6trjCnQgt3d1TnGQ==.
+  Installed Microsoft.Xaml.Behaviors.Wpf 1.1.31 from https://api.nuget.org/v3/index.json to C:\Users\runneradmin\.nuget\packages\microsoft.xaml.behaviors.wpf\1.1.31 with content hash LZpuf82ACZWldmfMuv3CTUMDh3o0xo0uHUaybR5HgqVLDBJJ9RZLykplQ/bTJd0/VDt3EhD4iDgUgbdIUAM+Kg==.
+  Installed MahApps.Metro.IconPacks.Codicons 5.1.0 from https://api.nuget.org/v3/index.json to C:\Users\runneradmin\.nuget\packages\mahapps.metro.iconpacks.codicons\5.1.0 with content hash z8aIgtHRW9kxqxv+W/Pg1dyRTlLhmVjGCOnpCfa2hmRg/pNxBCcVSTa6zKOnB1zitW8u4HA50mchUoFzGuzC6g==.
+  Installed MahApps.Metro.IconPacks.Zondicons 5.1.0 from https://api.nuget.org/v3/index.json to C:\Users\runneradmin\.nuget\packages\mahapps.metro.iconpacks.zondicons\5.1.0 with content hash EiSwb2763RiczWsbeJJ+8TuZOW4wXGNAF0a8MAULNyCd7CREgjzKNB+vxXqEMXbVYhM5VcAtZSddQB/EhEuBsQ==.
+  Installed MahApps.Metro.IconPacks.RemixIcon 5.1.0 from https://api.nuget.org/v3/index.json to C:\Users\runneradmin\.nuget\packages\mahapps.metro.iconpacks.remixicon\5.1.0 with content hash MY5KqzmCFnq7D8cm0BR9dqLbEUz3ns2u7IpMAi/+G5daWMUM3CrXhNErx2vuEgeQi6AbkdHvtozEkV9BsiwQEA==.
+  Installed MahApps.Metro.IconPacks.FileIcons 5.1.0 from https://api.nuget.org/v3/index.json to C:\Users\runneradmin\.nuget\packages\mahapps.metro.iconpacks.fileicons\5.1.0 with content hash GrfKti0Z626E9fu9zpiPK3hCchwR8hcWy9vn75wTR4lQAq++22a1k4b3b3BGHXDSYqtP9+WolnQR6fiTrLPMkQ==.
+  Installed MahApps.Metro.IconPacks.Fontisto 5.1.0 from https://api.nuget.org/v3/index.json to C:\Users\runneradmin\.nuget\packages\mahapps.metro.iconpacks.fontisto\5.1.0 with content hash q2uwuZwCk6UOoVr3ks90PH2vWRchXCGzBSXJUvCxyQ2IUVNP0a1AL/fsYeB+sHtEDgsC7k/EXOgi4xJkk968Dg==.
+  Installed MahApps.Metro.IconPacks.Material 5.1.0 from https://api.nuget.org/v3/index.json to C:\Users\runneradmin\.nuget\packages\mahapps.metro.iconpacks.material\5.1.0 with content hash RWh43z0Ddd3jS0ktXpU6Y2DbvaNV8gY8uBVfmOuy7LrRzcLhd0ywUkWQrH1F3m6ODIO1vgMI5vEcKgqXP58s9Q==.
+  Installed MahApps.Metro.IconPacks.GameIcons 5.1.0 from https://api.nuget.org/v3/index.json to C:\Users\runneradmin\.nuget\packages\mahapps.metro.iconpacks.gameicons\5.1.0 with content hash poBiGz9rPGOjgxNu+XhEYQZXJFQ0AAzN3lbgxyKxmg2Q8OdRVeIhw1I6aFBHOPcEiVpGLXRu+6lLZU83iAZnCA==.
+  Installed MahApps.Metro.IconPacks.Typicons 5.1.0 from https://api.nuget.org/v3/index.json to C:\Users\runneradmin\.nuget\packages\mahapps.metro.iconpacks.typicons\5.1.0 with content hash A3yLUxyJgJ5RDcFkA3VPI43l8vMDeIVUcSwfqbTHvuskjwdGF4whOENEIb6Y8085ZszETZsyDogvvk5khBvw6g==.
+  Installed MahApps.Metro.IconPacks.RPGAwesome 5.1.0 from https://api.nuget.org/v3/index.json to C:\Users\runneradmin\.nuget\packages\mahapps.metro.iconpacks.rpgawesome\5.1.0 with content hash dX4t9A3V6GDzUFZ3h4I66k5KDnPNepGUwCC+8biMiWTmqGMTe++gcXFUhAjlUkm65VANIk4qdtwiXZjkMTMWmA==.
+  Installed MahApps.Metro.IconPacks 5.1.0 from https://api.nuget.org/v3/index.json to C:\Users\runneradmin\.nuget\packages\mahapps.metro.iconpacks\5.1.0 with content hash +R8cYdrG+xvHeYoiNh/K2mZLBP9+x6b8odEei+eGy2/DJvtwZw1G9fXjwO43X5pEkmyJLLeNchKIBadY7qn2zA==.
+  Generating MSBuild file D:\a\***-main\***-main\***\obj\***.csproj.nuget.g.props.
+  Generating MSBuild file D:\a\***-main\***-main\***\obj\***.csproj.nuget.g.targets.
+  Writing assets file to disk. Path: D:\a\***-main\***-main\***\obj\project.assets.json
+  Restored D:\a\***-main\***-main\***\***.csproj (in 11.46 sec).
+  
+  NuGet Config files used:
+      C:\Users\runneradmin\AppData\Roaming\NuGet\NuGet.Config
+      C:\Program Files (x86)\NuGet\Config\Microsoft.VisualStudio.FallbackLocation.config
+      C:\Program Files (x86)\NuGet\Config\Microsoft.VisualStudio.Offline.config
+  
+  Feeds used:
+      https://api.nuget.org/v3/index.json
+      C:\Program Files (x86)\Microsoft SDKs\NuGetPackages\
+  
+  Installed:
+      2 package(s) to D:\a\***-main\***-main\***Core\***Core.csproj
+      13 package(s) to D:\a\***-main\***-main\***DataLayer\***DataLayer.csproj
+      1 package(s) to D:\a\***-main\***-main\***.Installer.Wix\***.Installer.Wix.wixproj
+      14 package(s) to D:\a\***-main\***-main\***Service\***Service.csproj
+      4 package(s) to D:\a\***-main\***-main\***Extensions\***Extensions.csproj
+      68 package(s) to D:\a\***-main\***-main\***\***.csproj
+Done Building Project "D:\a\***-main\***-main\***.sln" (Restore target(s)).
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+Time Elapsed 00:00:40.07
+MSBuild version 17.14.23+b0019275e for .NET Framework
+Build started 10/27/2025 11:21:30 AM.
+Project "D:\a\***-main\***-main\***.sln" on node 1 (default targets).
+ValidateSolutionConfiguration:
+  Building solution configuration "Release|Any CPU".
+ValidateProjects:
+  The project "***DataLayer" is not selected for building in solution configuration "Release|Any CPU".
+Project "D:\a\***-main\***-main\***.sln" (1) is building "D:\a\***-main\***-main\***\***.csproj" (2) on node 1 (default targets).
+PrepareForBuild:
+  Creating directory "bin\Release\".
+  Creating directory "obj\Release\".
+Project "D:\a\***-main\***-main\***\***.csproj" (2) is building "D:\a\***-main\***-main\***Core\***Core.csproj" (3:2) on node 1 (default targets).
+PrepareForBuild:
+  Creating directory "bin\Release\".
+  Creating directory "obj\Release\".
+CoreCompile:
+  C:\Program Files\Microsoft Visual Studio\2022\Enterprise\MSBuild\Current\Bin\Roslyn\csc.exe /noconfig /nowarn:1701,1702 /fullpaths /nostdlib+ /errorreport:prompt /warn:4 /define:TRACE /highentropyva+ /reference:"C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.8.1\Microsoft.CSharp.dll" /reference:"C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.8.1\mscorlib.dll" /reference:C:\Users\runneradmin\.nuget\packages\roler.toolkit.file.epub\1.0.1\lib\netstandard2.0\Roler.Toolkit.File.Epub.dll /reference:C:\Users\runneradmin\.nuget\packages\roler.toolkit.file.mobi\1.0.5\lib\netstandard2.0\Roler.Toolkit.File.Mobi.dll /reference:"C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.8.1\System.Core.dll" /reference:"C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.8.1\System.Data.DataSetExtensions.dll" /reference:"C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.8.1
+  CompilerServer: tool - using command line tool by design 'C:\Program Files\Microsoft Visual Studio\2022\Enterprise\MSBuild\Current\Bin\Roslyn\csc.exe' - ***Core
+_CopyFilesMarkedCopyLocal:
+  Copying file from "C:\Users\runneradmin\.nuget\packages\roler.toolkit.file.epub\1.0.1\lib\netstandard2.0\Roler.Toolkit.File.Epub.dll" to "D:\a\***-main\***-main\***Core\bin\Release\Roler.Toolkit.File.Epub.dll".
+  Copying file from "C:\Users\runneradmin\.nuget\packages\roler.toolkit.file.mobi\1.0.5\lib\netstandard2.0\Roler.Toolkit.File.Mobi.dll" to "D:\a\***-main\***-main\***Core\bin\Release\Roler.Toolkit.File.Mobi.dll".
+  Creating "D:\a\***-main\***-main\***Core\obj\Release\***.B4113F31.Up2Date" because "AlwaysCreate" was specified.
+  Touching "D:\a\***-main\***-main\***Core\obj\Release\***.B4113F31.Up2Date".
+CopyFilesToOutputDirectory:
+  Copying file from "D:\a\***-main\***-main\***Core\obj\Release\***Core.dll" to "D:\a\***-main\***-main\***Core\bin\Release\***Core.dll".
+  ***Core -> D:\a\***-main\***-main\***Core\bin\Release\***Core.dll
+  Copying file from "D:\a\***-main\***-main\***Core\obj\Release\***Core.pdb" to "D:\a\***-main\***-main\***Core\bin\Release\***Core.pdb".
+Done Building Project "D:\a\***-main\***-main\***Core\***Core.csproj" (default targets).
+Project "D:\a\***-main\***-main\***\***.csproj" (2) is building "D:\a\***-main\***-main\***Extensions\***Extensions.csproj" (5:2) on node 1 (default targets).
+PrepareForBuild:
+  Creating directory "bin\Release\".
+  Creating directory "obj\Release\".
+CoreCompile:
+  C:\Program Files\Microsoft Visual Studio\2022\Enterprise\MSBuild\Current\Bin\Roslyn\csc.exe /noconfig /nowarn:1701,1702 /fullpaths /nostdlib+ /errorreport:prompt /warn:4 /define:TRACE /highentropyva+ /reference:"C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.8.1\Microsoft.CSharp.dll" /reference:"C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.8.1\mscorlib.dll" /reference:D:\a\***-main\***-main\***Core\bin\Release\***Core.dll /reference:C:\Users\runneradmin\.nuget\packages\roler.toolkit.file.epub\1.0.1\lib\netstandard2.0\Roler.Toolkit.File.Epub.dll /reference:C:\Users\runneradmin\.nuget\packages\roler.toolkit.file.mobi\1.0.5\lib\netstandard2.0\Roler.Toolkit.File.Mobi.dll /reference:C:\Users\runneradmin\.nuget\packages\serverregistrationmanager\2.7.2\lib\net45\ServerRegistrationManager.exe /reference:C:\Users\runneradmin\.nuget\packages\sharpshell\2.7.2\lib\net40-client\SharpShell.dll /reference:"C:\Program Files (x86)\Reference Assemblies\Mic
+  CompilerServer: tool - using command line tool by design 'C:\Program Files\Microsoft Visual Studio\2022\Enterprise\MSBuild\Current\Bin\Roslyn\csc.exe' - ***Extensions
+_CopyFilesMarkedCopyLocal:
+  Copying file from "C:\Users\runneradmin\.nuget\packages\roler.toolkit.file.epub\1.0.1\lib\netstandard2.0\Roler.Toolkit.File.Epub.dll" to "D:\a\***-main\***-main\***Extensions\bin\Release\Roler.Toolkit.File.Epub.dll".
+  Copying file from "C:\Users\runneradmin\.nuget\packages\roler.toolkit.file.mobi\1.0.5\lib\netstandard2.0\Roler.Toolkit.File.Mobi.dll" to "D:\a\***-main\***-main\***Extensions\bin\Release\Roler.Toolkit.File.Mobi.dll".
+  Copying file from "C:\Users\runneradmin\.nuget\packages\sharpshell\2.7.2\lib\net40-client\SharpShell.dll" to "D:\a\***-main\***-main\***Extensions\bin\Release\SharpShell.dll".
+  Copying file from "C:\Users\runneradmin\.nuget\packages\serverregistrationmanager\2.7.2\lib\net45\ServerRegistrationManager.exe" to "D:\a\***-main\***-main\***Extensions\bin\Release\ServerRegistrationManager.exe".
+  Copying file from "D:\a\***-main\***-main\***Core\bin\Release\***Core.dll" to "D:\a\***-main\***-main\***Extensions\bin\Release\***Core.dll".
+  Copying file from "D:\a\***-main\***-main\***Core\bin\Release\***Core.pdb" to "D:\a\***-main\***-main\***Extensions\bin\Release\***Core.pdb".
+  Creating "D:\a\***-main\***-main\***Extensions\obj\Release\***.646B4DCA.Up2Date" because "AlwaysCreate" was specified.
+  Touching "D:\a\***-main\***-main\***Extensions\obj\Release\***.646B4DCA.Up2Date".
+_CopyAppConfigFile:
+  Copying file from "D:\a\***-main\***-main\***Extensions\app.config" to "D:\a\***-main\***-main\***Extensions\bin\Release\***Extensions.dll.config".
+CopyFilesToOutputDirectory:
+  Copying file from "D:\a\***-main\***-main\***Extensions\obj\Release\***Extensions.dll" to "D:\a\***-main\***-main\***Extensions\bin\Release\***Extensions.dll".
+  ***Extensions -> D:\a\***-main\***-main\***Extensions\bin\Release\***Extensions.dll
+  Copying file from "D:\a\***-main\***-main\***Extensions\obj\Release\***Extensions.pdb" to "D:\a\***-main\***-main\***Extensions\bin\Release\***Extensions.pdb".
+Done Building Project "D:\a\***-main\***-main\***Extensions\***Extensions.csproj" (default targets).
+Project "D:\a\***-main\***-main\***\***.csproj" (2) is building "D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj" (6) on node 1 (_CompileTemporaryAssembly target(s)).
+CoreCompile:
+  C:\Program Files\Microsoft Visual Studio\2022\Enterprise\MSBuild\Current\Bin\Roslyn\csc.exe /noconfig /nowarn:1701,1702 /fullpaths /nostdlib+ /platform:anycpu32bitpreferred /errorreport:prompt /warn:4 /define:TRACE /main:***.Program /highentropyva+ /reference:C:\Users\runneradmin\.nuget\packages\communitytoolkit.mvvm\8.3.2\lib\netstandard2.0\CommunityToolkit.Mvvm.dll /reference:C:\Users\runneradmin\.nuget\packages\controlzex\5.0.2\lib\net462\ControlzEx.dll /reference:C:\Users\runneradmin\.nuget\packages\entityframework\6.5.1\lib\net45\EntityFramework.dll /reference:C:\Users\runneradmin\.nuget\packages\entityframework\6.5.1\lib\net45\EntityFramework.SqlServer.dll /reference:C:\Users\runneradmin\.nuget\packages\mahapps.metro\2.4.10\lib\net47\MahApps.Metro.dll /reference:C:\Users\runneradmin\.nuget\packages\mahapps.metro.iconpacks.bootstrapicons\5.1.0\lib\net47\MahApps.Metro.IconPacks.BootstrapIcons.dll /reference:C:\Users\runneradmin\.nuget\packages\mahapps.metro.iconpacks.boxicons\5.1.0\lib\net47\MahApps.Met
+  CompilerServer: tool - using command line tool by design 'C:\Program Files\Microsoft Visual Studio\2022\Enterprise\MSBuild\Current\Bin\Roslyn\csc.exe' - ***_blbsy2wg_wpftmp
+D:\a\***-main\***-main\***\View\Controls\MonitoredPathFlyout.xaml.cs(4,23): error CS0234: The type or namespace name 'Repository' does not exist in the namespace '***Service' (are you missing an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+D:\a\***-main\***-main\***\View\Modern\FolderConfigurationViewModel.cs(5,23): error CS0234: The type or namespace name 'Repository' does not exist in the namespace '***Service' (are you missing an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+D:\a\***-main\***-main\***\View\Modern\MonitoredPathsViewModel.cs(8,23): error CS0234: The type or namespace name 'Repository' does not exist in the namespace '***Service' (are you missing an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+D:\a\***-main\***-main\***\View\Controls\FolderConfigurationView.xaml.cs(5,23): error CS0234: The type or namespace name 'Repository' does not exist in the namespace '***Service' (are you missing an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+D:\a\***-main\***-main\***\View\Modern\MonitoredPathViewModel.cs(5,23): error CS0234: The type or namespace name 'Repository' does not exist in the namespace '***Service' (are you missing an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+D:\a\***-main\***-main\***\View\Service\IDeviceInfoService.cs(1,23): error CS0234: The type or namespace name 'Repository' does not exist in the namespace '***Service' (are you missing an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+D:\a\***-main\***-main\***\View\Service\IFoldersConfigurationService.cs(1,23): error CS0234: The type or namespace name 'Repository' does not exist in the namespace '***Service' (are you missing an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+D:\a\***-main\***-main\***\View\Service\ILocalDBService.cs(1,23): error CS0234: The type or namespace name 'Repository' does not exist in the namespace '***Service' (are you missing an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+D:\a\***-main\***-main\***\View\Service\IMonitoredPathService.cs(1,23): error CS0234: The type or namespace name 'Repository' does not exist in the namespace '***Service' (are you missing an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+D:\a\***-main\***-main\***\View\WhatsThat.xaml.cs(5,23): error CS0234: The type or namespace name 'Repository' does not exist in the namespace '***Service' (are you missing an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+D:\a\***-main\***-main\***\View\Modern\FolderConfigurationViewModel.cs(19,16): error CS0246: The type or namespace name 'FolderConfiguration' could not be found (are you missing a using directive or an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+D:\a\***-main\***-main\***\View\Modern\FolderConfigurationViewModel.cs(33,53): error CS0246: The type or namespace name 'FolderConfiguration' could not be found (are you missing a using directive or an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+D:\a\***-main\***-main\***\View\Modern\MonitoredPathViewModel.cs(32,16): error CS0246: The type or namespace name 'MonitoredPath' could not be found (are you missing a using directive or an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+D:\a\***-main\***-main\***\View\Modern\MonitoredPathViewModel.cs(43,16): error CS0246: The type or namespace name 'FolderConfiguration' could not be found (are you missing a using directive or an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+D:\a\***-main\***-main\***\View\Modern\FolderConfigurationViewModel.cs(17,17): error CS0246: The type or namespace name 'FolderConfiguration' could not be found (are you missing a using directive or an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+D:\a\***-main\***-main\***\View\Modern\MonitoredPathsViewModel.cs(41,37): error CS0246: The type or namespace name 'MonitoredPath' could not be found (are you missing a using directive or an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+D:\a\***-main\***-main\***\View\Modern\MonitoredPathsViewModel.cs(45,16): error CS0246: The type or namespace name 'MonitoredPath' could not be found (are you missing a using directive or an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+D:\a\***-main\***-main\***\View\Modern\MonitoredPathsViewModel.cs(65,41): error CS0246: The type or namespace name 'MonitoredPath' could not be found (are you missing a using directive or an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+D:\a\***-main\***-main\***\View\Modern\MonitoredPathsViewModel.cs(43,17): error CS0246: The type or namespace name 'MonitoredPath' could not be found (are you missing a using directive or an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+D:\a\***-main\***-main\***\View\Modern\MonitoredPathViewModel.cs(52,37): error CS0246: The type or namespace name 'FolderConfiguration' could not be found (are you missing a using directive or an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+D:\a\***-main\***-main\***\View\Modern\MonitoredPathViewModel.cs(62,30): error CS0246: The type or namespace name 'MonitoredPath' could not be found (are you missing a using directive or an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+D:\a\***-main\***-main\***\View\Modern\MonitoredPathViewModel.cs(80,72): error CS0246: The type or namespace name 'FolderConfiguration' could not be found (are you missing a using directive or an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+D:\a\***-main\***-main\***\View\Modern\MonitoredPathViewModel.cs(108,16): error CS0246: The type or namespace name 'DeviceInfo' could not be found (are you missing a using directive or an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+D:\a\***-main\***-main\***\View\Modern\MonitoredPathViewModel.cs(133,42): error CS0246: The type or namespace name 'DeviceInfo' could not be found (are you missing a using directive or an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+D:\a\***-main\***-main\***\View\Modern\MonitoredPathViewModel.cs(133,16): error CS0246: The type or namespace name 'DeviceInfo' could not be found (are you missing a using directive or an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+D:\a\***-main\***-main\***\View\Modern\MonitoredPathViewModel.cs(170,46): error CS0246: The type or namespace name 'FolderConfiguration' could not be found (are you missing a using directive or an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+D:\a\***-main\***-main\***\View\Modern\MonitoredPathViewModel.cs(30,17): error CS0246: The type or namespace name 'MonitoredPath' could not be found (are you missing a using directive or an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+D:\a\***-main\***-main\***\View\Modern\MonitoredPathViewModel.cs(41,17): error CS0246: The type or namespace name 'FolderConfiguration' could not be found (are you missing a using directive or an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+D:\a\***-main\***-main\***\View\Service\IDeviceInfoService.cs(11,75): error CS0234: The type or namespace name 'Repository' does not exist in the namespace '***Service' (are you missing an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+D:\a\***-main\***-main\***\View\Service\IDeviceInfoService.cs(13,9): error CS0246: The type or namespace name 'DeviceInfo' could not be found (are you missing a using directive or an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+D:\a\***-main\***-main\***\View\Service\IDeviceInfoService.cs(21,46): error CS0234: The type or namespace name 'Repository' does not exist in the namespace '***Service' (are you missing an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+D:\a\***-main\***-main\***\View\Service\IDeviceInfoService.cs(26,79): error CS0234: The type or namespace name 'Repository' does not exist in the namespace '***Service' (are you missing an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+D:\a\***-main\***-main\***\View\Service\IDeviceInfoService.cs(31,85): error CS0234: The type or namespace name 'Repository' does not exist in the namespace '***Service' (are you missing an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+D:\a\***-main\***-main\***\View\Service\IDeviceInfoService.cs(36,79): error CS0234: The type or namespace name 'Repository' does not exist in the namespace '***Service' (are you missing an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+D:\a\***-main\***-main\***\View\Service\IDeviceInfoService.cs(43,79): error CS0234: The type or namespace name 'Repository' does not exist in the namespace '***Service' (are you missing an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+D:\a\***-main\***-main\***\View\Service\IDeviceInfoService.cs(48,16): error CS0246: The type or namespace name 'DeviceInfo' could not be found (are you missing a using directive or an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+D:\a\***-main\***-main\***\View\Service\IDeviceInfoService.cs(26,25): error CS0234: The type or namespace name 'Repository' does not exist in the namespace '***Service' (are you missing an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+D:\a\***-main\***-main\***\View\Service\IDeviceInfoService.cs(31,30): error CS0234: The type or namespace name 'Repository' does not exist in the namespace '***Service' (are you missing an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+D:\a\***-main\***-main\***\View\Service\IDeviceInfoService.cs(36,122): error CS0234: The type or namespace name 'Repository' does not exist in the namespace '***Service' (are you missing an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+D:\a\***-main\***-main\***\View\Service\IDeviceInfoService.cs(36,25): error CS0234: The type or namespace name 'Repository' does not exist in the namespace '***Service' (are you missing an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+D:\a\***-main\***-main\***\View\Service\IDeviceInfoService.cs(43,125): error CS0234: The type or namespace name 'Repository' does not exist in the namespace '***Service' (are you missing an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+D:\a\***-main\***-main\***\View\Service\IDeviceInfoService.cs(43,25): error CS0234: The type or namespace name 'Repository' does not exist in the namespace '***Service' (are you missing an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+D:\a\***-main\***-main\***\View\Service\IDeviceInfoService.cs(19,17): error CS0246: The type or namespace name 'LocalDBContext' could not be found (are you missing a using directive or an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+D:\a\***-main\***-main\***\View\Service\IFoldersConfigurationService.cs(11,69): error CS0246: The type or namespace name 'FolderConfiguration' could not be found (are you missing a using directive or an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+D:\a\***-main\***-main\***\View\Service\IFoldersConfigurationService.cs(24,30): error CS0246: The type or namespace name 'FolderConfiguration' could not be found (are you missing a using directive or an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+D:\a\***-main\***-main\***\View\Service\IFoldersConfigurationService.cs(29,45): error CS0246: The type or namespace name 'FolderConfiguration' could not be found (are you missing a using directive or an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+D:\a\***-main\***-main\***\View\Service\IFoldersConfigurationService.cs(34,51): error CS0246: The type or namespace name 'FolderConfiguration' could not be found (are you missing a using directive or an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+D:\a\***-main\***-main\***\View\Service\IFoldersConfigurationService.cs(39,45): error CS0246: The type or namespace name 'FolderConfiguration' could not be found (are you missing a using directive or an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+D:\a\***-main\***-main\***\View\Service\IMonitoredPathService.cs(9,78): error CS0234: The type or namespace name 'Repository' does not exist in the namespace '***Service' (are you missing an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+D:\a\***-main\***-main\***\View\Service\IFoldersConfigurationService.cs(19,40): error CS0246: The type or namespace name 'FolderConfiguration' could not be found (are you missing a using directive or an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+D:\a\***-main\***-main\***\View\Service\IFoldersConfigurationService.cs(19,16): error CS0246: The type or namespace name 'FolderConfiguration' could not be found (are you missing a using directive or an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+D:\a\***-main\***-main\***\View\Service\IFoldersConfigurationService.cs(29,9): error CS0246: The type or namespace name 'FolderConfiguration' could not be found (are you missing a using directive or an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+D:\a\***-main\***-main\***\View\Service\IMonitoredPathService.cs(18,46): error CS0234: The type or namespace name 'Repository' does not exist in the namespace '***Service' (are you missing an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+D:\a\***-main\***-main\***\View\Service\IMonitoredPathService.cs(23,82): error CS0234: The type or namespace name 'Repository' does not exist in the namespace '***Service' (are you missing an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+D:\a\***-main\***-main\***\View\Service\IMonitoredPathService.cs(28,88): error CS0234: The type or namespace name 'Repository' does not exist in the namespace '***Service' (are you missing an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+D:\a\***-main\***-main\***\View\Service\IMonitoredPathService.cs(33,82): error CS0234: The type or namespace name 'Repository' does not exist in the namespace '***Service' (are you missing an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+D:\a\***-main\***-main\***\View\Service\IMonitoredPathService.cs(44,82): error CS0234: The type or namespace name 'Repository' does not exist in the namespace '***Service' (are you missing an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+D:\a\***-main\***-main\***\View\Service\IFoldersConfigurationService.cs(34,14): error CS0246: The type or namespace name 'FolderConfiguration' could not be found (are you missing a using directive or an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+D:\a\***-main\***-main\***\View\Service\IMonitoredPathService.cs(23,25): error CS0234: The type or namespace name 'Repository' does not exist in the namespace '***Service' (are you missing an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+D:\a\***-main\***-main\***\View\Service\IMonitoredPathService.cs(28,30): error CS0234: The type or namespace name 'Repository' does not exist in the namespace '***Service' (are you missing an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+D:\a\***-main\***-main\***\View\Service\IFoldersConfigurationService.cs(39,73): error CS0246: The type or namespace name 'FolderConfiguration' could not be found (are you missing a using directive or an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+D:\a\***-main\***-main\***\View\Service\IFoldersConfigurationService.cs(39,9): error CS0246: The type or namespace name 'FolderConfiguration' could not be found (are you missing a using directive or an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+D:\a\***-main\***-main\***\View\Service\IMonitoredPathService.cs(33,128): error CS0234: The type or namespace name 'Repository' does not exist in the namespace '***Service' (are you missing an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+D:\a\***-main\***-main\***\View\Service\IMonitoredPathService.cs(33,25): error CS0234: The type or namespace name 'Repository' does not exist in the namespace '***Service' (are you missing an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+D:\a\***-main\***-main\***\View\Service\IMonitoredPathService.cs(44,131): error CS0234: The type or namespace name 'Repository' does not exist in the namespace '***Service' (are you missing an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+D:\a\***-main\***-main\***\View\Service\IMonitoredPathService.cs(44,25): error CS0234: The type or namespace name 'Repository' does not exist in the namespace '***Service' (are you missing an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+D:\a\***-main\***-main\***\View\Service\IFoldersConfigurationService.cs(17,17): error CS0246: The type or namespace name 'LocalDBContext' could not be found (are you missing a using directive or an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+D:\a\***-main\***-main\***\View\Service\IMonitoredPathService.cs(16,17): error CS0246: The type or namespace name 'LocalDBContext' could not be found (are you missing a using directive or an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+Done Building Project "D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj" (_CompileTemporaryAssembly target(s)) -- FAILED.
+Done Building Project "D:\a\***-main\***-main\***\***.csproj" (default targets) -- FAILED.
+Project "D:\a\***-main\***-main\***.sln" (1) is building "D:\a\***-main\***-main\***Installer\***Installer.vdproj.metaproj" (7) on node 1 (default targets).
+D:\a\***-main\***-main\***Installer\***Installer.vdproj.metaproj : warning MSB4078: The project file "***Installer\***Installer.vdproj" is not supported by MSBuild and cannot be built.
+Done Building Project "D:\a\***-main\***-main\***Installer\***Installer.vdproj.metaproj" (default targets).
+Project "D:\a\***-main\***-main\***.sln" (1) is building "D:\a\***-main\***-main\***Service\***Service.csproj.metaproj" (8) on node 1 (default targets).
+Project "D:\a\***-main\***-main\***Service\***Service.csproj.metaproj" (8) is building "D:\a\***-main\***-main\***Service\***Service.csproj" (9) on node 1 (default targets).
+PrepareForBuild:
+  Creating directory "bin\Release\".
+  Creating directory "obj\Release\".
+CoreResGen:
+  Processing resource file "***Service.resx" into "obj\Release\***Service.***Service.resources".
+  Processing resource file "ProjectInstaller.resx" into "obj\Release\***Service.ProjectInstaller.resources".
+CoreCompile:
+  C:\Program Files\Microsoft Visual Studio\2022\Enterprise\MSBuild\Current\Bin\Roslyn\csc.exe /noconfig /nowarn:1701,1702 /fullpaths /nostdlib+ /platform:anycpu32bitpreferred /errorreport:prompt /warn:4 /define:TRACE /highentropyva+ /reference:C:\Users\runneradmin\.nuget\packages\entityframework\6.5.1\lib\net45\EntityFramework.dll /reference:C:\Users\runneradmin\.nuget\packages\entityframework\6.5.1\lib\net45\EntityFramework.SqlServer.dll /reference:C:\Users\runneradmin\.nuget\packages\log4net\3.0.1\lib\net462\log4net.dll /reference:"C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.8.1\Microsoft.CSharp.dll" /reference:"C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.8.1\mscorlib.dll" /reference:D:\a\***-main\***-main\***Core\bin\Release\***Core.dll /reference:C:\Users\runneradmin\.nuget\packages\roler.toolkit.file.epub\1.0.1\lib\netstandard2.0\Roler.Toolkit.File.Epub.dll /reference:C:\Users\runneradmin\.nuget\packages\roler.toolkit.file.mobi\1.0
+  CompilerServer: tool - using command line tool by design 'C:\Program Files\Microsoft Visual Studio\2022\Enterprise\MSBuild\Current\Bin\Roslyn\csc.exe' - ***Service
+D:\a\***-main\***-main\***Service\***Service.cs(4,23): error CS0234: The type or namespace name 'Repository' does not exist in the namespace '***Service' (are you missing an assembly reference?) [D:\a\***-main\***-main\***Service\***Service.csproj]
+D:\a\***-main\***-main\***Service\***Service.cs(28,17): error CS0246: The type or namespace name 'LocalDBContext' could not be found (are you missing a using directive or an assembly reference?) [D:\a\***-main\***-main\***Service\***Service.csproj]
+Done Building Project "D:\a\***-main\***-main\***Service\***Service.csproj" (default targets) -- FAILED.
+Done Building Project "D:\a\***-main\***-main\***Service\***Service.csproj.metaproj" (default targets) -- FAILED.
+Project "D:\a\***-main\***-main\***.sln" (1) is building "D:\a\***-main\***-main\***.Installer.Wix\***.Installer.Wix.wixproj" (10) on node 1 (default targets).
+PrepareForBuild:
+  Creating directory "bin\Release\".
+  Creating directory "obj\Release\".
+Done Building Project "D:\a\***-main\***-main\***.Installer.Wix\***.Installer.Wix.wixproj" (default targets) -- FAILED.
+Done Building Project "D:\a\***-main\***-main\***.sln" (default targets) -- FAILED.
+Build FAILED.
+"D:\a\***-main\***-main\***.sln" (default target) (1) ->
+"D:\a\***-main\***-main\***Installer\***Installer.vdproj.metaproj" (default target) (7) ->
+(Build target) -> 
+  D:\a\***-main\***-main\***Installer\***Installer.vdproj.metaproj : warning MSB4078: The project file "***Installer\***Installer.vdproj" is not supported by MSBuild and cannot be built.
+"D:\a\***-main\***-main\***.sln" (default target) (1) ->
+"D:\a\***-main\***-main\***\***.csproj" (default target) (2) ->
+"D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj" (_CompileTemporaryAssembly target) (6) ->
+(CoreCompile target) -> 
+  D:\a\***-main\***-main\***\View\Controls\MonitoredPathFlyout.xaml.cs(4,23): error CS0234: The type or namespace name 'Repository' does not exist in the namespace '***Service' (are you missing an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+  D:\a\***-main\***-main\***\View\Modern\FolderConfigurationViewModel.cs(5,23): error CS0234: The type or namespace name 'Repository' does not exist in the namespace '***Service' (are you missing an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+  D:\a\***-main\***-main\***\View\Modern\MonitoredPathsViewModel.cs(8,23): error CS0234: The type or namespace name 'Repository' does not exist in the namespace '***Service' (are you missing an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+  D:\a\***-main\***-main\***\View\Controls\FolderConfigurationView.xaml.cs(5,23): error CS0234: The type or namespace name 'Repository' does not exist in the namespace '***Service' (are you missing an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+  D:\a\***-main\***-main\***\View\Modern\MonitoredPathViewModel.cs(5,23): error CS0234: The type or namespace name 'Repository' does not exist in the namespace '***Service' (are you missing an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+  D:\a\***-main\***-main\***\View\Service\IDeviceInfoService.cs(1,23): error CS0234: The type or namespace name 'Repository' does not exist in the namespace '***Service' (are you missing an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+  D:\a\***-main\***-main\***\View\Service\IFoldersConfigurationService.cs(1,23): error CS0234: The type or namespace name 'Repository' does not exist in the namespace '***Service' (are you missing an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+  D:\a\***-main\***-main\***\View\Service\ILocalDBService.cs(1,23): error CS0234: The type or namespace name 'Repository' does not exist in the namespace '***Service' (are you missing an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+  D:\a\***-main\***-main\***\View\Service\IMonitoredPathService.cs(1,23): error CS0234: The type or namespace name 'Repository' does not exist in the namespace '***Service' (are you missing an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+  D:\a\***-main\***-main\***\View\WhatsThat.xaml.cs(5,23): error CS0234: The type or namespace name 'Repository' does not exist in the namespace '***Service' (are you missing an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+  D:\a\***-main\***-main\***\View\Modern\FolderConfigurationViewModel.cs(19,16): error CS0246: The type or namespace name 'FolderConfiguration' could not be found (are you missing a using directive or an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+  D:\a\***-main\***-main\***\View\Modern\FolderConfigurationViewModel.cs(33,53): error CS0246: The type or namespace name 'FolderConfiguration' could not be found (are you missing a using directive or an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+  D:\a\***-main\***-main\***\View\Modern\MonitoredPathViewModel.cs(32,16): error CS0246: The type or namespace name 'MonitoredPath' could not be found (are you missing a using directive or an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+  D:\a\***-main\***-main\***\View\Modern\MonitoredPathViewModel.cs(43,16): error CS0246: The type or namespace name 'FolderConfiguration' could not be found (are you missing a using directive or an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+  D:\a\***-main\***-main\***\View\Modern\FolderConfigurationViewModel.cs(17,17): error CS0246: The type or namespace name 'FolderConfiguration' could not be found (are you missing a using directive or an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+  D:\a\***-main\***-main\***\View\Modern\MonitoredPathsViewModel.cs(41,37): error CS0246: The type or namespace name 'MonitoredPath' could not be found (are you missing a using directive or an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+  D:\a\***-main\***-main\***\View\Modern\MonitoredPathsViewModel.cs(45,16): error CS0246: The type or namespace name 'MonitoredPath' could not be found (are you missing a using directive or an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+  D:\a\***-main\***-main\***\View\Modern\MonitoredPathsViewModel.cs(65,41): error CS0246: The type or namespace name 'MonitoredPath' could not be found (are you missing a using directive or an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+  D:\a\***-main\***-main\***\View\Modern\MonitoredPathsViewModel.cs(43,17): error CS0246: The type or namespace name 'MonitoredPath' could not be found (are you missing a using directive or an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+  D:\a\***-main\***-main\***\View\Modern\MonitoredPathViewModel.cs(52,37): error CS0246: The type or namespace name 'FolderConfiguration' could not be found (are you missing a using directive or an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+  D:\a\***-main\***-main\***\View\Modern\MonitoredPathViewModel.cs(62,30): error CS0246: The type or namespace name 'MonitoredPath' could not be found (are you missing a using directive or an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+  D:\a\***-main\***-main\***\View\Modern\MonitoredPathViewModel.cs(80,72): error CS0246: The type or namespace name 'FolderConfiguration' could not be found (are you missing a using directive or an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+  D:\a\***-main\***-main\***\View\Modern\MonitoredPathViewModel.cs(108,16): error CS0246: The type or namespace name 'DeviceInfo' could not be found (are you missing a using directive or an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+  D:\a\***-main\***-main\***\View\Modern\MonitoredPathViewModel.cs(133,42): error CS0246: The type or namespace name 'DeviceInfo' could not be found (are you missing a using directive or an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+  D:\a\***-main\***-main\***\View\Modern\MonitoredPathViewModel.cs(133,16): error CS0246: The type or namespace name 'DeviceInfo' could not be found (are you missing a using directive or an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+  D:\a\***-main\***-main\***\View\Modern\MonitoredPathViewModel.cs(170,46): error CS0246: The type or namespace name 'FolderConfiguration' could not be found (are you missing a using directive or an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+  D:\a\***-main\***-main\***\View\Modern\MonitoredPathViewModel.cs(30,17): error CS0246: The type or namespace name 'MonitoredPath' could not be found (are you missing a using directive or an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+  D:\a\***-main\***-main\***\View\Modern\MonitoredPathViewModel.cs(41,17): error CS0246: The type or namespace name 'FolderConfiguration' could not be found (are you missing a using directive or an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+  D:\a\***-main\***-main\***\View\Service\IDeviceInfoService.cs(11,75): error CS0234: The type or namespace name 'Repository' does not exist in the namespace '***Service' (are you missing an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+  D:\a\***-main\***-main\***\View\Service\IDeviceInfoService.cs(13,9): error CS0246: The type or namespace name 'DeviceInfo' could not be found (are you missing a using directive or an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+  D:\a\***-main\***-main\***\View\Service\IDeviceInfoService.cs(21,46): error CS0234: The type or namespace name 'Repository' does not exist in the namespace '***Service' (are you missing an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+  D:\a\***-main\***-main\***\View\Service\IDeviceInfoService.cs(26,79): error CS0234: The type or namespace name 'Repository' does not exist in the namespace '***Service' (are you missing an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+  D:\a\***-main\***-main\***\View\Service\IDeviceInfoService.cs(31,85): error CS0234: The type or namespace name 'Repository' does not exist in the namespace '***Service' (are you missing an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+  D:\a\***-main\***-main\***\View\Service\IDeviceInfoService.cs(36,79): error CS0234: The type or namespace name 'Repository' does not exist in the namespace '***Service' (are you missing an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+  D:\a\***-main\***-main\***\View\Service\IDeviceInfoService.cs(43,79): error CS0234: The type or namespace name 'Repository' does not exist in the namespace '***Service' (are you missing an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+  D:\a\***-main\***-main\***\View\Service\IDeviceInfoService.cs(48,16): error CS0246: The type or namespace name 'DeviceInfo' could not be found (are you missing a using directive or an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+  D:\a\***-main\***-main\***\View\Service\IDeviceInfoService.cs(26,25): error CS0234: The type or namespace name 'Repository' does not exist in the namespace '***Service' (are you missing an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+  D:\a\***-main\***-main\***\View\Service\IDeviceInfoService.cs(31,30): error CS0234: The type or namespace name 'Repository' does not exist in the namespace '***Service' (are you missing an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+  D:\a\***-main\***-main\***\View\Service\IDeviceInfoService.cs(36,122): error CS0234: The type or namespace name 'Repository' does not exist in the namespace '***Service' (are you missing an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+  D:\a\***-main\***-main\***\View\Service\IDeviceInfoService.cs(36,25): error CS0234: The type or namespace name 'Repository' does not exist in the namespace '***Service' (are you missing an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+  D:\a\***-main\***-main\***\View\Service\IDeviceInfoService.cs(43,125): error CS0234: The type or namespace name 'Repository' does not exist in the namespace '***Service' (are you missing an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+  D:\a\***-main\***-main\***\View\Service\IDeviceInfoService.cs(43,25): error CS0234: The type or namespace name 'Repository' does not exist in the namespace '***Service' (are you missing an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+  D:\a\***-main\***-main\***\View\Service\IDeviceInfoService.cs(19,17): error CS0246: The type or namespace name 'LocalDBContext' could not be found (are you missing a using directive or an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+  D:\a\***-main\***-main\***\View\Service\IFoldersConfigurationService.cs(11,69): error CS0246: The type or namespace name 'FolderConfiguration' could not be found (are you missing a using directive or an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+  D:\a\***-main\***-main\***\View\Service\IFoldersConfigurationService.cs(24,30): error CS0246: The type or namespace name 'FolderConfiguration' could not be found (are you missing a using directive or an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+  D:\a\***-main\***-main\***\View\Service\IFoldersConfigurationService.cs(29,45): error CS0246: The type or namespace name 'FolderConfiguration' could not be found (are you missing a using directive or an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+  D:\a\***-main\***-main\***\View\Service\IFoldersConfigurationService.cs(34,51): error CS0246: The type or namespace name 'FolderConfiguration' could not be found (are you missing a using directive or an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+  D:\a\***-main\***-main\***\View\Service\IFoldersConfigurationService.cs(39,45): error CS0246: The type or namespace name 'FolderConfiguration' could not be found (are you missing a using directive or an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+  D:\a\***-main\***-main\***\View\Service\IMonitoredPathService.cs(9,78): error CS0234: The type or namespace name 'Repository' does not exist in the namespace '***Service' (are you missing an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+  D:\a\***-main\***-main\***\View\Service\IFoldersConfigurationService.cs(19,40): error CS0246: The type or namespace name 'FolderConfiguration' could not be found (are you missing a using directive or an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+  D:\a\***-main\***-main\***\View\Service\IFoldersConfigurationService.cs(19,16): error CS0246: The type or namespace name 'FolderConfiguration' could not be found (are you missing a using directive or an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+  D:\a\***-main\***-main\***\View\Service\IFoldersConfigurationService.cs(29,9): error CS0246: The type or namespace name 'FolderConfiguration' could not be found (are you missing a using directive or an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+  D:\a\***-main\***-main\***\View\Service\IMonitoredPathService.cs(18,46): error CS0234: The type or namespace name 'Repository' does not exist in the namespace '***Service' (are you missing an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+  D:\a\***-main\***-main\***\View\Service\IMonitoredPathService.cs(23,82): error CS0234: The type or namespace name 'Repository' does not exist in the namespace '***Service' (are you missing an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+  D:\a\***-main\***-main\***\View\Service\IMonitoredPathService.cs(28,88): error CS0234: The type or namespace name 'Repository' does not exist in the namespace '***Service' (are you missing an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+  D:\a\***-main\***-main\***\View\Service\IMonitoredPathService.cs(33,82): error CS0234: The type or namespace name 'Repository' does not exist in the namespace '***Service' (are you missing an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+  D:\a\***-main\***-main\***\View\Service\IMonitoredPathService.cs(44,82): error CS0234: The type or namespace name 'Repository' does not exist in the namespace '***Service' (are you missing an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+  D:\a\***-main\***-main\***\View\Service\IFoldersConfigurationService.cs(34,14): error CS0246: The type or namespace name 'FolderConfiguration' could not be found (are you missing a using directive or an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+  D:\a\***-main\***-main\***\View\Service\IMonitoredPathService.cs(23,25): error CS0234: The type or namespace name 'Repository' does not exist in the namespace '***Service' (are you missing an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+  D:\a\***-main\***-main\***\View\Service\IMonitoredPathService.cs(28,30): error CS0234: The type or namespace name 'Repository' does not exist in the namespace '***Service' (are you missing an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+  D:\a\***-main\***-main\***\View\Service\IFoldersConfigurationService.cs(39,73): error CS0246: The type or namespace name 'FolderConfiguration' could not be found (are you missing a using directive or an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+  D:\a\***-main\***-main\***\View\Service\IFoldersConfigurationService.cs(39,9): error CS0246: The type or namespace name 'FolderConfiguration' could not be found (are you missing a using directive or an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+  D:\a\***-main\***-main\***\View\Service\IMonitoredPathService.cs(33,128): error CS0234: The type or namespace name 'Repository' does not exist in the namespace '***Service' (are you missing an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+  D:\a\***-main\***-main\***\View\Service\IMonitoredPathService.cs(33,25): error CS0234: The type or namespace name 'Repository' does not exist in the namespace '***Service' (are you missing an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+  D:\a\***-main\***-main\***\View\Service\IMonitoredPathService.cs(44,131): error CS0234: The type or namespace name 'Repository' does not exist in the namespace '***Service' (are you missing an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+  D:\a\***-main\***-main\***\View\Service\IMonitoredPathService.cs(44,25): error CS0234: The type or namespace name 'Repository' does not exist in the namespace '***Service' (are you missing an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+  D:\a\***-main\***-main\***\View\Service\IFoldersConfigurationService.cs(17,17): error CS0246: The type or namespace name 'LocalDBContext' could not be found (are you missing a using directive or an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+  D:\a\***-main\***-main\***\View\Service\IMonitoredPathService.cs(16,17): error CS0246: The type or namespace name 'LocalDBContext' could not be found (are you missing a using directive or an assembly reference?) [D:\a\***-main\***-main\***\***_blbsy2wg_wpftmp.csproj]
+"D:\a\***-main\***-main\***.sln" (default target) (1) ->
+"D:\a\***-main\***-main\***Service\***Service.csproj.metaproj" (default target) (8) ->
+"D:\a\***-main\***-main\***Service\***Service.csproj" (default target) (9) ->
+  D:\a\***-main\***-main\***Service\***Service.cs(4,23): error CS0234: The type or namespace name 'Repository' does not exist in the namespace '***Service' (are you missing an assembly reference?) [D:\a\***-main\***-main\***Service\***Service.csproj]
+  D:\a\***-main\***-main\***Service\***Service.cs(28,17): error CS0246: The type or namespace name 'LocalDBContext' could not be found (are you missing a using directive or an assembly reference?) [D:\a\***-main\***-main\***Service\***Service.csproj]
+    1 Warning(s)
+    70 Error(s)
+Time Elapsed 00:00:40.72
+Error: Process completed with exit code 1.
