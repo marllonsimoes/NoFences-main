@@ -33,7 +33,6 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
-
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
@@ -42,7 +41,7 @@
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
-        <Reference Include="System.Net.Http">
+    <Reference Include="System.Net.Http">
       <Private>False</Private>
     </Reference>
     <Reference Include="System.Xml" />
@@ -59,7 +58,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-    <None Include="NoFences_pl.snk" />
     <None Include="Properties\DataSources\NoFencesService.Repository.BackupConfig.datasource" />
     <None Include="Properties\DataSources\NoFencesService.Repository.MonitoredPath.datasource" />
     <None Include="Properties\DataSources\NoFencesService.Repository.PendingRemoteSync.datasource" />

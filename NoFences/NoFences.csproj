@@ -161,7 +161,6 @@
       <DesignTime>True</DesignTime>
     </Compile>
     <None Include="app.manifest" />
-    <None Include="NoFences_pl.snk" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -216,6 +215,10 @@
     <ProjectReference Include="..\NoFencesExtensions\NoFencesExtensions.csproj">
       <Project>{92aa43b2-6db1-45bb-85a6-f9fd3dd199e5}</Project>
       <Name>NoFencesExtensions</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\NoFencesService\NoFencesService.csproj">
+      <Project>{cf267ba6-7da1-46ed-8fc5-562c4eea1ad0}</Project>
+      <Name>NoFencesService</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
