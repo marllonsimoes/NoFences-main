@@ -99,6 +99,13 @@
     <Reference Include="WindowsFormsIntegration" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ApplicationLogic\DependencyInjectionSetup.cs" />
+    <Compile Include="ApplicationLogic\ElevationManager.cs" />
+    <Compile Include="ApplicationLogic\IApplicationService.cs" />
+    <Compile Include="ApplicationLogic\PipeService.cs" />
+    <Compile Include="ApplicationLogic\StartupManager.cs" />
+    <Compile Include="ApplicationLogic\TrayIconManager.cs" />
+    <Compile Include="ApplicationLogic\WindowsServiceManager.cs" />
     <Compile Include="Util\Extensions.cs" />
     <Compile Include="Util\ThrottledExecution.cs" />
     <Compile Include="Util\ThumbnailProvider.cs" />
