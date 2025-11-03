@@ -1,3 +1,4 @@
+using NoFences.Util;
 using System.ServiceProcess;
 
 namespace NoFences.ApplicationLogic
@@ -22,7 +23,7 @@ namespace NoFences.ApplicationLogic
                 }
                 catch
                 {
-                    // TODO add error handler and logging
+                    Logger.Log($"Error while checking status");// TODO add error handler and logging
                 }
             }
         }

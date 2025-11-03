@@ -2,19 +2,20 @@
 using System;
 using System.IO;
 using System.Xml.Serialization;
+using NoFences.View.Fences.Handlers;
 
 namespace NoFences.Model
 {
     public class FenceManager
     {
-        public static FenceManager Instance { get; } = new FenceManager();
-
         private const string MetaFileName = "__fence_metadata.xml";
 
         private readonly string basePath;
+        private readonly FenceHandlerFactory _fenceHandlerFactory;
 
-        public FenceManager()
+        public FenceManager(FenceHandlerFactory fenceHandlerFactory)
         {
+            _fenceHandlerFactory = fenceHandlerFactory;
             AppEnvUtil.EnsureAppEnvironmentPathExists();
             AppEnvUtil.EnsureDirectoryExists("Fences");
             basePath = Path.Combine(AppEnvUtil.GetAppEnvironmentPath(), "Fences");
@@ -30,7 +31,7 @@ namespace NoFences.Model
                 var fence = serializer.Deserialize(reader) as FenceInfo;
                 reader.Close();
 
-                new FenceWindow(fence).Show();
+                new FenceWindow(fence, _fenceHandlerFactory).Show();
             }
         }
 
@@ -50,7 +51,7 @@ namespace NoFences.Model
         public void CreateFence(string name, FenceInfo fenceInfo)
         {
             UpdateFence(fenceInfo);
-            new FenceWindow(fenceInfo).Show();
+            new FenceWindow(fenceInfo, _fenceHandlerFactory).Show();
         }
 
 

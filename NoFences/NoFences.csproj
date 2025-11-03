@@ -109,9 +109,7 @@
     <Compile Include="Util\Extensions.cs" />
     <Compile Include="Util\ThrottledExecution.cs" />
     <Compile Include="Util\ThumbnailProvider.cs" />
-    <Compile Include="View\Controls\MonitoredPathFlyout.xaml.cs">
-      <DependentUpon>MonitoredPathFlyout.xaml</DependentUpon>
-    </Compile>
+    <Compile Include="Util\Logger.cs" />
     <Compile Include="View\EditDialog.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -128,29 +126,16 @@
     <Compile Include="Model\FenceManager.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="View\Modern\FolderConfigurationViewModel.cs" />
-    <Compile Include="View\Modern\MonitoredPathsViewModel.cs" />
-    <Compile Include="View\Controls\FolderConfigurationView.xaml.cs">
-      <DependentUpon>FolderConfigurationView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="View\Modern\MonitoredPathViewModel.cs" />
-    <Compile Include="View\Modern\SimpleCommand.cs" />
-    <Compile Include="View\Service\IBackupConfigurationService.cs" />
-    <Compile Include="View\Service\IDeviceInfoService.cs" />
-    <Compile Include="View\Service\IFoldersConfigurationService.cs" />
-    <Compile Include="View\Service\ILocalDBService.cs" />
-    <Compile Include="View\Service\IMonitoredPathService.cs" />
-    <Compile Include="View\Service\IPendingRemoveSyncService.cs" />
-    <Compile Include="View\Service\ISettingsService.cs" />
-    <Compile Include="View\WhatsThat.xaml.cs">
-      <DependentUpon>WhatsThat.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Win32\BlurUtil.cs" />
     <Compile Include="Win32\DesktopUtil.cs" />
     <Compile Include="Win32\DropShadow.cs" />
     <Compile Include="Win32\IconUtil.cs" />
     <Compile Include="Win32\ShellContextMenu.cs" />
     <Compile Include="Win32\WindowUtil.cs" />
+    <Compile Include="View\Fences\Handlers\IFenceHandler.cs" />
+    <Compile Include="View\Fences\Handlers\PictureFenceHandler.cs" />
+    <Compile Include="View\Fences\Handlers\FilesFenceHandler.cs" />
+    <Compile Include="View\Fences\Handlers\FenceHandlerFactory.cs" />
     <EmbeddedResource Include="View\EditDialog.resx">
       <DependentUpon>EditDialog.cs</DependentUpon>
     </EmbeddedResource>
@@ -227,20 +212,6 @@
       <Project>{cf267ba6-7da1-46ed-8fc5-562c4eea1ad0}</Project>
       <Name>NoFencesService</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Page Include="View\Controls\MonitoredPathFlyout.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="View\Controls\FolderConfigurationView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="View\WhatsThat.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Mvvm">

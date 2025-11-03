@@ -30,7 +30,6 @@
         {
             this.components = new System.ComponentModel.Container();
             this.appContextMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
-            this.deleteItemToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.lockedToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.minifyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.editFenceToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -44,7 +43,6 @@
             // appContextMenu
             // 
             this.appContextMenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.deleteItemToolStripMenuItem,
             this.lockedToolStripMenuItem,
             this.minifyToolStripMenuItem,
             this.editFenceToolStripMenuItem,
@@ -53,16 +51,7 @@
             this.exitToolStripMenuItem});
             this.appContextMenu.Name = "contextMenuStrip1";
             this.appContextMenu.RenderMode = System.Windows.Forms.ToolStripRenderMode.Professional;
-            this.appContextMenu.Size = new System.Drawing.Size(152, 142);
-            this.appContextMenu.Opening += new System.ComponentModel.CancelEventHandler(this.contextMenuStrip1_Opening);
-            // 
-            // deleteItemToolStripMenuItem
-            // 
-            this.deleteItemToolStripMenuItem.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.deleteItemToolStripMenuItem.Name = "deleteItemToolStripMenuItem";
-            this.deleteItemToolStripMenuItem.Size = new System.Drawing.Size(151, 22);
-            this.deleteItemToolStripMenuItem.Text = "Delete item";
-            this.deleteItemToolStripMenuItem.Click += new System.EventHandler(this.deleteItemToolStripMenuItem_Click);
+            this.appContextMenu.Size = new System.Drawing.Size(152, 120);
             // 
             // lockedToolStripMenuItem
             // 
@@ -114,6 +103,7 @@
             // 
             // FenceWindow
             // 
+            this.AllowDrop = true;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.Black;
@@ -135,6 +125,7 @@
             this.DragEnter += new System.Windows.Forms.DragEventHandler(this.FenceWindow_DragEnter);
             this.Paint += new System.Windows.Forms.PaintEventHandler(this.FenceWindow_Paint);
             this.DoubleClick += new System.EventHandler(this.FenceWindow_DoubleClick);
+            this.KeyUp += new System.Windows.Forms.KeyEventHandler(this.FenceWindow_KeyUp);
             this.MouseClick += new System.Windows.Forms.MouseEventHandler(this.FenceWindow_MouseClick);
             this.MouseEnter += new System.EventHandler(this.FenceWindow_MouseEnter);
             this.MouseLeave += new System.EventHandler(this.FenceWindow_MouseLeave);
@@ -153,7 +144,6 @@
         private System.Windows.Forms.ToolStripMenuItem exitToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem minifyToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem editFenceToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem deleteItemToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem newFenceToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem titleSizeToolStripMenuItem;
     }

@@ -25,15 +25,17 @@ namespace NoFences
 
                 // It's recommended to run with elevated privileges to manage Windows Services
                 // and avoid other potential permission issues.
-                if (!ElevationManager.IsCurrentProcessElevated())
-                {
-                    ElevationManager.StartElevatedAsync();
-                    // The new elevated process will take over. This instance should exit.
-                    return;
-                }
+                //if (!ElevationManager.IsCurrentProcessElevated())
+                //{
+                //    ElevationManager.StartElevatedAsync();
+                //    // The new elevated process will take over. This instance should exit.
+                //    return;
+                //}
 
                 Application.EnableVisualStyles();
                 Application.SetCompatibleTextRenderingDefault(false);
+
+                DependencyInjectionSetup.InitializeIoCContainer();
 
                 // The application is composed of several services that manage different aspects.
                 // To add new functionality, create a class that implements IApplicationService
@@ -41,7 +43,7 @@ namespace NoFences
                 var services = new List<IApplicationService>
                 {
                     new TrayIconManager(),
-                    new WindowsServiceManager(),
+                    //new WindowsServiceManager(),
                     new PipeService()
                     // Add new services here
                 };
@@ -61,13 +63,15 @@ namespace NoFences
                     service.Start();
                 }
 
+                var fenceManager = CommunityToolkit.Mvvm.DependencyInjection.Ioc.Default.GetService<FenceManager>();
+
                 // Load existing fences from storage.
-                FenceManager.Instance.LoadFences();
+                fenceManager.LoadFences();
 
                 // If no fences are loaded, create a default one to guide the user.
                 if (Application.OpenForms.Count == 0)
                 {
-                    FenceManager.Instance.CreateFence("First fence");
+                    fenceManager.CreateFence("First fence");
                 }
 
                 // Start the main application message loop.

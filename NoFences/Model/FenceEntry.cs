@@ -25,7 +25,7 @@ namespace NoFences.Model
         public static FenceEntry FromPath(string path)
         {
             if (File.Exists(path))
-                return new FenceEntry(path, EntryType.File);
+                return new FenceEntry(path, EntryType.Files);
             else if (Directory.Exists(path))
                 return new FenceEntry(path, EntryType.Folder);
             else return null;
@@ -33,7 +33,7 @@ namespace NoFences.Model
 
         public Icon ExtractIcon(ThumbnailProvider thumbnailProvider)
         {
-            if (Type == EntryType.File)
+            if (Type == EntryType.Files)
             {
                 if (thumbnailProvider.IsSupported(Path))
                     return thumbnailProvider.GenerateThumbnail(Path);
@@ -44,25 +44,6 @@ namespace NoFences.Model
             {
                 return IconUtil.FolderLarge;
             }
-        }
-
-        public void Open()
-        {
-            Task.Run(() =>
-            {
-                // start asynchronously
-                try
-                {
-                    if (Type == EntryType.File)
-                        Process.Start(Path);
-                    else if (Type == EntryType.Folder)
-                        Process.Start("explorer.exe", Path);
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine($"Failed to start: {e}");
-                }
-            });
         }
     }
 }

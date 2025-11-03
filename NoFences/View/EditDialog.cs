@@ -24,7 +24,7 @@ namespace NoFences
             tbName.Text = fenceInfo.Name;
             titleSize.Value = fenceInfo.TitleHeight;
             cbType.SelectedItem = fenceInfo.Type.ToString();
-            linkLabel1.Text = fenceInfo.Folder != null && fenceInfo.Folder != "" ? fenceInfo.Folder : "(click to select)";
+            linkLabel1.Text = fenceInfo.Path != null && fenceInfo.Path.Equals("") ? fenceInfo.Path : "(click to select)";
             interval.Value = fenceInfo.Interval < 60000 ? fenceInfo.Interval/1000 : fenceInfo.Interval/60_000;
             intervalTimeUnit.SelectedIndex = fenceInfo.Interval < 60000 ? 0 : 1;
 
@@ -40,11 +40,11 @@ namespace NoFences
 
             list.AddingNew += List_AddingNew;
 
-            if (fenceInfo.Patterns != null && fenceInfo.Patterns.Count > 0)
+            if (fenceInfo.Filters != null && fenceInfo.Filters.Count > 0)
             {
                 delPatternButton.Enabled = true;
             }
-            foreach (var pattern in fenceInfo.Patterns)
+            foreach (var pattern in fenceInfo.Filters)
             {
                 list.Add(pattern);
             }
@@ -75,10 +75,10 @@ namespace NoFences
             return new FenceInfo()
             {
                 Name = tbName.Text,
-                Folder = linkLabel1.Text.Equals("(click to select)") ? "" : linkLabel1.Text,
+                Path = linkLabel1.Text.Equals("(click to select)") ? null : linkLabel1.Text,
                 Type = cbType.SelectedItem.ToString(),
                 TitleHeight = ((int)titleSize.Value),
-                Patterns = patterns,
+                Filters = patterns,
                 Interval = interval.Value * intervalTimeUnit.SelectedIndex == 0 ? 1000 : 60_000
             };
         }
@@ -113,7 +113,7 @@ namespace NoFences
         {
             var selectedItem = cbType.SelectedItem.ToString();
 
-            if (selectedItem == EntryType.Folder.ToString()) {
+            if (selectedItem == EntryType.Files.ToString()) {
                 folderPanel.Visible = true;
                 interval.Value = 20;
                 intervalTimeUnit.SelectedIndex = 0;
@@ -121,7 +121,7 @@ namespace NoFences
                 folderPanel.Visible = false;
             }
 
-            if (selectedItem == EntryType.Picture.ToString())
+            if (selectedItem == EntryType.Pictures.ToString())
             {
                 intervalPanel.Visible = true;
                 linkLabel1.Text = "(click to select)";

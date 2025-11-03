@@ -1,5 +1,6 @@
 using NoFences.Model;
 using NoFences.View;
+using NoFences.View.Fences.Handlers;
 using System;
 using System.IO;
 using System.IO.Pipes;
@@ -86,7 +87,7 @@ namespace NoFences.ApplicationLogic
 
         private void ShowFenceWindow(FenceInfo fenceInfo)
         {
-            new FenceWindow(fenceInfo).Show();
+            new FenceWindow(fenceInfo, CommunityToolkit.Mvvm.DependencyInjection.Ioc.Default.GetService<FenceHandlerFactory>()).Show();
         }
     }
 }

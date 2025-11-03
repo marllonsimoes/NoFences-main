@@ -2,11 +2,10 @@
 {
     public enum EntryType
     {
-        File,
+        Files,
         Folder,
-        Picture,
-        SlideShow,
+        Pictures,
         Clock,
-        TodoItems
+        Widget
     }
 }

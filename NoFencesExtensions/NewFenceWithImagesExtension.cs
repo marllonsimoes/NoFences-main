@@ -68,17 +68,17 @@ namespace NoFences
                 if (SelectedItemPaths.Count((path) => path.EndsWith("jpg")) == SelectedItemPaths.Count())
                 {
                     if (SelectedItemPaths.Count((path) => path.EndsWith("jpg")) > 1) { 
-                        fenceInfo.Type = EntryType.SlideShow.ToString();
-                        fenceInfo.Folder = Directory.EnumerateDirectories(SelectedItemPaths.First()).First();
+                        // TODO fenceInfo.Type = EntryType.SlideShow.ToString();
+                        fenceInfo.Path = Directory.EnumerateDirectories(SelectedItemPaths.First()).First();
                     } else
                     {
-                        fenceInfo.Type = EntryType.Picture.ToString();
-                        fenceInfo.Folder = SelectedItemPaths.First();
+                        fenceInfo.Type = EntryType.Pictures.ToString();
+                        fenceInfo.Path = SelectedItemPaths.First();
                     }
                 }
                 else
                 {
-                    fenceInfo.Files = SelectedItemPaths.ToList();
+                    fenceInfo.Items = SelectedItemPaths.ToList();
                 }
             }
 

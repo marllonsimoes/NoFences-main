@@ -1,7 +1,5 @@
 using ControlzEx.Theming;
 using NoFences.Model;
-using NoFences.View;
-using NoFences.View.Modern;
 using NoFencesService.Util;
 using System;
 using System.Diagnostics;
@@ -17,9 +15,6 @@ namespace NoFences.ApplicationLogic
         private NotifyIcon notifyIcon;
         private MenuItem toggleStartUpMenuItem;
 
-        private System.Windows.Application wpfApp;
-        private WhatsThat wpfWindow;
-
         public void Start()
         {
             toggleStartUpMenuItem = new MenuItem("Start on login", (s, e) => ToggleAutoStart())
@@ -34,9 +29,8 @@ namespace NoFences.ApplicationLogic
                 ContextMenu = new ContextMenu(new[]
                 {
                     toggleStartUpMenuItem,
-                    new MenuItem("New Fence", (s, e) => FenceManager.Instance.CreateFence("New Fence")),
+                    new MenuItem("New Fence", (s, e) => CommunityToolkit.Mvvm.DependencyInjection.Ioc.Default.GetService<FenceManager>().CreateFence("New Fence")),
                     new MenuItem("Open local storage", (s, e) => OpenLocalStorage()),
-                    new MenuItem("Open WPF", (s, e) => OpenWpfWindow()),
                     new MenuItem("Exit", (s, e) => ExitApplication())
                 }),
                 Visible = true
@@ -51,9 +45,6 @@ namespace NoFences.ApplicationLogic
                 notifyIcon.Dispose();
                 notifyIcon = null;
             }
-
-            wpfWindow?.Close();
-            wpfApp?.Shutdown();
         }
 
         private void ToggleAutoStart()
@@ -68,30 +59,6 @@ namespace NoFences.ApplicationLogic
             string basePath = Path.Combine(AppEnvUtil.GetAppEnvironmentPath(), "Fences");
             var psi = new ProcessStartInfo() { FileName = basePath, UseShellExecute = true };
             Process.Start(psi);
-        }
-
-        private void OpenWpfWindow()
-        {
-            if (wpfApp == null)
-            {
-                wpfApp = new System.Windows.Application();
-                DependencyInjectionSetup.InitializeIoCContainer();
-            }
-
-            if (wpfWindow == null)
-            {
-                wpfWindow = new WhatsThat();
-                ElementHost.EnableModelessKeyboardInterop(wpfWindow);
-
-                ResourceDictionary dictControls = new ResourceDictionary { Source = new Uri("pack://application:,,,/MahApps.Metro;component/Styles/Controls.xaml") };
-                System.Windows.Application.Current.Resources.MergedDictionaries.Add(dictControls);
-
-                ResourceDictionary dictFonts = new ResourceDictionary { Source = new Uri("pack://application:,,,/MahApps.Metro;component/Styles/Fonts.xaml") };
-                System.Windows.Application.Current.Resources.MergedDictionaries.Add(dictFonts);
-
-                ThemeManager.Current.SyncTheme();
-            }
-            wpfWindow.Show();
         }
 
         private void ExitApplication()

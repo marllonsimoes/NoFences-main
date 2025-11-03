@@ -36,15 +36,13 @@ namespace NoFences.Model
         /// </summary>
         public int TitleHeight { get; set; } = 25;
 
-        public string Type { get; set; } = EntryType.File.ToString();
+        public string Type { get; set; } = EntryType.Files.ToString();
 
-        public List<string> Files { get; set; } = new List<string>();
+        public string Path { get; set; }
 
-        public List<string> TodoItems { get; set; } = new List<string>();
+        public List<string> Items { get; set; } = new List<string>();
 
-        public string Folder { get; set; }
-
-        public List<string> Patterns { get; set; } = new List<string>();
+        public List<string> Filters { get; set; } = new List<string>();
 
         public int Interval { get; set; } = 30_000;
 
