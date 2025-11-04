@@ -5,13 +5,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="log4net" Version="3.2.0" />
     <PackageReference Include="WixSharp" Version="1.26.0" />
     <PackageReference Include="WixSharp_wix4" Version="2.8.0" />
     <PackageReference Include="WixSharp_wix4.bin" Version="2.8.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\NoFencesService\NoFencesService.csproj" />
+    <ProjectReference Include="..\NoFencesService\NoFences.Service.csproj" />
     <ProjectReference Include="..\NoFences\NoFences.csproj" />
   </ItemGroup>
 </Project>

@@ -1,10 +1,10 @@
 ﻿using log4net;
 using log4net.Config;
-using log4net.Repository.Hierarchy;
+using NoFences.Core.Model;
+using NoFences.Core.Util;
 using NoFencesService.Repository;
-using NoFencesService.Util;
+using NoFencesService.Sync;
 using System;
-using System.Data.Entity.Migrations;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -12,8 +12,7 @@ using System.Management;
 using System.Runtime.InteropServices;
 using System.ServiceProcess;
 using System.Threading;
-using System.Web;
-using Microsoft.Win32;
+using System.Threading.Tasks;
 
 namespace NoFencesService
 {
@@ -28,6 +27,11 @@ namespace NoFencesService
         private LocalDBContext localDatabaseContext = new LocalDBContext();
 
         private ILog log;
+
+        // Cloud and device sync components
+        private CloudSyncEngine cloudSyncEngine;
+        private HybridSyncManager hybridSyncManager;
+        private ServiceStatusPipeServer statusPipeServer;
 
         public NoFencesService()
         {
@@ -53,6 +57,13 @@ namespace NoFencesService
             log.Info("Pausing service");
             deviceInsertedWatcher.Stop();
             deviceRemovedWatcher.Stop();
+
+            // Update status
+            if (statusPipeServer != null)
+            {
+                statusPipeServer.UpdateFeatureState("DeviceSync", ServiceFeatureState.Stopped);
+            }
+
             log.Info("Monitoring paused");
         }
 
@@ -61,6 +72,13 @@ namespace NoFencesService
             log.Info("Resuming service");
             deviceInsertedWatcher.Start();
             deviceRemovedWatcher.Start();
+
+            // Update status
+            if (statusPipeServer != null)
+            {
+                statusPipeServer.UpdateFeatureState("DeviceSync", ServiceFeatureState.Running);
+            }
+
             log.Info("Monitoring resumed");
         }
 
@@ -72,9 +90,25 @@ namespace NoFencesService
             serviceStatus.dwWaitHint = 100000;
             SetServiceStatus(this.ServiceHandle, ref serviceStatus);
 
-            log.Info("Monitoring stopped");
+            log.Info("Stopping components");
+
+            // Stop device monitoring
             deviceInsertedWatcher.Stop();
             deviceRemovedWatcher.Stop();
+
+            // Shutdown sync engines
+            if (cloudSyncEngine != null)
+            {
+                cloudSyncEngine.Shutdown();
+                log.Info("CloudSyncEngine stopped");
+            }
+
+            // Stop pipe server
+            if (statusPipeServer != null)
+            {
+                statusPipeServer.Stop();
+                log.Info("StatusPipeServer stopped");
+            }
 
             serviceStatus.dwCurrentState = ServiceState.SERVICE_STOPPED;
             SetServiceStatus(this.ServiceHandle, ref serviceStatus);
@@ -103,23 +137,141 @@ namespace NoFencesService
 
         private void ConfigureAndValidateComponents()
         {
-            log.Info("Configuring watcher for Downloads folder");
-            
-            LocalDBContext localDBContext = new LocalDBContext();
-            
-            var monitoredPaths = localDBContext.MonitoredPaths.ToList();
+            log.Info("Initializing service components");
 
-            foreach ( var monitoredPath in monitoredPaths )
+            // Initialize named pipe server for status communication
+            InitializeStatusPipeServer();
+
+            // Initialize cloud sync engine
+            InitializeCloudSyncEngine();
+
+            // Initialize hybrid sync manager
+            InitializeHybridSyncManager();
+
+            // Start device monitoring
+            log.Info("Starting device monitoring");
+            QueryDevicesInBackground();
+
+            log.Info("All components configured successfully");
+        }
+
+        /// <summary>
+        /// Initialize the status pipe server for communication with main app
+        /// </summary>
+        private void InitializeStatusPipeServer()
+        {
+            try
             {
-                
+                log.Info("Initializing ServiceStatusPipeServer");
+                statusPipeServer = new ServiceStatusPipeServer();
+
+                // Register service features
+                statusPipeServer.RegisterFeature(
+                    "DeviceSync",
+                    "Device Sync",
+                    "Monitors connected devices and triggers synchronization",
+                    isControllable: true);
+
+                statusPipeServer.RegisterFeature(
+                    "CloudSync",
+                    "Cloud Sync",
+                    "Synchronizes files with cloud storage providers",
+                    isControllable: true);
+
+                statusPipeServer.RegisterFeature(
+                    "FolderMonitoring",
+                    "Folder Monitoring",
+                    "Watches folders for file changes and organization",
+                    isControllable: true);
+
+                // Start the pipe server
+                statusPipeServer.Start();
+                log.Info("ServiceStatusPipeServer started successfully");
             }
+            catch (Exception ex)
+            {
+                log.Error("Failed to initialize ServiceStatusPipeServer", ex);
+            }
+        }
 
+        /// <summary>
+        /// Initialize the cloud sync engine
+        /// </summary>
+        private void InitializeCloudSyncEngine()
+        {
+            try
+            {
+                log.Info("Initializing CloudSyncEngine");
+                cloudSyncEngine = new CloudSyncEngine();
 
-            log.Info("Configuring watcher for Downloads folder");
+                // TODO: Register cloud providers (OneDrive, Google Drive, Dropbox, etc.)
+                // Example:
+                // var oneDriveProvider = new OneDriveProvider();
+                // cloudSyncEngine.RegisterProvider(oneDriveProvider);
 
-            //Debug.WriteLine("Querying devices in background");
-            //QueryDevicesInBackground();
-            //Debug.WriteLine("Query configuration and create the monitors");
+                log.Info("CloudSyncEngine initialized successfully");
+
+                if (statusPipeServer != null)
+                {
+                    statusPipeServer.UpdateFeatureState("CloudSync", ServiceFeatureState.Running);
+                }
+            }
+            catch (Exception ex)
+            {
+                log.Error("Failed to initialize CloudSyncEngine", ex);
+                if (statusPipeServer != null)
+                {
+                    statusPipeServer.UpdateFeatureState("CloudSync", ServiceFeatureState.Error, ex.Message);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Initialize the hybrid sync manager
+        /// </summary>
+        private void InitializeHybridSyncManager()
+        {
+            try
+            {
+                log.Info("Initializing HybridSyncManager");
+                hybridSyncManager = new HybridSyncManager(cloudSyncEngine);
+
+                // Subscribe to device sync events
+                hybridSyncManager.DeviceSyncTriggered += OnDeviceSyncTriggered;
+
+                // TODO: Load sync configurations from database
+                // Example:
+                // var configs = localDatabaseContext.SyncConfigurations.ToList();
+                // foreach (var config in configs)
+                // {
+                //     hybridSyncManager.AddSyncConfiguration(config);
+                // }
+
+                log.Info("HybridSyncManager initialized successfully");
+            }
+            catch (Exception ex)
+            {
+                log.Error("Failed to initialize HybridSyncManager", ex);
+                if (statusPipeServer != null)
+                {
+                    statusPipeServer.UpdateFeatureState("DeviceSync", ServiceFeatureState.Error, ex.Message);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Handle device sync triggered event
+        /// </summary>
+        private void OnDeviceSyncTriggered(object sender, DeviceSyncEventArgs e)
+        {
+            if (e.Success)
+            {
+                log.Info($"Device sync successful: {e.ConfigurationName} → {e.DriveLetter} ({e.VolumeLabel})");
+            }
+            else
+            {
+                log.Error($"Device sync failed: {e.ConfigurationName} → {e.DriveLetter} - {e.ErrorMessage}");
+            }
         }
 
 
@@ -180,22 +332,110 @@ namespace NoFencesService
 
         private void DeviceInsertedEvent(object sender, EventArrivedEventArgs e)
         {
-            ManagementBaseObject instance = (ManagementBaseObject)e.NewEvent["TargetInstance"];
-            foreach (var property in instance.Properties)
+            try
             {
-                Console.WriteLine(property.Name + " = " + property.Value);
-                Debug.WriteLine(property.Name + " = " + property.Value);
+                ManagementBaseObject instance = (ManagementBaseObject)e.NewEvent["TargetInstance"];
+
+                log.Debug("Device inserted event received");
+
+                // Wait a moment for the device to be fully ready
+                Thread.Sleep(2000);
+
+                // Check for newly available drives
+                var drives = DriveInfo.GetDrives().Where(d => d.IsReady && d.DriveType == DriveType.Removable).ToList();
+
+                foreach (var drive in drives)
+                {
+                    log.Info($"Detected new drive: {drive.Name} - {drive.VolumeLabel}");
+
+                    // Get device serial number if possible
+                    string serialNumber = GetDriveSerialNumber(drive.Name);
+
+                    // Notify hybrid sync manager
+                    if (hybridSyncManager != null)
+                    {
+                        Task.Run(async () =>
+                        {
+                            try
+                            {
+                                await hybridSyncManager.OnDeviceConnected(
+                                    drive.Name.TrimEnd('\\'),
+                                    drive.VolumeLabel,
+                                    serialNumber);
+                            }
+                            catch (Exception ex)
+                            {
+                                log.Error($"Error in device connected handler: {ex.Message}", ex);
+                            }
+                        });
+                    }
+                }
+
+                if (statusPipeServer != null)
+                {
+                    statusPipeServer.UpdateFeatureState("DeviceSync", ServiceFeatureState.Running);
+                }
+            }
+            catch (Exception ex)
+            {
+                log.Error($"Error in DeviceInsertedEvent: {ex.Message}", ex);
             }
         }
 
         private void DeviceRemovedEvent(object sender, EventArrivedEventArgs e)
         {
-            ManagementBaseObject instance = (ManagementBaseObject)e.NewEvent["TargetInstance"];
-            foreach (var property in instance.Properties)
+            try
             {
-                Console.WriteLine(property.Name + " = " + property.Value);
-                Debug.WriteLine(property.Name + " = " + property.Value);
+                ManagementBaseObject instance = (ManagementBaseObject)e.NewEvent["TargetInstance"];
+
+                log.Debug("Device removed event received");
+
+                // Get list of currently available drives
+                var currentDrives = DriveInfo.GetDrives()
+                    .Where(d => d.IsReady)
+                    .Select(d => d.Name.TrimEnd('\\'))
+                    .ToList();
+
+                log.Info($"Current drives: {string.Join(", ", currentDrives)}");
+
+                // TODO: Track previously known drives to detect which one was removed
+                // For now, just log the event
             }
+            catch (Exception ex)
+            {
+                log.Error($"Error in DeviceRemovedEvent: {ex.Message}", ex);
+            }
+        }
+
+        /// <summary>
+        /// Get drive serial number using WMI
+        /// </summary>
+        private string GetDriveSerialNumber(string driveLetter)
+        {
+            try
+            {
+                var cleanDrive = driveLetter.TrimEnd('\\').Replace(":", "");
+                var query = $"SELECT VolumeSerialNumber FROM Win32_LogicalDisk WHERE DeviceID = '{cleanDrive}:'";
+
+                using (var searcher = new ManagementObjectSearcher(query))
+                {
+                    foreach (ManagementObject obj in searcher.Get())
+                    {
+                        var serialNumber = obj["VolumeSerialNumber"]?.ToString();
+                        if (!string.IsNullOrEmpty(serialNumber))
+                        {
+                            log.Debug($"Drive {driveLetter} serial number: {serialNumber}");
+                            return serialNumber;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                log.Warn($"Failed to get serial number for drive {driveLetter}: {ex.Message}");
+            }
+
+            return null;
         }
 
         private void ListAllDevices()

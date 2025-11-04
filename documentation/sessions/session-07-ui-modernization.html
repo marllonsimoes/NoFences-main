@@ -1,0 +1,1912 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Session 7: UI Modernization</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            color: #e0e0e0;
+            background-color: #0a0a0a;
+            background-image:
+                linear-gradient(rgba(0, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+        }
+        h1 {
+            color: #00ffff;
+            text-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff, 0 0 30px #00ffff;
+            border-bottom: 3px solid #00ffff;
+            padding-bottom: 10px;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+        h2 {
+            color: #ff00ff;
+            text-shadow: 0 0 10px #ff00ff, 0 0 20px #ff00ff;
+            margin-top: 30px;
+            border-bottom: 2px solid #ff00ff;
+            padding-bottom: 5px;
+        }
+        h3 {
+            color: #ffff00;
+            text-shadow: 0 0 5px #ffff00;
+            margin-top: 20px;
+        }
+        code {
+            background-color: #1a1a1a;
+            border: 1px solid #00ff00;
+            color: #00ff00;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.9em;
+            box-shadow: 0 0 5px rgba(0, 255, 0, 0.3);
+        }
+        pre {
+            background-color: #0d0d0d;
+            border: 1px solid #00ffff;
+            border-left: 4px solid #00ffff;
+            padding: 15px;
+            overflow-x: auto;
+            border-radius: 4px;
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+            color: #00ff00;
+        }
+        .issue {
+            background-color: rgba(255, 193, 7, 0.1);
+            border-left: 4px solid #ffc107;
+            padding: 10px;
+            margin: 10px 0;
+            box-shadow: 0 0 10px rgba(255, 193, 7, 0.3);
+        }
+        .solution {
+            background-color: rgba(0, 255, 0, 0.1);
+            border-left: 4px solid #00ff00;
+            padding: 10px;
+            margin: 10px 0;
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+        }
+        .note {
+            background-color: rgba(0, 255, 255, 0.1);
+            border-left: 4px solid #00ffff;
+            padding: 10px;
+            margin: 10px 0;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+        }
+        .failed {
+            background-color: rgba(255, 0, 255, 0.1);
+            border-left: 4px solid #ff00ff;
+            padding: 10px;
+            margin: 10px 0;
+            box-shadow: 0 0 10px rgba(255, 0, 255, 0.3);
+        }
+        ul {
+            padding-left: 25px;
+        }
+        li {
+            margin: 8px 0;
+        }
+        li::marker {
+            color: #00ffff;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            border: 1px solid #00ffff;
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.2);
+        }
+        th, td {
+            border: 1px solid #333;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #1a1a1a;
+            font-weight: bold;
+            color: #00ffff;
+            text-shadow: 0 0 5px #00ffff;
+        }
+        tr:hover {
+            background-color: rgba(0, 255, 255, 0.05);
+        }
+        .file-path {
+            color: #ff00ff;
+            font-weight: 500;
+            text-shadow: 0 0 5px #ff00ff;
+        }
+        strong {
+            color: #ffff00;
+        }
+        a {
+            color: #00ffff;
+            text-decoration: none;
+            text-shadow: 0 0 5px #00ffff;
+        }
+        a:hover {
+            text-shadow: 0 0 10px #00ffff;
+        }
+        hr {
+            border: none;
+            border-top: 2px solid #00ffff;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+        }
+        @keyframes glow {
+            from {
+                text-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff, 0 0 30px #00ffff;
+            }
+            to {
+                text-shadow: 0 0 20px #00ffff, 0 0 30px #00ffff, 0 0 40px #00ffff, 0 0 50px #00ffff;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>NoFences Development Session - Change Summary</h1>
+    <p><strong>Date:</strong> 2025-01-04</p>
+    <p><strong>Branch:</strong> gemini/fencewindow-refactor</p>
+    <p><strong>Architecture:</strong> Canvas-based with WPF content rendering</p>
+    <p><strong>Total Changes:</strong> 12,617 lines added, 104 lines removed (49 files)</p>
+    <p><strong>Sessions:</strong> 2 (Architecture creation + Bug fixes)</p>
+
+    <div class="note">
+        <strong>Overview:</strong> This document covers changes across two development sessions:
+        <ul>
+    <h2>21. Session 7 (2025-01-07): Minify Bug Fix</h2>
+
+    <div class="note">
+        <strong>Session Date:</strong> 2025-01-07<br>
+        <strong>Focus:</strong> Fix minify toggle bug in edit window<br>
+        <strong>Status:</strong> ✅ COMPLETED
+    </div>
+
+    <h3>21.1 Bug Description</h3>
+
+    <div class="issue">
+        <strong>Issue:</strong> Minify feature not working correctly. From the edit window, if a fence is minified, unchecking "Can Minify" and saving doesn't expand the fence back to full size.
+    </div>
+
+    <h4>Root Cause</h4>
+
+    <pre>
+When FenceEditWindow saves changes:
+1. User unchecks "Can Minify" checkbox
+2. Dialog saves directly to fenceInfo.CanMinify = false
+3. EditMenuItem_Click handler doesn't check minify state change
+4. Fence remains collapsed even though CanMinify is now false
+    </pre>
+
+    <h3>21.2 Solution Implementation</h3>
+
+    <div class="solution">
+        <strong>Fix:</strong> Added minify state tracking and auto-expansion logic in <code>EditMenuItem_Click()</code>
+    </div>
+
+    <h4>Changes Made</h4>
+
+    <table>
+        <tr>
+            <th>File</th>
+            <th>Change</th>
+            <th>Lines</th>
+        </tr>
+        <tr>
+            <td>FenceContainer.cs</td>
+            <td>
+                <ul>
+                    <li>Added <code>wasCanMinifyEnabled</code> variable to track original state</li>
+                    <li>Check if CanMinify was disabled while fence is minified</li>
+                    <li>Auto-expand fence when CanMinify disabled</li>
+                    <li>Restore opacity to full when expanding</li>
+                    <li>Update context menu checkbox to reflect new state</li>
+                    <li>Added logging for debugging</li>
+                </ul>
+            </td>
+            <td>906-977</td>
+        </tr>
+    </table>
+
+    <h4>Implementation Code</h4>
+
+    <pre>private void EditMenuItem_Click(object sender, EventArgs e)
+{
+    try
+    {
+        // Store the original CanMinify state before opening dialog
+        bool wasCanMinifyEnabled = fenceInfo.CanMinify;
+
+        // Create and show the WPF edit window
+        var editWindow = new FenceEditWindow(fenceInfo);
+
+        // Show as modal dialog
+        bool? result = editWindow.ShowDialog();
+
+        if (result == true)
+        {
+            // Properties were saved to fenceInfo by the dialog
+            Logger.Log($"Fence properties edited: {fenceInfo.Name}");
+
+            // Update title height if changed
+            if (logicalTitleHeight != fenceInfo.TitleHeight)
+            {
+                logicalTitleHeight = fenceInfo.TitleHeight;
+                ReloadFonts();
+                titlePanel?.Invalidate();
+            }
+
+            // Check if CanMinify was disabled while fence is minified - if so, expand it
+            if (wasCanMinifyEnabled && !fenceInfo.CanMinify && isMinified)
+            {
+                isMinified = false;
+                this.Height = prevHeight;
+                // Also restore opacity to full if it was faded
+                if (isFadedOut)
+                {
+                    isFadedOut = false;
+                    currentOpacity = 1.0;
+                    ApplyFadeOpacity();
+                }
+                Logger.Log($"Fence '{fenceInfo.Name}' expanded because CanMinify was disabled in edit dialog");
+            }
+
+            // Update context menu checkbox to reflect new state
+            if (minifyMenuItem != null)
+            {
+                minifyMenuItem.Checked = fenceInfo.CanMinify;
+            }
+
+            // Reapply theme if changed
+            ApplyTheme();
+            UpdateBorderColors();
+
+            // Recreate WPF content if type or other properties changed
+            RecreateWpfContent();
+
+            // Update resize borders based on AutoHeight setting
+            UpdateResizeBordersForAutoHeight();
+
+            // Trigger events
+            FenceEdited?.Invoke(this, fenceInfo);
+            NotifyChanged();
+        }
+    }
+    catch (Exception ex)
+    {
+        Logger.Log($"Error opening edit window: {ex.Message}");
+        MessageBox.Show(
+            $"Failed to open edit window: {ex.Message}",
+            "Error",
+            MessageBoxButtons.OK,
+            MessageBoxIcon.Error);
+    }
+}</pre>
+
+    <h3>21.3 Behavior Flow</h3>
+
+    <pre>
+Before Fix:
+1. User opens Edit Fence dialog for minified fence
+2. User unchecks "Can Minify"
+3. User clicks OK
+4. Dialog saves fenceInfo.CanMinify = false
+5. Dialog closes
+6. ❌ Fence stays minified (incorrect)
+
+After Fix:
+1. User opens Edit Fence dialog for minified fence
+2. EditMenuItem_Click stores wasCanMinifyEnabled = true
+3. User unchecks "Can Minify"
+4. User clicks OK
+5. Dialog saves fenceInfo.CanMinify = false
+6. Dialog closes
+7. EditMenuItem_Click checks: wasCanMinifyEnabled && !fenceInfo.CanMinify && isMinified
+8. ✅ Condition true → Fence expanded automatically
+9. ✅ Opacity restored to 100%
+10. ✅ Context menu checkbox updated
+    </pre>
+
+    <h3>21.4 Consistency with Existing Logic</h3>
+
+    <div class="solution">
+        <strong>Pattern Consistency:</strong> This fix mirrors the existing auto-expansion logic in two other places:
+        <ul>
+            <li><strong>CanMinify property setter</strong> (lines 273-299): Expands fence when property set to false</li>
+            <li><strong>UpdateFenceInfo() method</strong> (lines 1497-1508): Expands fence when info updated with CanMinify=false</li>
+        </ul>
+    </div>
+
+    <h4>Comparison</h4>
+
+    <table>
+        <tr>
+            <th>Location</th>
+            <th>Trigger</th>
+            <th>Logic</th>
+        </tr>
+        <tr>
+            <td>CanMinify Property Setter</td>
+            <td>Property set via code or context menu</td>
+            <td>
+                <pre>if (!value && isMinified)
+{
+    isMinified = false;
+    this.Height = prevHeight;
+    // Restore opacity...
+}</pre>
+            </td>
+        </tr>
+        <tr>
+            <td>UpdateFenceInfo() Method</td>
+            <td>FenceInfo object replaced</td>
+            <td>
+                <pre>if (wasMinifyEnabled && !willMinifyBeEnabled && isMinified)
+{
+    isMinified = false;
+    this.Height = prevHeight;
+    // Restore opacity...
+}</pre>
+            </td>
+        </tr>
+        <tr>
+            <td>EditMenuItem_Click (NEW)</td>
+            <td>Edit dialog closes after property change</td>
+            <td>
+                <pre>if (wasCanMinifyEnabled && !fenceInfo.CanMinify && isMinified)
+{
+    isMinified = false;
+    this.Height = prevHeight;
+    // Restore opacity...
+}</pre>
+            </td>
+        </tr>
+    </table>
+
+    <h3>21.5 Additional Improvements</h3>
+
+    <ul>
+        <li><strong>Context Menu Sync:</strong> Added code to update context menu checkbox after edit dialog closes</li>
+        <li><strong>Logging:</strong> Added debug log when fence is auto-expanded for troubleshooting</li>
+        <li><strong>Opacity Restoration:</strong> Ensures fence fully fades in when expanded (not just height change)</li>
+    </ul>
+
+    <h3>21.6 Testing Checklist</h3>
+
+    <table>
+        <tr>
+            <th>Test Case</th>
+            <th>Expected Result</th>
+        </tr>
+        <tr>
+            <td>1. Minified fence → Edit dialog → Uncheck CanMinify → Save</td>
+            <td>✅ Fence expands to full height immediately</td>
+        </tr>
+        <tr>
+            <td>2. Minified fence → Edit dialog → Keep CanMinify checked → Save</td>
+            <td>✅ Fence stays minified</td>
+        </tr>
+        <tr>
+            <td>3. Expanded fence → Edit dialog → Uncheck CanMinify → Save</td>
+            <td>✅ Fence stays expanded (already expanded)</td>
+        </tr>
+        <tr>
+            <td>4. Minified fence → Right-click → Uncheck "Can Minify"</td>
+            <td>✅ Fence expands (existing property setter logic)</td>
+        </tr>
+        <tr>
+            <td>5. Check context menu after edit dialog</td>
+            <td>✅ Context menu checkbox matches actual CanMinify state</td>
+        </tr>
+        <tr>
+            <td>6. Check opacity after expansion</td>
+            <td>✅ Fence at 100% opacity (not faded)</td>
+        </tr>
+        <tr>
+            <td>7. Check logs</td>
+            <td>✅ See "Fence expanded because CanMinify was disabled in edit dialog"</td>
+        </tr>
+    </table>
+
+    <h3>21.7 Edge Cases Handled</h3>
+
+    <ul>
+        <li>✅ Fence not minified + CanMinify disabled → No action (correct)</li>
+        <li>✅ CanMinify already disabled + Edit dialog opened → No change (correct)</li>
+        <li>✅ CanMinify enabled → disabled → enabled again in same dialog session → Uses final saved state</li>
+        <li>✅ User cancels dialog → No changes applied</li>
+        <li>✅ Multiple properties changed at once → All handled correctly</li>
+    </ul>
+
+    <h3>21.8 Why Bug Existed</h3>
+
+    <div class="note">
+        <strong>Architectural Reason:</strong> The edit dialog modifies <code>fenceInfo</code> directly, not via the <code>CanMinify</code> property setter.
+        <ul>
+            <li>Property setter has auto-expansion logic built-in</li>
+            <li>But dialog bypasses setter by writing to <code>fenceInfo.CanMinify</code> field directly</li>
+            <li>This is intentional (dialog works with data object, not UI state)</li>
+            <li>Solution: Add expansion logic in dialog close handler</li>
+        </ul>
+    </div>
+
+    <h3>21.9 Summary</h3>
+
+    <table>
+        <tr>
+            <th>Aspect</th>
+            <th>Details</th>
+        </tr>
+        <tr>
+            <td>Bug</td>
+            <td>Minified fence doesn't expand when CanMinify unchecked in edit dialog</td>
+        </tr>
+        <tr>
+            <td>Root Cause</td>
+            <td>Edit dialog modifies fenceInfo directly, bypassing property setter logic</td>
+        </tr>
+        <tr>
+            <td>Fix Location</td>
+            <td>FenceContainer.cs → EditMenuItem_Click()</td>
+        </tr>
+        <tr>
+            <td>Lines Changed</td>
+            <td>+19 lines (tracking, checking, expanding, syncing)</td>
+        </tr>
+        <tr>
+            <td>Testing</td>
+            <td>7 test cases, all edge cases covered</td>
+        </tr>
+        <tr>
+            <td>Consistency</td>
+            <td>Matches existing auto-expansion patterns in codebase</td>
+        </tr>
+        <tr>
+            <td>Status</td>
+            <td>✅ Fixed and ready for testing</td>
+        </tr>
+    </table>
+
+    <hr>
+
+    <h2>22. Session 7 (Continued - 2025-01-07): Dark Mode with MahApps.Metro</h2>
+
+    <div class="note">
+        <strong>Session Date:</strong> 2025-01-07<br>
+        <strong>Focus:</strong> Implement automatic dark/light mode using MahApps.Metro<br>
+        <strong>Status:</strong> ✅ COMPLETED
+    </div>
+
+    <h3>22.1 Discovery: Existing MahApps.Metro Dependency</h3>
+
+    <div class="solution">
+        <strong>Investigation Results:</strong>
+        <ul>
+            <li><strong>MahApps.Metro 2.4.10</strong> - Already installed in project</li>
+            <li><strong>MahApps.Metro.IconPacks 5.1.0</strong> - Available for modern icons</li>
+            <li><strong>Partial Usage:</strong> Already used in MonitoredPathFlyout and FolderConfigurationView</li>
+            <li><strong>ThemeManager Pattern:</strong> Existing pattern for automatic Windows theme sync</li>
+        </ul>
+    </div>
+
+    <h4>Existing Pattern Found</h4>
+
+    <pre>// Pattern used in FolderConfigurationView.xaml.cs
+ThemeManager.Current.ThemeSyncMode = ThemeSyncMode.SyncWithAppMode;
+ThemeManager.Current.SyncTheme();</pre>
+
+    <div class="note">
+        <strong>Key Advantage:</strong> MahApps.Metro provides automatic dark/light theme switching based on Windows system settings (Settings → Personalization → Colors → Choose your default app mode).
+    </div>
+
+    <h3>22.2 FenceEditWindow Modernization</h3>
+
+    <h4>Changes Made</h4>
+
+    <table>
+        <tr>
+            <th>Component</th>
+            <th>Before</th>
+            <th>After</th>
+        </tr>
+        <tr>
+            <td>Window Type</td>
+            <td><code>&lt;Window&gt;</code></td>
+            <td><code>&lt;mah:MetroWindow&gt;</code></td>
+        </tr>
+        <tr>
+            <td>Base Class</td>
+            <td><code>: Window</code></td>
+            <td><code>: MetroWindow</code></td>
+        </tr>
+        <tr>
+            <td>Button Styles</td>
+            <td>Custom <code>ModernButtonStyle</code> + <code>PrimaryButtonStyle</code></td>
+            <td>MahApps styles: <code>MahApps.Styles.Button.Square.Accent</code></td>
+        </tr>
+        <tr>
+            <td>Theme Support</td>
+            <td>Manual SystemColors references</td>
+            <td>Automatic ThemeManager sync with Windows</td>
+        </tr>
+        <tr>
+            <td>Window Chrome</td>
+            <td>Standard Windows chrome</td>
+            <td>Modern Metro chrome with glow effect</td>
+        </tr>
+    </table>
+
+    <h4>XAML Changes (FenceEditWindow.xaml)</h4>
+
+    <div class="solution">
+        <strong>1. Added MahApps.Metro namespaces:</strong>
+        <pre>&lt;mah:MetroWindow ...
+    xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
+    xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+    GlowBrush="{DynamicResource MahApps.Brushes.Accent}"
+    BorderThickness="1"
+    SaveWindowPosition="False"
+    TitleCharacterCasing="Normal"&gt;</pre>
+    </div>
+
+    <div class="solution">
+        <strong>2. Replaced custom button styles:</strong>
+        <pre>&lt;!-- OK Button - Accent styled --&gt;
+&lt;Button x:Name="btnOk" Content="OK"
+        Style="{DynamicResource MahApps.Styles.Button.Square.Accent}"
+        Click="BtnOk_Click" IsDefault="True"
+        Margin="0,0,8,0" MinWidth="80" Height="32"/&gt;
+
+&lt;!-- Cancel Button - Standard styled --&gt;
+&lt;Button x:Name="btnCancel" Content="Cancel"
+        Style="{DynamicResource MahApps.Styles.Button.Square}"
+        Click="BtnCancel_Click" IsCancel="True"
+        MinWidth="80" Height="32"/&gt;</pre>
+    </div>
+
+    <h4>Code-Behind Changes (FenceEditWindow.xaml.cs)</h4>
+
+    <div class="solution">
+        <strong>1. Added MahApps.Metro using statements:</strong>
+        <pre>using MahApps.Metro.Controls;
+using ControlzEx.Theming;</pre>
+    </div>
+
+    <div class="solution">
+        <strong>2. Changed base class:</strong>
+        <pre>public partial class FenceEditWindow : MetroWindow  // Was: Window</pre>
+    </div>
+
+    <div class="solution">
+        <strong>3. Added ThemeManager initialization in constructor:</strong>
+        <pre>public FenceEditWindow(FenceInfo fenceInfo)
+{
+    InitializeComponent();
+
+    // Apply MahApps.Metro theme sync with Windows dark/light mode
+    ThemeManager.Current.ThemeSyncMode = ThemeSyncMode.SyncWithAppMode;
+    ThemeManager.Current.SyncTheme();
+
+    // ... rest of initialization
+}</pre>
+    </div>
+
+    <h3>22.3 Features Gained</h3>
+
+    <table>
+        <tr>
+            <th>Feature</th>
+            <th>Description</th>
+        </tr>
+        <tr>
+            <td>Automatic Dark/Light Mode</td>
+            <td>Syncs with Windows Settings → Personalization → Colors → App mode</td>
+        </tr>
+        <tr>
+            <td>Modern Window Chrome</td>
+            <td>Metro-style window with colored glow effect (accent color border)</td>
+        </tr>
+        <tr>
+            <td>Consistent Button Styling</td>
+            <td>Accent button (OK) and standard button (Cancel) with hover effects</td>
+        </tr>
+        <tr>
+            <td>Dynamic Resource Bindings</td>
+            <td>All colors update automatically when theme changes</td>
+        </tr>
+        <tr>
+            <td>No Manual Theme Management</td>
+            <td>ThemeManager handles everything automatically</td>
+        </tr>
+    </table>
+
+    <h3>22.4 Theme Behavior</h3>
+
+    <h4>Dark Mode (Windows Dark App Mode)</h4>
+
+    <div class="solution">
+        <ul>
+            <li><strong>Background:</strong> Dark gray (#1E1E1E)</li>
+            <li><strong>Text:</strong> White/light gray</li>
+            <li><strong>Accent Button:</strong> System accent color (e.g., blue)</li>
+            <li><strong>Borders:</strong> Subtle light gray</li>
+            <li><strong>Glow:</strong> Accent color glow around window</li>
+        </ul>
+    </div>
+
+    <h4>Light Mode (Windows Light App Mode)</h4>
+
+    <div class="solution">
+        <ul>
+            <li><strong>Background:</strong> White (#FFFFFF)</li>
+            <li><strong>Text:</strong> Black/dark gray</li>
+            <li><strong>Accent Button:</strong> System accent color</li>
+            <li><strong>Borders:</strong> Subtle dark gray</li>
+            <li><strong>Glow:</strong> Accent color glow around window</li>
+        </ul>
+    </div>
+
+    <h3>22.5 User Experience</h3>
+
+    <table>
+        <tr>
+            <th>Action</th>
+            <th>Result</th>
+        </tr>
+        <tr>
+            <td>Open Edit Fence dialog</td>
+            <td>Theme matches current Windows app mode (dark/light)</td>
+        </tr>
+        <tr>
+            <td>Change Windows theme</td>
+            <td>Next dialog opening will use new theme automatically</td>
+        </tr>
+        <tr>
+            <td>Hover over OK button</td>
+            <td>Smooth hover effect with accent color</td>
+        </tr>
+        <tr>
+            <td>Hover over Cancel button</td>
+            <td>Subtle gray hover effect</td>
+        </tr>
+        <tr>
+            <td>Focus window</td>
+            <td>Glow border lights up with accent color</td>
+        </tr>
+    </table>
+
+    <h3>22.6 MahApps.Metro Components Available</h3>
+
+    <div class="note">
+        <strong>Additional components available for future use:</strong>
+        <ul>
+            <li><strong>Controls:</strong> ToggleSwitch, NumericUpDown, ColorPicker, DatePicker, TimePicker</li>
+            <li><strong>Icons:</strong> MahApps.Metro.IconPacks (Material, FontAwesome, etc.)</li>
+            <li><strong>Dialogs:</strong> MessageDialog, ProgressDialog, InputDialog</li>
+            <li><strong>Flyouts:</strong> Side panels (already used in MonitoredPathFlyout)</li>
+            <li><strong>Tiles:</strong> Modern tile controls for dashboards</li>
+            <li><strong>AppBar:</strong> Application bar with buttons</li>
+        </ul>
+    </div>
+
+    <h3>22.7 Benefits Over Custom Styling</h3>
+
+    <table>
+        <tr>
+            <th>Aspect</th>
+            <th>Custom Styling</th>
+            <th>MahApps.Metro</th>
+        </tr>
+        <tr>
+            <td>Dark Mode</td>
+            <td>Manual implementation required (~200+ lines)</td>
+            <td>2 lines of code (ThemeManager)</td>
+        </tr>
+        <tr>
+            <td>System Integration</td>
+            <td>Doesn't follow Windows theme</td>
+            <td>Automatic sync with Windows settings</td>
+        </tr>
+        <tr>
+            <td>Button Styles</td>
+            <td>~70 lines of XAML</td>
+            <td>Single Style attribute</td>
+        </tr>
+        <tr>
+            <td>Maintenance</td>
+            <td>Manual updates for new themes</td>
+            <td>Framework handles updates</td>
+        </tr>
+        <tr>
+            <td>Consistency</td>
+            <td>Custom = different from other apps</td>
+            <td>Modern WPF standard</td>
+        </tr>
+    </table>
+
+    <h3>22.8 Testing Checklist</h3>
+
+    <ul>
+        <li><strong>Windows Dark Mode:</strong> Settings → Personalization → Colors → Dark → Open Edit Fence → Verify dark theme</li>
+        <li><strong>Windows Light Mode:</strong> Settings → Personalization → Colors → Light → Open Edit Fence → Verify light theme</li>
+        <li><strong>Button Hover:</strong> Hover over OK/Cancel buttons → Verify smooth hover effects</li>
+        <li><strong>Window Glow:</strong> Focus window → Verify accent color glow border</li>
+        <li><strong>All Controls:</strong> Verify TextBox, ComboBox, CheckBox are themed correctly</li>
+        <li><strong>Accent Color:</strong> Change Windows accent color → Reopen dialog → Verify accent button uses new color</li>
+    </ul>
+
+    <h3>22.9 Files Modified</h3>
+
+    <table>
+        <tr>
+            <th>File</th>
+            <th>Changes</th>
+            <th>Lines</th>
+        </tr>
+        <tr>
+            <td class="file-path">FenceEditWindow.xaml</td>
+            <td>
+                <ul>
+                    <li>Changed Window → mah:MetroWindow</li>
+                    <li>Added MahApps namespaces (mah, iconPacks)</li>
+                    <li>Removed custom button styles (~70 lines)</li>
+                    <li>Applied MahApps button styles</li>
+                    <li>Added MetroWindow properties (GlowBrush, etc.)</li>
+                </ul>
+            </td>
+            <td>~80 lines changed</td>
+        </tr>
+        <tr>
+            <td class="file-path">FenceEditWindow.xaml.cs</td>
+            <td>
+                <ul>
+                    <li>Changed base class: Window → MetroWindow</li>
+                    <li>Added MahApps using statements</li>
+                    <li>Added ThemeManager initialization</li>
+                    <li>Updated XML documentation</li>
+                </ul>
+            </td>
+            <td>~10 lines changed</td>
+        </tr>
+    </table>
+
+    <h3>22.10 Removed Code</h3>
+
+    <div class="solution">
+        <strong>Custom button styles removed (~70 lines of XAML):</strong>
+        <ul>
+            <li><code>ModernButtonStyle</code> - Custom rounded button with hover effects</li>
+            <li><code>PrimaryButtonStyle</code> - Custom accent-colored button</li>
+            <li>Manual ControlTemplate with Border and triggers</li>
+            <li>Static SystemColors references</li>
+        </ul>
+        <strong>Benefit:</strong> Reduced code complexity, improved maintainability
+    </div>
+
+    <h3>22.11 Architecture Impact</h3>
+
+    <div class="note">
+        <strong>Pattern Established:</strong> This implementation sets the pattern for all future WPF dialogs and windows:
+        <ol>
+            <li>Use <code>MetroWindow</code> base class</li>
+            <li>Initialize ThemeManager in constructor</li>
+            <li>Use MahApps.Styles for controls</li>
+            <li>Let framework handle theming automatically</li>
+        </ol>
+        <p>This approach can now be applied to context menus, settings windows, and other UI elements.</p>
+    </div>
+
+    <h3>22.12 Future Enhancements</h3>
+
+    <div class="note">
+        <strong>Next Steps for Complete Dark Mode:</strong>
+        <ul>
+            <li><strong>Context Menus:</strong> Convert WinForms context menus to WPF with MahApps theming</li>
+            <li><strong>Tray Icon:</strong> Update tray icon context menu to support themes</li>
+            <li><strong>Fence Content:</strong> Apply theming to WPF content within fences</li>
+            <li><strong>Icons:</strong> Use MahApps.Metro.IconPacks for modern vector icons</li>
+            <li><strong>Notifications:</strong> Use MahApps flyouts for modern notifications</li>
+        </ul>
+    </div>
+
+    <h3>22.13 Summary</h3>
+
+    <table>
+        <tr>
+            <th>Achievement</th>
+            <th>Details</th>
+        </tr>
+        <tr>
+            <td>Automatic Dark/Light Mode</td>
+            <td>Edit Fence dialog now syncs with Windows theme automatically</td>
+        </tr>
+        <tr>
+            <td>Modern UI Framework</td>
+            <td>Leveraged existing MahApps.Metro dependency</td>
+        </tr>
+        <tr>
+            <td>Code Reduction</td>
+            <td>Removed ~70 lines of custom styling XAML</td>
+        </tr>
+        <tr>
+            <td>User Experience</td>
+            <td>Consistent with modern Windows applications</td>
+        </tr>
+        <tr>
+            <td>Pattern Established</td>
+            <td>Foundation for theming all other dialogs</td>
+        </tr>
+        <tr>
+            <td>Zero Configuration</td>
+            <td>Users don't need to configure themes manually</td>
+        </tr>
+    </table>
+
+    <hr>
+
+    <h2>23. Session 7 (Continued - 2025-01-07): Modern Tray Icon with Themed Context Menu</h2>
+
+    <div class="note">
+        <strong>Session Date:</strong> 2025-01-07<br>
+        <strong>Focus:</strong> Modernize system tray icon with WPF-based themed context menu<br>
+        <strong>Status:</strong> ✅ COMPLETED
+    </div>
+
+    <h3>23.1 Current Tray Icon Analysis</h3>
+
+    <h4>Before Modernization</h4>
+
+    <table>
+        <tr>
+            <th>Aspect</th>
+            <th>Implementation</th>
+        </tr>
+        <tr>
+            <td>Technology</td>
+            <td>WinForms NotifyIcon + old ContextMenu</td>
+        </tr>
+        <tr>
+            <td>Menu Styling</td>
+            <td>Plain text-only menu items, no icons</td>
+        </tr>
+        <tr>
+            <td>Theming</td>
+            <td>None - always light Windows default style</td>
+        </tr>
+        <tr>
+            <td>Icon</td>
+            <td>fibonacci.ico (static)</td>
+        </tr>
+        <tr>
+            <td>Menu Items</td>
+            <td>
+                <ul>
+                    <li>Start on login (checkbox)</li>
+                    <li>New Fence</li>
+                    <li>Open local storage</li>
+                    <li>Exit</li>
+                </ul>
+            </td>
+        </tr>
+    </table>
+
+    <h3>23.2 Modernization Strategy</h3>
+
+    <div class="solution">
+        <strong>Approach:</strong> Migrate to WPF-based tray icon with full theming support
+        <ul>
+            <li><strong>H.NotifyIcon.Wpf (v2.1.4):</strong> Modern WPF tray icon library</li>
+            <li><strong>WPF ContextMenu:</strong> Replace WinForms with WPF for theming</li>
+            <li><strong>MahApps.Metro.IconPacks:</strong> Material Design icons for menu items</li>
+            <li><strong>ThemeManager:</strong> Automatic dark/light mode sync</li>
+        </ul>
+    </div>
+
+    <h4>Technology Comparison</h4>
+
+    <table>
+        <tr>
+            <th>Feature</th>
+            <th>WinForms NotifyIcon</th>
+            <th>H.NotifyIcon.Wpf</th>
+        </tr>
+        <tr>
+            <td>WPF Integration</td>
+            <td>❌ Poor (requires workarounds)</td>
+            <td>✅ Native WPF support</td>
+        </tr>
+        <tr>
+            <td>Context Menu Type</td>
+            <td>WinForms ContextMenu (old API)</td>
+            <td>WPF ContextMenu (modern)</td>
+        </tr>
+        <tr>
+            <td>Theming Support</td>
+            <td>❌ No dark mode</td>
+            <td>✅ Full MahApps theming</td>
+        </tr>
+        <tr>
+            <td>Icons</td>
+            <td>❌ Difficult to add</td>
+            <td>✅ Easy with WPF controls</td>
+        </tr>
+        <tr>
+            <td>Animations</td>
+            <td>❌ Not supported</td>
+            <td>✅ WPF animations available</td>
+        </tr>
+    </table>
+
+    <h3>23.3 Package Added</h3>
+
+    <div class="solution">
+        <strong>NuGet Package:</strong>
+        <pre>&lt;PackageReference Include="H.NotifyIcon.Wpf"&gt;
+  &lt;Version&gt;2.1.4&lt;/Version&gt;
+&lt;/PackageReference&gt;</pre>
+        <strong>About H.NotifyIcon.Wpf:</strong>
+        <ul>
+            <li>Modern fork of the popular Hardcodet.NotifyIcon.Wpf library</li>
+            <li>Active maintenance and .NET 6+ support</li>
+            <li>Full WPF integration for tray icons</li>
+            <li>Supports WPF popups, tooltips, and context menus</li>
+        </ul>
+    </div>
+
+    <h3>23.4 Implementation Changes</h3>
+
+    <h4>TrayIconManager.cs - Complete Rewrite</h4>
+
+    <table>
+        <tr>
+            <th>Component</th>
+            <th>Before</th>
+            <th>After</th>
+        </tr>
+        <tr>
+            <td>Tray Icon Control</td>
+            <td><code>NotifyIcon</code> (WinForms)</td>
+            <td><code>TaskbarIcon</code> (H.NotifyIcon.Wpf)</td>
+        </tr>
+        <tr>
+            <td>Context Menu</td>
+            <td><code>ContextMenu</code> (WinForms)</td>
+            <td><code>ContextMenu</code> (WPF)</td>
+        </tr>
+        <tr>
+            <td>Menu Items</td>
+            <td><code>MenuItem</code> (WinForms)</td>
+            <td><code>MenuItem</code> (WPF)</td>
+        </tr>
+        <tr>
+            <td>Icons</td>
+            <td>None (text only)</td>
+            <td><code>PackIconMaterial</code> with colors</td>
+        </tr>
+        <tr>
+            <td>Theme Support</td>
+            <td>None</td>
+            <td>MahApps ThemeManager</td>
+        </tr>
+    </table>
+
+    <h3>23.5 Menu Items with Icons</h3>
+
+    <table>
+        <tr>
+            <th>Menu Item</th>
+            <th>Icon</th>
+            <th>Color</th>
+            <th>Function</th>
+        </tr>
+        <tr>
+            <td><strong>Start on login</strong></td>
+            <td>Login icon (PackIconMaterialKind.Login)</td>
+            <td>Themed (white/black)</td>
+            <td>Toggle startup with Windows (checkable)</td>
+        </tr>
+        <tr>
+            <td colspan="4" style="text-align:center"><em>--- Separator ---</em></td>
+        </tr>
+        <tr>
+            <td><strong>New Fence</strong></td>
+            <td>Plus box icon (PackIconMaterialKind.PlusBox)</td>
+            <td>Green (RGB 100, 180, 100)</td>
+            <td>Create a new fence</td>
+        </tr>
+        <tr>
+            <td><strong>Open local storage</strong></td>
+            <td>Folder icon (PackIconMaterialKind.FolderOpen)</td>
+            <td>Orange/Yellow (RGB 255, 180, 0)</td>
+            <td>Open fence storage folder in Explorer</td>
+        </tr>
+        <tr>
+            <td colspan="4" style="text-align:center"><em>--- Separator ---</em></td>
+        </tr>
+        <tr>
+            <td><strong>Exit</strong></td>
+            <td>Exit icon (PackIconMaterialKind.ExitToApp)</td>
+            <td>Red (RGB 220, 80, 80)</td>
+            <td>Close application</td>
+        </tr>
+    </table>
+
+    <h3>23.6 Code Highlights</h3>
+
+    <div class="solution">
+        <strong>1. ThemeManager Initialization (Start method):</strong>
+        <pre>// Apply MahApps.Metro theme sync with Windows dark/light mode
+ThemeManager.Current.ThemeSyncMode = ThemeSyncMode.SyncWithAppMode;
+ThemeManager.Current.SyncTheme();</pre>
+    </div>
+
+    <div class="solution">
+        <strong>2. TaskbarIcon Creation:</strong>
+        <pre>taskbarIcon = new TaskbarIcon
+{
+    ToolTipText = "NoFences - Desktop Organization",
+    ContextMenu = contextMenu,
+    IconSource = new BitmapImage(new Uri("pack://application:,,,/fibonacci.ico"))
+};</pre>
+    </div>
+
+    <div class="solution">
+        <strong>3. WPF Context Menu with MahApps Styling:</strong>
+        <pre>var contextMenu = new ContextMenu();
+
+// Apply MahApps.Metro styling to context menu
+contextMenu.Style = Application.Current.TryFindResource("MahApps.Styles.ContextMenu") as Style;</pre>
+    </div>
+
+    <div class="solution">
+        <strong>4. Menu Item with Icon Example (New Fence):</strong>
+        <pre>var newFenceItem = new MenuItem
+{
+    Header = "New Fence",
+    Icon = new PackIconMaterial
+    {
+        Kind = PackIconMaterialKind.PlusBox,
+        Width = 16,
+        Height = 16,
+        Foreground = new SolidColorBrush(Color.FromRgb(100, 180, 100))
+    }
+};
+newFenceItem.Click += (s, e) => CreateNewFence();
+contextMenu.Items.Add(newFenceItem);</pre>
+    </div>
+
+    <div class="solution">
+        <strong>5. Checkable Menu Item (Start on login):</strong>
+        <pre>toggleStartUpMenuItem = new MenuItem
+{
+    Header = "Start on login",
+    IsCheckable = true,
+    IsChecked = StartupManager.IsAutoStartEnabled(),
+    Icon = new PackIconMaterial
+    {
+        Kind = PackIconMaterialKind.Login,
+        Width = 16,
+        Height = 16
+    }
+};</pre>
+    </div>
+
+    <h3>23.7 Visual Design</h3>
+
+    <h4>Dark Mode Menu</h4>
+
+    <div class="solution">
+        <ul>
+            <li><strong>Background:</strong> Dark gray (#2D2D30)</li>
+            <li><strong>Text:</strong> White (#FFFFFF)</li>
+            <li><strong>Hover:</strong> Lighter gray (#3E3E42)</li>
+            <li><strong>Icons:</strong> Full color (green, orange, red)</li>
+            <li><strong>Separator:</strong> Subtle dark line</li>
+            <li><strong>Checkbox:</strong> Themed checkmark when enabled</li>
+        </ul>
+    </div>
+
+    <h4>Light Mode Menu</h4>
+
+    <div class="solution">
+        <ul>
+            <li><strong>Background:</strong> White (#FFFFFF)</li>
+            <li><strong>Text:</strong> Black (#000000)</li>
+            <li><strong>Hover:</strong> Light gray (#F0F0F0)</li>
+            <li><strong>Icons:</strong> Full color (green, orange, red)</li>
+            <li><strong>Separator:</strong> Subtle gray line</li>
+            <li><strong>Checkbox:</strong> Standard checkmark when enabled</li>
+        </ul>
+    </div>
+
+    <h3>23.8 Behavior Changes</h3>
+
+    <table>
+        <tr>
+            <th>Action</th>
+            <th>Old Behavior</th>
+            <th>New Behavior</th>
+        </tr>
+        <tr>
+            <td>Right-click tray icon</td>
+            <td>Plain WinForms menu appears</td>
+            <td>Themed WPF menu with icons appears</td>
+        </tr>
+        <tr>
+            <td>Windows dark mode</td>
+            <td>Menu always light (no theme support)</td>
+            <td>Menu automatically dark themed</td>
+        </tr>
+        <tr>
+            <td>Windows light mode</td>
+            <td>Menu light</td>
+            <td>Menu light (consistent with system)</td>
+        </tr>
+        <tr>
+            <td>Hover menu item</td>
+            <td>Simple highlight</td>
+            <td>Smooth MahApps hover effect</td>
+        </tr>
+        <tr>
+            <td>Toggle "Start on login"</td>
+            <td>Text shows "Checked"</td>
+            <td>Visual checkmark appears/disappears</td>
+        </tr>
+        <tr>
+            <td>Exit application</td>
+            <td><code>Application.Exit()</code> (WinForms)</td>
+            <td><code>Application.Current.Shutdown()</code> (WPF)</td>
+        </tr>
+    </table>
+
+    <h3>23.9 Icon Color Coding Strategy</h3>
+
+    <div class="note">
+        <strong>Color Psychology Applied:</strong>
+        <ul>
+            <li><strong>Green (New Fence):</strong> Positive action, creation, go</li>
+            <li><strong>Orange/Yellow (Open Storage):</strong> Information, neutral action, folder/file association</li>
+            <li><strong>Red (Exit):</strong> Destructive action, stop, caution</li>
+            <li><strong>Themed (Start on login):</strong> Follows system theme for settings-related actions</li>
+        </ul>
+        <p>Icons remain consistently colored in both dark and light modes for instant recognition.</p>
+    </div>
+
+    <h3>23.10 Benefits</h3>
+
+    <table>
+        <tr>
+            <th>Benefit</th>
+            <th>Impact</th>
+        </tr>
+        <tr>
+            <td>Visual Polish</td>
+            <td>Menu looks modern with Material Design icons</td>
+        </tr>
+        <tr>
+            <td>System Consistency</td>
+            <td>Matches Windows dark/light theme automatically</td>
+        </tr>
+        <tr>
+            <td>User Recognition</td>
+            <td>Icons make menu items instantly recognizable</td>
+        </tr>
+        <tr>
+            <td>Better UX</td>
+            <td>Color-coded actions guide user choices</td>
+        </tr>
+        <tr>
+            <td>WPF Integration</td>
+            <td>Consistent with rest of modern WPF UI</td>
+        </tr>
+        <tr>
+            <td>Maintainability</td>
+            <td>Easier to add new menu items with icons</td>
+        </tr>
+    </table>
+
+    <h3>23.11 Technical Improvements</h3>
+
+    <ul>
+        <li><strong>Thread Safety:</strong> H.NotifyIcon.Wpf handles WPF dispatcher correctly</li>
+        <li><strong>Memory Management:</strong> Proper disposal via Dispose() pattern</li>
+        <li><strong>Tooltip Enhancement:</strong> Changed from "NoFences" to "NoFences - Desktop Organization"</li>
+        <li><strong>Icon Loading:</strong> Uses pack URI for reliable resource loading</li>
+        <li><strong>Separators:</strong> Logical grouping of menu items</li>
+    </ul>
+
+    <h3>23.12 Files Modified</h3>
+
+    <table>
+        <tr>
+            <th>File</th>
+            <th>Changes</th>
+            <th>Lines</th>
+        </tr>
+        <tr>
+            <td class="file-path">NoFences.csproj</td>
+            <td>Added H.NotifyIcon.Wpf package reference (v2.1.4)</td>
+            <td>+3 lines</td>
+        </tr>
+        <tr>
+            <td class="file-path">TrayIconManager.cs</td>
+            <td>
+                <ul>
+                    <li>Complete rewrite from WinForms to WPF</li>
+                    <li>Added ThemeManager initialization</li>
+                    <li>Created CreateModernContextMenu() method</li>
+                    <li>Added Material Design icons to all menu items</li>
+                    <li>Changed from NotifyIcon to TaskbarIcon</li>
+                    <li>Changed from Application.Exit() to Application.Current.Shutdown()</li>
+                    <li>Enhanced XML documentation</li>
+                </ul>
+            </td>
+            <td>~80 lines total (complete rewrite)</td>
+        </tr>
+    </table>
+
+    <h3>23.13 Testing Checklist</h3>
+
+    <ul>
+        <li><strong>Tray Icon Visible:</strong> Icon appears in system tray after app starts</li>
+        <li><strong>Right-click Menu:</strong> Context menu appears on right-click</li>
+        <li><strong>Dark Mode:</strong> Menu dark when Windows is in dark mode</li>
+        <li><strong>Light Mode:</strong> Menu light when Windows is in light mode</li>
+        <li><strong>Icons Visible:</strong> All menu items show correct colored icons</li>
+        <li><strong>Start on Login:</strong> Toggle checkbox works, persists state</li>
+        <li><strong>New Fence:</strong> Creates new fence when clicked</li>
+        <li><strong>Open Storage:</strong> Opens fence folder in Explorer</li>
+        <li><strong>Exit:</strong> Closes application cleanly</li>
+        <li><strong>Hover Effect:</strong> Smooth highlight on menu item hover</li>
+        <li><strong>Tooltip:</strong> Shows "NoFences - Desktop Organization" on hover</li>
+    </ul>
+
+    <h3>23.14 Future Enhancements</h3>
+
+    <div class="note">
+        <strong>Possible future additions to tray icon:</strong>
+        <ul>
+            <li><strong>Balloon Notifications:</strong> Show WPF popups for events</li>
+            <li><strong>Recent Fences Submenu:</strong> Quick access to last opened fences</li>
+            <li><strong>Settings Menu Item:</strong> Direct access to app settings</li>
+            <li><strong>About Dialog:</strong> Show version and credits</li>
+            <li><strong>Animated Icon:</strong> Change icon on events (e.g., sync in progress)</li>
+            <li><strong>Custom Popup:</strong> Rich WPF popup instead of context menu on left-click</li>
+        </ul>
+    </div>
+
+    <h3>23.15 Removed Dependencies</h3>
+
+    <div class="solution">
+        <strong>Removed code patterns:</strong>
+        <ul>
+            <li>WinForms <code>NotifyIcon</code> class usage</li>
+            <li>WinForms <code>ContextMenu</code> class usage</li>
+            <li>WinForms <code>MenuItem</code> class usage</li>
+            <li><code>System.Windows.Forms.Application.Exit()</code> pattern</li>
+        </ul>
+        <strong>Note:</strong> System.Windows.Forms is still referenced by other parts of the application (e.g., FenceWindow), so the assembly reference remains.
+    </div>
+
+    <h3>23.16 Summary</h3>
+
+    <table>
+        <tr>
+            <th>Achievement</th>
+            <th>Details</th>
+        </tr>
+        <tr>
+            <td>Modern Tray Icon</td>
+            <td>Migrated from WinForms to WPF-based H.NotifyIcon.Wpf</td>
+        </tr>
+        <tr>
+            <td>Automatic Theming</td>
+            <td>Context menu syncs with Windows dark/light mode</td>
+        </tr>
+        <tr>
+            <td>Material Design Icons</td>
+            <td>All menu items have color-coded icons for recognition</td>
+        </tr>
+        <tr>
+            <td>Enhanced Tooltip</td>
+            <td>More descriptive tooltip text</td>
+        </tr>
+        <tr>
+            <td>Better UX</td>
+            <td>Modern look consistent with Edit Fence window</td>
+        </tr>
+        <tr>
+            <td>Code Quality</td>
+            <td>Complete rewrite with better structure and documentation</td>
+        </tr>
+    </table>
+
+    <hr>
+
+    <h2>24. Session 7 (Continued - 2025-01-07): Modern Fence Context Menus with Icons and Theming</h2>
+
+    <div class="note">
+        <strong>Session Date:</strong> 2025-01-07<br>
+        <strong>Focus:</strong> Modernize fence right-click context menus with WPF, theming, and Material Design icons<br>
+        <strong>Status:</strong> ✅ COMPLETED
+    </div>
+
+    <h3>24.1 Current Fence Context Menu Analysis</h3>
+
+    <h4>Before Modernization</h4>
+
+    <table>
+        <tr>
+            <th>Aspect</th>
+            <th>Implementation</th>
+        </tr>
+        <tr>
+            <td>Technology</td>
+            <td>WinForms ContextMenuStrip + ToolStripMenuItem</td>
+        </tr>
+        <tr>
+            <td>Menu Items</td>
+            <td>
+                <ul>
+                    <li>Locked (checkbox)</li>
+                    <li>Can Minify (checkbox)</li>
+                    <li>Theme (submenu)</li>
+                    <li>---</li>
+                    <li>Edit Fence...</li>
+                    <li>Delete Fence</li>
+                </ul>
+            </td>
+        </tr>
+        <tr>
+            <td>Styling</td>
+            <td>Plain text-only menu items, no icons</td>
+        </tr>
+        <tr>
+            <td>Theming</td>
+            <td>None - always light Windows default style</td>
+        </tr>
+        <tr>
+            <td>Right-click Handling</td>
+            <td>4 different locations with manual coordinate conversion</td>
+        </tr>
+    </table>
+
+    <h3>24.2 Migration Strategy</h3>
+
+    <div class="solution">
+        <strong>Challenge:</strong> FenceContainer is a WinForms UserControl hosting WPF content via ElementHost
+        <ul>
+            <li><strong>Problem:</strong> Mixed WinForms/WPF architecture makes theming difficult</li>
+            <li><strong>Solution:</strong> Migrate context menu to pure WPF with proper coordinate conversion</li>
+            <li><strong>Approach:</strong> Use WPF ContextMenu with MahApps styling, attach to WPF content</li>
+        </ul>
+    </div>
+
+    <h3>24.3 Implementation Changes</h3>
+
+    <h4>New Using Statements</h4>
+
+    <pre>using System.Windows.Controls;
+using System.Windows.Media;
+using MahApps.Metro.IconPacks;
+using ControlzEx.Theming;</pre>
+
+    <h4>Field Type Changes</h4>
+
+    <table>
+        <tr>
+            <th>Field</th>
+            <th>Before</th>
+            <th>After</th>
+        </tr>
+        <tr>
+            <td>contextMenu</td>
+            <td><code>ContextMenuStrip</code> (WinForms)</td>
+            <td><code>System.Windows.Controls.ContextMenu</code> (WPF)</td>
+        </tr>
+        <tr>
+            <td>Menu item fields</td>
+            <td><code>ToolStripMenuItem</code> (WinForms)</td>
+            <td><code>System.Windows.Controls.MenuItem</code> (WPF)</td>
+        </tr>
+    </table>
+
+    <h3>24.4 Menu Items with Material Design Icons</h3>
+
+    <table>
+        <tr>
+            <th>Menu Item</th>
+            <th>Icon</th>
+            <th>Color</th>
+            <th>Type</th>
+        </tr>
+        <tr>
+            <td><strong>Locked</strong></td>
+            <td>Lock icon (PackIconMaterialKind.Lock)</td>
+            <td>Themed (follows dark/light mode)</td>
+            <td>Checkbox</td>
+        </tr>
+        <tr>
+            <td><strong>Can Minify</strong></td>
+            <td>Window Minimize icon (PackIconMaterialKind.WindowMinimize)</td>
+            <td>Themed (follows dark/light mode)</td>
+            <td>Checkbox</td>
+        </tr>
+        <tr>
+            <td><strong>Theme</strong></td>
+            <td>Palette icon (PackIconMaterialKind.Palette)</td>
+            <td>Purple (RGB 156, 39, 176)</td>
+            <td>Submenu</td>
+        </tr>
+        <tr>
+            <td colspan="4" style="text-align:center"><em>--- Separator ---</em></td>
+        </tr>
+        <tr>
+            <td><strong>Edit Fence...</strong></td>
+            <td>Pencil icon (PackIconMaterialKind.Pencil)</td>
+            <td>Blue (RGB 33, 150, 243)</td>
+            <td>Action</td>
+        </tr>
+        <tr>
+            <td><strong>Delete Fence</strong></td>
+            <td>Delete icon (PackIconMaterialKind.Delete)</td>
+            <td>Red (RGB 220, 80, 80)</td>
+            <td>Destructive action</td>
+        </tr>
+    </table>
+
+    <h3>24.5 Theme Submenu</h3>
+
+    <div class="solution">
+        <strong>Theme submenu items:</strong>
+        <ul>
+            <li>Dark (checkable)</li>
+            <li>Light (checkable)</li>
+            <li>Dark Blue (checkable)</li>
+            <li>Dark Green (checkable)</li>
+        </ul>
+        <p>Only the currently selected theme shows a checkmark. All submenu items use MahApps styling with automatic dark/light mode support.</p>
+    </div>
+
+    <h3>24.6 Code Highlights</h3>
+
+    <div class="solution">
+        <strong>1. CreateContextMenu() - ThemeManager Initialization:</strong>
+        <pre>private void CreateContextMenu()
+{
+    // Apply MahApps.Metro theme sync with Windows dark/light mode
+    ThemeManager.Current.ThemeSyncMode = ThemeSyncMode.SyncWithAppMode;
+    ThemeManager.Current.SyncTheme();
+
+    contextMenu = new System.Windows.Controls.ContextMenu();
+
+    // Apply MahApps.Metro styling
+    contextMenu.Style = System.Windows.Application.Current
+        .TryFindResource("MahApps.Styles.ContextMenu") as System.Windows.Style;
+
+    // ... menu items
+}</pre>
+    </div>
+
+    <div class="solution">
+        <strong>2. Checkbox Menu Item with Icon (Locked):</strong>
+        <pre>lockedMenuItem = new System.Windows.Controls.MenuItem
+{
+    Header = "Locked",
+    IsCheckable = true,
+    IsChecked = fenceInfo.Locked,
+    Icon = new PackIconMaterial
+    {
+        Kind = PackIconMaterialKind.Lock,
+        Width = 16,
+        Height = 16
+    }
+};</pre>
+    </div>
+
+    <div class="solution">
+        <strong>3. Action Menu Item with Colored Icon (Edit):</strong>
+        <pre>editMenuItem = new System.Windows.Controls.MenuItem
+{
+    Header = "Edit Fence...",
+    Icon = new PackIconMaterial
+    {
+        Kind = PackIconMaterialKind.Pencil,
+        Width = 16,
+        Height = 16,
+        Foreground = new SolidColorBrush(Color.FromRgb(33, 150, 243)) // Blue
+    }
+};</pre>
+    </div>
+
+    <div class="solution">
+        <strong>4. Separator:</strong>
+        <pre>contextMenu.Items.Add(new System.Windows.Controls.Separator());</pre>
+    </div>
+
+    <h3>24.7 Right-Click Handler Updates</h3>
+
+    <div class="note">
+        <strong>Challenge:</strong> The fence has 4 different places where right-click shows the context menu:
+        <ol>
+            <li>WPF content area (wpfContent.MouseRightButtonDown)</li>
+            <li>After changing theme (newContent.MouseRightButtonDown)</li>
+            <li>After recreating WPF content (newContent.MouseRightButtonDown)</li>
+            <li>Title panel right-click (TitlePanel_MouseClick - WinForms)</li>
+        </ol>
+        <strong>Solution:</strong> Updated all 4 locations to properly show WPF context menu
+    </div>
+
+    <h4>WPF Content Right-Click (Locations 1, 2, 3)</h4>
+
+    <div class="solution">
+        <strong>Before (WinForms approach):</strong>
+        <pre>wpfContent.MouseRightButtonDown += (s, e) =>
+{
+    var wpfPoint = e.GetPosition(wpfContent);
+    var screenPoint = wpfContent.PointToScreen(new System.Windows.Point(wpfPoint.X, wpfPoint.Y));
+    contextMenu?.Show(new Point((int)screenPoint.X, (int)screenPoint.Y));
+    e.Handled = true;
+};</pre>
+    </div>
+
+    <div class="solution">
+        <strong>After (WPF approach):</strong>
+        <pre>wpfContent.MouseRightButtonDown += (s, e) =>
+{
+    if (contextMenu != null)
+    {
+        contextMenu.PlacementTarget = wpfContent;
+        contextMenu.Placement = System.Windows.Controls.Primitives.PlacementMode.MousePoint;
+        contextMenu.IsOpen = true;
+    }
+    e.Handled = true;
+};</pre>
+    </div>
+
+    <h4>WinForms Title Panel Right-Click (Location 4)</h4>
+
+    <div class="solution">
+        <strong>Before (WinForms approach):</strong>
+        <pre>private void TitlePanel_MouseClick(object sender, MouseEventArgs e)
+{
+    if (e.Button == MouseButtons.Right)
+    {
+        contextMenu.Show(titlePanel, e.Location);
+    }
+}</pre>
+    </div>
+
+    <div class="solution">
+        <strong>After (WPF context menu with coordinate conversion):</strong>
+        <pre>private void TitlePanel_MouseClick(object sender, MouseEventArgs e)
+{
+    if (e.Button == MouseButtons.Right && contextMenu != null)
+    {
+        // Convert WinForms coordinates to screen coordinates
+        var screenPoint = titlePanel.PointToScreen(e.Location);
+
+        // Show WPF context menu at the converted position
+        contextMenu.PlacementRectangle = new System.Windows.Rect(
+            screenPoint.X, screenPoint.Y, 0, 0);
+        contextMenu.Placement = System.Windows.Controls.Primitives.PlacementMode.AbsolutePoint;
+        contextMenu.IsOpen = true;
+    }
+}</pre>
+    </div>
+
+    <h3>24.8 Theme Submenu Changes</h3>
+
+    <div class="solution">
+        <strong>Key Changes:</strong>
+        <ul>
+            <li><code>themeMenuItem.DropDownItems</code> → <code>themeMenuItem.Items</code></li>
+            <li><code>new ToolStripMenuItem()</code> → <code>new System.Windows.Controls.MenuItem()</code></li>
+            <li><code>Checked</code> property → <code>IsChecked</code> property</li>
+            <li><code>IsCheckable = true</code> added for checkbox behavior</li>
+            <li>Proper checkmark clearing using <code>foreach (MenuItem item in themeMenuItem.Items)</code></li>
+        </ul>
+    </div>
+
+    <h3>24.9 Visual Design</h3>
+
+    <h4>Dark Mode Menu</h4>
+
+    <div class="solution">
+        <ul>
+            <li><strong>Background:</strong> Dark gray (#2D2D30)</li>
+            <li><strong>Text:</strong> White (#FFFFFF)</li>
+            <li><strong>Hover:</strong> Lighter gray (#3E3E42)</li>
+            <li><strong>Icons:</strong> Checkboxes themed, actions colored (purple, blue, red)</li>
+            <li><strong>Checkmark:</strong> White checkmark when checked</li>
+            <li><strong>Separator:</strong> Subtle dark line</li>
+        </ul>
+    </div>
+
+    <h4>Light Mode Menu</h4>
+
+    <div class="solution">
+        <ul>
+            <li><strong>Background:</strong> White (#FFFFFF)</li>
+            <li><strong>Text:</strong> Black (#000000)</li>
+            <li><strong>Hover:</strong> Light gray (#F0F0F0)</li>
+            <li><strong>Icons:</strong> Checkboxes themed, actions colored (purple, blue, red)</li>
+            <li><strong>Checkmark:</strong> Black checkmark when checked</li>
+            <li><strong>Separator:</strong> Subtle gray line</li>
+        </ul>
+    </div>
+
+    <h3>24.10 Icon Color Coding Strategy</h3>
+
+    <table>
+        <tr>
+            <th>Category</th>
+            <th>Color</th>
+            <th>Icons</th>
+            <th>Meaning</th>
+        </tr>
+        <tr>
+            <td>Settings/Toggles</td>
+            <td>Themed (white/black)</td>
+            <td>Locked, Can Minify</td>
+            <td>Follows system theme for neutrality</td>
+        </tr>
+        <tr>
+            <td>Appearance</td>
+            <td>Purple (RGB 156, 39, 176)</td>
+            <td>Theme (Palette)</td>
+            <td>Visual customization</td>
+        </tr>
+        <tr>
+            <td>Editing</td>
+            <td>Blue (RGB 33, 150, 243)</td>
+            <td>Edit (Pencil)</td>
+            <td>Modification, safe action</td>
+        </tr>
+        <tr>
+            <td>Destructive</td>
+            <td>Red (RGB 220, 80, 80)</td>
+            <td>Delete (Delete)</td>
+            <td>Warning, caution required</td>
+        </tr>
+    </table>
+
+    <h3>24.11 Technical Challenges Solved</h3>
+
+    <table>
+        <tr>
+            <th>Challenge</th>
+            <th>Solution</th>
+        </tr>
+        <tr>
+            <td>WinForms/WPF hybrid architecture</td>
+            <td>Used WPF ContextMenu with proper coordinate conversion from WinForms controls</td>
+        </tr>
+        <tr>
+            <td>Multiple right-click locations</td>
+            <td>Updated all 4 locations (3 WPF, 1 WinForms) consistently</td>
+        </tr>
+        <tr>
+            <td>Title panel (WinForms) to WPF menu</td>
+            <td>Screen coordinate conversion with PlacementRectangle and AbsolutePoint</td>
+        </tr>
+        <tr>
+            <td>Theme submenu checkbox state</td>
+            <td>Proper IsCheckable + IsChecked with foreach clearing</td>
+        </tr>
+        <tr>
+            <td>MahApps styling application</td>
+            <td>TryFindResource("MahApps.Styles.ContextMenu") with ThemeManager sync</td>
+        </tr>
+    </table>
+
+    <h3>24.12 Code Locations Updated</h3>
+
+    <table>
+        <tr>
+            <th>Location</th>
+            <th>Method/Handler</th>
+            <th>Change</th>
+        </tr>
+        <tr>
+            <td>Line 69-74</td>
+            <td>Field declarations</td>
+            <td>Changed from WinForms to WPF types (6 fields)</td>
+        </tr>
+        <tr>
+            <td>Line 789-896</td>
+            <td>CreateContextMenu()</td>
+            <td>Complete rewrite with WPF, icons, theming (~107 lines)</td>
+        </tr>
+        <tr>
+            <td>Line 898-964</td>
+            <td>CreateThemeSubmenu()</td>
+            <td>Updated to use WPF MenuItem with IsCheckable</td>
+        </tr>
+        <tr>
+            <td>Line 688-699</td>
+            <td>wpfContent.MouseRightButtonDown</td>
+            <td>Changed to WPF context menu IsOpen approach</td>
+        </tr>
+        <tr>
+            <td>Line 932-940</td>
+            <td>newContent.MouseRightButtonDown (theme change)</td>
+            <td>Changed to WPF context menu IsOpen approach</td>
+        </tr>
+        <tr>
+            <td>Line 1072-1081</td>
+            <td>newContent.MouseRightButtonDown (content recreate)</td>
+            <td>Changed to WPF context menu IsOpen approach</td>
+        </tr>
+        <tr>
+            <td>Line 1219-1235</td>
+            <td>TitlePanel_MouseClick()</td>
+            <td>Coordinate conversion + WPF context menu with AbsolutePoint</td>
+        </tr>
+    </table>
+
+    <h3>24.13 Benefits</h3>
+
+    <table>
+        <tr>
+            <th>Benefit</th>
+            <th>Impact</th>
+        </tr>
+        <tr>
+            <td>Modern Look</td>
+            <td>Material Design icons make menu instantly recognizable</td>
+        </tr>
+        <tr>
+            <td>System Consistency</td>
+            <td>Matches Windows dark/light theme automatically</td>
+        </tr>
+        <tr>
+            <td>Visual Hierarchy</td>
+            <td>Color coding guides user actions (blue = safe, red = destructive)</td>
+        </tr>
+        <tr>
+            <td>Better UX</td>
+            <td>Icons provide visual cues without reading text</td>
+        </tr>
+        <tr>
+            <td>Code Quality</td>
+            <td>Consistent WPF approach across all 4 right-click locations</td>
+        </tr>
+        <tr>
+            <td>Maintainability</td>
+            <td>Easier to add new menu items with icons and theming</td>
+        </tr>
+    </table>
+
+    <h3>24.14 Files Modified</h3>
+
+    <table>
+        <tr>
+            <th>File</th>
+            <th>Changes</th>
+            <th>Lines Changed</th>
+        </tr>
+        <tr>
+            <td class="file-path">FenceContainer.cs</td>
+            <td>
+                <ul>
+                    <li>Added 4 new using statements (WPF, MahApps)</li>
+                    <li>Changed 6 field declarations (WinForms → WPF)</li>
+                    <li>Complete rewrite of CreateContextMenu() (~107 lines)</li>
+                    <li>Updated CreateThemeSubmenu() (~66 lines)</li>
+                    <li>Updated 4 right-click handler locations</li>
+                    <li>Added Material Design icons to all menu items</li>
+                    <li>Added MahApps ThemeManager initialization</li>
+                </ul>
+            </td>
+            <td>~200 lines modified</td>
+        </tr>
+    </table>
+
+    <h3>24.15 Testing Checklist</h3>
+
+    <ul>
+        <li><strong>Right-click WPF content area:</strong> Context menu appears at mouse position</li>
+        <li><strong>Right-click title bar:</strong> Context menu appears at mouse position</li>
+        <li><strong>Dark mode:</strong> Menu background dark, text white, checkmarks white</li>
+        <li><strong>Light mode:</strong> Menu background white, text black, checkmarks black</li>
+        <li><strong>Icon colors:</strong> Purple (Theme), Blue (Edit), Red (Delete) in both modes</li>
+        <li><strong>Locked checkbox:</strong> Toggle works, persists state, icon present</li>
+        <li><strong>Can Minify checkbox:</strong> Toggle works, expands fence if needed, icon present</li>
+        <li><strong>Theme submenu:</strong> Shows all themes, correct theme checked, icon present</li>
+        <li><strong>Theme selection:</strong> Changes fence theme, updates checkmark, recreates content</li>
+        <li><strong>Edit Fence:</strong> Opens Edit Fence dialog with dark/light theme</li>
+        <li><strong>Delete Fence:</strong> Shows confirmation dialog, deletes fence on Yes</li>
+        <li><strong>Hover effects:</strong> Smooth MahApps hover highlighting</li>
+        <li><strong>Separator:</strong> Visible between menu sections</li>
+    </ul>
+
+    <h3>24.16 Architecture Notes</h3>
+
+    <div class="note">
+        <strong>Hybrid WinForms/WPF Pattern:</strong>
+        <p>FenceContainer demonstrates a successful pattern for modernizing legacy WinForms controls:</p>
+        <ol>
+            <li>Keep WinForms UserControl container (no need to rewrite everything)</li>
+            <li>Host WPF content via ElementHost for modern UI</li>
+            <li>Use WPF controls (ContextMenu) for theming support</li>
+            <li>Convert coordinates between WinForms and WPF as needed</li>
+            <li>Apply MahApps theming to WPF controls only</li>
+        </ol>
+        <p>This approach allows gradual modernization without a complete rewrite.</p>
+    </div>
+
+    <h3>24.17 Consistency Across Application</h3>
+
+    <div class="solution">
+        <strong>Context Menu Pattern Now Established:</strong>
+        <table>
+            <tr>
+                <th>Location</th>
+                <th>Technology</th>
+                <th>Theming</th>
+                <th>Icons</th>
+            </tr>
+            <tr>
+                <td>Tray Icon Menu</td>
+                <td>WPF ContextMenu</td>
+                <td>✅ MahApps Auto</td>
+                <td>✅ Material Design</td>
+            </tr>
+            <tr>
+                <td>Fence Right-Click Menu</td>
+                <td>WPF ContextMenu</td>
+                <td>✅ MahApps Auto</td>
+                <td>✅ Material Design</td>
+            </tr>
+            <tr>
+                <td>Edit Fence Window</td>
+                <td>WPF MetroWindow</td>
+                <td>✅ MahApps Auto</td>
+                <td>❌ No icons yet</td>
+            </tr>
+        </table>
+        <p>All context menus now share the same modern, themed appearance!</p>
+    </div>
+
+    <h3>24.18 Summary</h3>
+
+    <table>
+        <tr>
+            <th>Achievement</th>
+            <th>Details</th>
+        </tr>
+        <tr>
+            <td>Modern Fence Context Menus</td>
+            <td>Migrated from WinForms to WPF with full theming support</td>
+        </tr>
+        <tr>
+            <td>Material Design Icons</td>
+            <td>All 6 menu items + submenu have color-coded icons</td>
+        </tr>
+        <tr>
+            <td>Automatic Theming</td>
+            <td>Syncs with Windows dark/light mode like other UI elements</td>
+        </tr>
+        <tr>
+            <td>Technical Excellence</td>
+            <td>Solved hybrid WinForms/WPF coordinate conversion challenges</td>
+        </tr>
+        <tr>
+            <td>Code Consistency</td>
+            <td>All 4 right-click locations use same WPF approach</td>
+        </tr>
+        <tr>
+            <td>User Experience</td>
+            <td>Visual hierarchy guides users with color coding</td>
+        </tr>
+    </table>
+
+    <hr>
+
+    <p><em>Generated: 2025-01-07 (Updated - Session 8: Sprint 2 Behavior Extraction + Sprint 3 Panel Extraction)</em></p>
+</body>
+</html>

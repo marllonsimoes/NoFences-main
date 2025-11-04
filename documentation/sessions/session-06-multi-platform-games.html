@@ -1,0 +1,1313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Session 6: Multi-Platform Game Stores</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            color: #e0e0e0;
+            background-color: #0a0a0a;
+            background-image:
+                linear-gradient(rgba(0, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+        }
+        h1 {
+            color: #00ffff;
+            text-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff, 0 0 30px #00ffff;
+            border-bottom: 3px solid #00ffff;
+            padding-bottom: 10px;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+        h2 {
+            color: #ff00ff;
+            text-shadow: 0 0 10px #ff00ff, 0 0 20px #ff00ff;
+            margin-top: 30px;
+            border-bottom: 2px solid #ff00ff;
+            padding-bottom: 5px;
+        }
+        h3 {
+            color: #ffff00;
+            text-shadow: 0 0 5px #ffff00;
+            margin-top: 20px;
+        }
+        code {
+            background-color: #1a1a1a;
+            border: 1px solid #00ff00;
+            color: #00ff00;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.9em;
+            box-shadow: 0 0 5px rgba(0, 255, 0, 0.3);
+        }
+        pre {
+            background-color: #0d0d0d;
+            border: 1px solid #00ffff;
+            border-left: 4px solid #00ffff;
+            padding: 15px;
+            overflow-x: auto;
+            border-radius: 4px;
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+            color: #00ff00;
+        }
+        .issue {
+            background-color: rgba(255, 193, 7, 0.1);
+            border-left: 4px solid #ffc107;
+            padding: 10px;
+            margin: 10px 0;
+            box-shadow: 0 0 10px rgba(255, 193, 7, 0.3);
+        }
+        .solution {
+            background-color: rgba(0, 255, 0, 0.1);
+            border-left: 4px solid #00ff00;
+            padding: 10px;
+            margin: 10px 0;
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+        }
+        .note {
+            background-color: rgba(0, 255, 255, 0.1);
+            border-left: 4px solid #00ffff;
+            padding: 10px;
+            margin: 10px 0;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+        }
+        .failed {
+            background-color: rgba(255, 0, 255, 0.1);
+            border-left: 4px solid #ff00ff;
+            padding: 10px;
+            margin: 10px 0;
+            box-shadow: 0 0 10px rgba(255, 0, 255, 0.3);
+        }
+        ul {
+            padding-left: 25px;
+        }
+        li {
+            margin: 8px 0;
+        }
+        li::marker {
+            color: #00ffff;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            border: 1px solid #00ffff;
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.2);
+        }
+        th, td {
+            border: 1px solid #333;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #1a1a1a;
+            font-weight: bold;
+            color: #00ffff;
+            text-shadow: 0 0 5px #00ffff;
+        }
+        tr:hover {
+            background-color: rgba(0, 255, 255, 0.05);
+        }
+        .file-path {
+            color: #ff00ff;
+            font-weight: 500;
+            text-shadow: 0 0 5px #ff00ff;
+        }
+        strong {
+            color: #ffff00;
+        }
+        a {
+            color: #00ffff;
+            text-decoration: none;
+            text-shadow: 0 0 5px #00ffff;
+        }
+        a:hover {
+            text-shadow: 0 0 10px #00ffff;
+        }
+        hr {
+            border: none;
+            border-top: 2px solid #00ffff;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+        }
+        @keyframes glow {
+            from {
+                text-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff, 0 0 30px #00ffff;
+            }
+            to {
+                text-shadow: 0 0 20px #00ffff, 0 0 30px #00ffff, 0 0 40px #00ffff, 0 0 50px #00ffff;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>NoFences Development Session - Change Summary</h1>
+    <p><strong>Date:</strong> 2025-01-04</p>
+    <p><strong>Branch:</strong> gemini/fencewindow-refactor</p>
+    <p><strong>Architecture:</strong> Canvas-based with WPF content rendering</p>
+    <p><strong>Total Changes:</strong> 12,617 lines added, 104 lines removed (49 files)</p>
+    <p><strong>Sessions:</strong> 2 (Architecture creation + Bug fixes)</p>
+
+    <div class="note">
+        <strong>Overview:</strong> This document covers changes across two development sessions:
+        <ul>
+    <h2>19. Session 6: Game Store Abstraction & Multi-Platform Support</h2>
+
+    <div class="note">
+        <strong>Session Date:</strong> 2025-01-06 (Continuation)<br>
+        <strong>Focus:</strong> Abstract game store detection, add Epic Games Store and GOG Galaxy support, fix Steam game icons<br>
+        <strong>Status:</strong> ✅ COMPLETED
+    </div>
+
+    <h3>19.1 User Requests</h3>
+
+    <ol>
+        <li><strong>Steam Game Icons Missing:</strong> "The games are not showing their icons. Is there any way to get the current game icon?"</li>
+        <li><strong>Epic Games Store Not Listing:</strong> "Epic game store is not listing correctly - maybe because of the shortcut or the installation path"</li>
+        <li><strong>Multi-Platform Support:</strong> "Can we make the SteamGameDetector more abstract to handle games from other stores too? Like GOG, Epic, Amazon Games, UbiConnect and EA app?"</li>
+    </ol>
+
+    <h3>19.2 Solution Architecture</h3>
+
+    <h4>Created Abstraction Layer</h4>
+
+    <table>
+        <tr>
+            <th>Component</th>
+            <th>Purpose</th>
+            <th>Location</th>
+        </tr>
+        <tr>
+            <td><code>IGameStoreDetector</code></td>
+            <td>Interface for all game store detectors</td>
+            <td>NoFencesCore/Util/IGameStoreDetector.cs</td>
+        </tr>
+        <tr>
+            <td><code>GameInfo</code></td>
+            <td>Universal game data model (platform-agnostic)</td>
+            <td>NoFencesCore/Util/IGameStoreDetector.cs</td>
+        </tr>
+        <tr>
+            <td><code>SteamStoreDetector</code></td>
+            <td>Wrapper for SteamGameDetector implementing interface</td>
+            <td>NoFencesCore/Util/SteamStoreDetector.cs</td>
+        </tr>
+        <tr>
+            <td><code>EpicGamesStoreDetector</code></td>
+            <td>Epic Games Store game detection</td>
+            <td>NoFencesCore/Util/EpicGamesStoreDetector.cs</td>
+        </tr>
+        <tr>
+            <td><code>GOGGalaxyDetector</code></td>
+            <td>GOG Galaxy game detection</td>
+            <td>NoFencesCore/Util/GOGGalaxyDetector.cs</td>
+        </tr>
+    </table>
+
+    <h3>19.3 Steam Game Icon Enhancement</h3>
+
+    <div class="solution">
+        <strong>Problem:</strong> Steam games showed default Steam icon instead of game-specific icons<br>
+        <strong>Solution:</strong> Multi-tier icon extraction strategy
+    </div>
+
+    <h4>Icon Extraction Strategy</h4>
+
+    <pre>
+1. Find game's main executable in install directory
+   └─ Filter out launchers (unins, crash, setup, etc.)
+   └─ Match exe name to game name
+   └─ Use first non-launcher exe as fallback
+
+2. Check Steam's icon cache
+   └─ Location: {SteamPath}/appcache/librarycache/
+   └─ Formats: {appid}_icon.jpg, {appid}_logo.png, {appid}.ico
+
+3. Fall back to Steam.exe icon
+
+4. Populate icon cache in handler
+   └─ FilesFenceHandlerWpf.iconPathCache[path] = software.IconPath
+
+5. Extract icon via FenceEntry.ExtractIcon()
+   └─ Uses IconPath when available
+   └─ Falls back to default document icon on error
+    </pre>
+
+    <h4>Changes Made</h4>
+
+    <table>
+        <tr>
+            <th>File</th>
+            <th>Modification</th>
+            <th>Lines</th>
+        </tr>
+        <tr>
+            <td>SteamGameDetector.cs</td>
+            <td>
+                <ul>
+                    <li>Added ExecutablePath and IconPath to SteamGameInfo</li>
+                    <li>Created FindGameExecutable() method</li>
+                    <li>Created GetSteamIconFromCache() method</li>
+                    <li>Updated ParseAppManifest() to populate icon data</li>
+                    <li>Made GetSteamInstallPath() public</li>
+                </ul>
+            </td>
+            <td>331-419</td>
+        </tr>
+        <tr>
+            <td>InstalledAppsUtil.cs</td>
+            <td>
+                <ul>
+                    <li>Updated GetSteamGames() to pass icon paths to shortcuts</li>
+                    <li>Set IconPath on InstalledSoftware objects</li>
+                </ul>
+            </td>
+            <td>254-276</td>
+        </tr>
+        <tr>
+            <td>FenceEntry.cs</td>
+            <td>
+                <ul>
+                    <li>Added IconPath property</li>
+                    <li>Updated constructor and factory to accept iconPath</li>
+                    <li>Enhanced ExtractIcon() to use IconPath</li>
+                </ul>
+            </td>
+            <td>11-84</td>
+        </tr>
+        <tr>
+            <td>FilesFenceHandlerWpf.cs</td>
+            <td>
+                <ul>
+                    <li>Added iconPathCache Dictionary</li>
+                    <li>Updated Refresh() to use cache</li>
+                    <li>Populated cache in GetFilesWithSmartFilter()</li>
+                </ul>
+            </td>
+            <td>33, 183-211, 283-287</td>
+        </tr>
+    </table>
+
+    <h3>19.4 Epic Games Store Detection</h3>
+
+    <div class="solution">
+        <strong>Problem:</strong> Epic games not listing correctly<br>
+        <strong>Solution:</strong> JSON manifest parsing from ProgramData
+    </div>
+
+    <h4>Detection Method</h4>
+
+    <pre>
+Location: C:\ProgramData\Epic\EpicGamesLauncher\Data\Manifests\
+File Format: *.item (JSON)
+Key Fields:
+    - AppName (game ID)
+    - DisplayName (display name)
+    - InstallLocation (install directory)
+    - LaunchExecutable (relative path to .exe)
+    - InstallSize (size in bytes)
+
+Launch Protocol: com.epicgames.launcher://apps/{appname}?action=launch&silent=true
+    </pre>
+
+    <h4>Executable Discovery</h4>
+
+    <pre>
+Search Paths (in order):
+1. {InstallLocation}/{LaunchExecutable}
+2. {InstallLocation}/Binaries/Win64/*.exe
+3. {InstallLocation}/Binaries/Win32/*.exe
+4. {InstallLocation}/Game/Binaries/Win64/*.exe
+5. {InstallLocation}/Bin/*.exe
+6. {InstallLocation}/*.exe
+
+Filters out: unins, crash, report, launcher, setup, install, updater, easyanticheat, battleye
+    </pre>
+
+    <h4>Registry Locations</h4>
+
+    <ul>
+        <li><code>HKLM\SOFTWARE\WOW6432Node\Epic Games\EpicGamesLauncher</code></li>
+        <li><code>HKCU\SOFTWARE\Epic Games\EOS</code></li>
+    </ul>
+
+    <h3>19.5 GOG Galaxy Detection</h3>
+
+    <div class="solution">
+        <strong>Problem:</strong> Need support for DRM-free GOG games<br>
+        <strong>Solution:</strong> Registry-based detection
+    </div>
+
+    <h4>Detection Method</h4>
+
+    <pre>
+Registry Location: HKLM\SOFTWARE\WOW6432Node\GOG.com\Games\{GameID}
+Key Fields:
+    - gameName (display name)
+    - path (install directory)
+    - exe (executable filename, can be relative or absolute)
+    - workingDir (working directory for exe)
+
+Launch Protocol: goggalaxy://openGameView/{gameid}
+    </pre>
+
+    <h4>Executable Resolution</h4>
+
+    <pre>
+1. If exe is absolute path → use directly
+2. If exe is relative:
+   - Try {workingDir}/{exe}
+   - Try {path}/{exe}
+3. If not found, search install directory
+4. Filter out: unins, crash, launcher, setup, galaxy, support
+    </pre>
+
+    <h3>19.6 Interface Implementation</h3>
+
+    <h4>IGameStoreDetector Contract</h4>
+
+    <pre><code>public interface IGameStoreDetector
+{
+    string PlatformName { get; }
+    List&lt;GameInfo&gt; GetInstalledGames();
+    bool IsInstalled();
+    string GetInstallPath();
+    string CreateGameShortcut(string gameId, string gameName,
+                              string outputDirectory, string iconPath = null);
+}</code></pre>
+
+    <h4>GameInfo Universal Model</h4>
+
+    <pre><code>public class GameInfo
+{
+    public string GameId { get; set; }           // Platform-specific ID
+    public string Name { get; set; }             // Display name
+    public string InstallDir { get; set; }       // Installation directory
+    public string ExecutablePath { get; set; }   // Main executable or shortcut
+    public string IconPath { get; set; }         // Icon for extraction
+    public long SizeOnDisk { get; set; }         // Size in bytes
+    public DateTime? LastUpdated { get; set; }   // Last update time
+    public string ShortcutPath { get; set; }     // Created shortcut
+    public string Platform { get; set; }         // Platform name
+    public Dictionary&lt;string, string&gt; Metadata { get; set; }  // Platform-specific
+}</code></pre>
+
+    <h3>19.7 Integration Changes</h3>
+
+    <h4>InstalledAppsUtil Refactoring</h4>
+
+    <table>
+        <tr>
+            <th>Method</th>
+            <th>Purpose</th>
+        </tr>
+        <tr>
+            <td><code>GetAllGames()</code></td>
+            <td>
+                Iterates all available game store detectors<br>
+                Checks IsInstalled() before scanning<br>
+                Aggregates results from all platforms
+            </td>
+        </tr>
+        <tr>
+            <td><code>GetGamesFromStore(detector)</code></td>
+            <td>
+                Converts GameInfo to InstalledSoftware<br>
+                Sets Publisher based on platform<br>
+                Populates IconPath for icon extraction
+            </td>
+        </tr>
+        <tr>
+            <td><code>GetPublisherForPlatform(name)</code></td>
+            <td>
+                Maps platform names to publishers:<br>
+                Steam → Valve Corporation<br>
+                Epic Games Store → Epic Games<br>
+                GOG Galaxy → GOG.com
+            </td>
+        </tr>
+        <tr>
+            <td><code>GetSteamGames()</code></td>
+            <td>
+                [Obsolete] Legacy method<br>
+                Now calls GetGamesFromStore(new SteamStoreDetector())
+            </td>
+        </tr>
+    </table>
+
+    <h4>Detector Registration</h4>
+
+    <pre><code>var detectors = new List&lt;IGameStoreDetector&gt;
+{
+    new SteamStoreDetector(),
+    new EpicGamesStoreDetector(),
+    new GOGGalaxyDetector()
+    // Future: UbisoftConnectDetector, EAAppDetector, AmazonGamesDetector
+};</code></pre>
+
+    <h3>19.8 Launch Protocol Support</h3>
+
+    <table>
+        <tr>
+            <th>Platform</th>
+            <th>Protocol Format</th>
+            <th>Example</th>
+        </tr>
+        <tr>
+            <td>Steam</td>
+            <td><code>steam://rungameid/{appid}</code></td>
+            <td><code>steam://rungameid/440</code> (TF2)</td>
+        </tr>
+        <tr>
+            <td>Epic Games Store</td>
+            <td><code>com.epicgames.launcher://apps/{appname}?action=launch&silent=true</code></td>
+            <td><code>com.epicgames.launcher://apps/Fortnite?action=launch&silent=true</code></td>
+        </tr>
+        <tr>
+            <td>GOG Galaxy</td>
+            <td><code>goggalaxy://openGameView/{gameid}</code></td>
+            <td><code>goggalaxy://openGameView/1207658924</code></td>
+        </tr>
+    </table>
+
+    <h3>19.9 Shortcut Creation</h3>
+
+    <h4>URL Shortcut Format</h4>
+
+    <pre><code>[InternetShortcut]
+URL=steam://rungameid/440
+IconIndex=0
+IconFile=C:\SteamLibrary\steamapps\common\Team Fortress 2\hl2.exe</code></pre>
+
+    <h4>Shortcut Locations</h4>
+
+    <ul>
+        <li><strong>Steam:</strong> <code>%APPDATA%\NoFences\SteamShortcuts\</code></li>
+        <li><strong>Epic:</strong> <code>%APPDATA%\NoFences\EpicShortcuts\</code></li>
+        <li><strong>GOG:</strong> <code>%APPDATA%\NoFences\GOGShortcuts\</code></li>
+    </ul>
+
+    <h3>19.10 Documentation Created</h3>
+
+    <div class="note">
+        Created comprehensive documentation: <strong>GAME_STORE_ABSTRACTION.md</strong> (500+ lines)
+    </div>
+
+    <h4>Documentation Sections</h4>
+
+    <ul>
+        <li>Architecture overview and interface design</li>
+        <li>Platform-specific detection methods for Steam, Epic, GOG</li>
+        <li>Icon extraction flow and caching strategy</li>
+        <li>How to add new game stores (Ubisoft, EA, Amazon)</li>
+        <li>Launch protocol reference for all major platforms</li>
+        <li>Common detection patterns (registry, file, database)</li>
+        <li>Troubleshooting guide (games not appearing, icons missing, shortcuts failing)</li>
+        <li>Performance considerations (lazy loading, caching)</li>
+        <li>Security considerations (path validation, registry safety)</li>
+        <li>Future enhancements (Battle.net, Rockstar, Xbox Game Pass)</li>
+        <li>Complete API reference with examples</li>
+        <li>Testing procedures and common test cases</li>
+    </ul>
+
+    <h3>19.11 Icon Extraction Flow</h3>
+
+    <pre>
+┌─────────────────────────────────────────────────┐
+│ 1. Game Detected by Platform Detector          │
+│    - SteamStoreDetector / EpicGamesStoreDetector│
+└─────────────────┬───────────────────────────────┘
+                  ↓
+┌─────────────────────────────────────────────────┐
+│ 2. Find Game Executable or Manifest Data       │
+│    - Search install directory for .exe          │
+│    - Filter out launchers/installers            │
+│    - Match exe name to game name                │
+└─────────────────┬───────────────────────────────┘
+                  ↓
+┌─────────────────────────────────────────────────┐
+│ 3. Store in GameInfo.IconPath                  │
+│    - Game exe path OR                           │
+│    - Platform icon cache OR                     │
+│    - Platform client exe (fallback)             │
+└─────────────────┬───────────────────────────────┘
+                  ↓
+┌─────────────────────────────────────────────────┐
+│ 4. Convert to InstalledSoftware.IconPath       │
+│    - GetGamesFromStore(detector)                │
+│    - Maps GameInfo → InstalledSoftware          │
+└─────────────────┬───────────────────────────────┘
+                  ↓
+┌─────────────────────────────────────────────────┐
+│ 5. Cache in FilesFenceHandlerWpf               │
+│    - iconPathCache[path] = software.IconPath    │
+│    - Populated in GetFilesWithSmartFilter()     │
+└─────────────────┬───────────────────────────────┘
+                  ↓
+┌─────────────────────────────────────────────────┐
+│ 6. Pass to FenceEntry.FromPath(path, iconPath) │
+│    - Refresh() uses cache to create entries     │
+└─────────────────┬───────────────────────────────┘
+                  ↓
+┌─────────────────────────────────────────────────┐
+│ 7. FenceEntry.ExtractIcon() Uses IconPath      │
+│    - Checks IconPath first (custom icon)        │
+│    - Falls back to Path (standard file icon)    │
+│    - Falls back to default document icon        │
+└─────────────────┬───────────────────────────────┘
+                  ↓
+┌─────────────────────────────────────────────────┐
+│ 8. Icon Displayed in Fence                     │
+│    - ExtractIcon() in handler creates WPF image │
+│    - FileItemViewModel.Icon set                 │
+└─────────────────────────────────────────────────┘
+    </pre>
+
+    <h3>19.12 Testing Recommendations</h3>
+
+    <div class="note">
+        <strong>Test Scenarios:</strong>
+    </div>
+
+    <table>
+        <tr>
+            <th>Scenario</th>
+            <th>What to Test</th>
+        </tr>
+        <tr>
+            <td>Empty Library</td>
+            <td>Platform installed but no games → should show empty fence</td>
+        </tr>
+        <tr>
+            <td>Multiple Libraries</td>
+            <td>Games on C:, D:, E: drives → all should be detected</td>
+        </tr>
+        <tr>
+            <td>Uninstalled Games</td>
+            <td>Manifests exist but games removed → should skip gracefully</td>
+        </tr>
+        <tr>
+            <td>Missing Executables</td>
+            <td>Game installed but .exe deleted → should fall back to platform icon</td>
+        </tr>
+        <tr>
+            <td>Icon Extraction</td>
+            <td>All games should show icons, never blank</td>
+        </tr>
+        <tr>
+            <td>Shortcut Launching</td>
+            <td>Double-click shortcut → game should launch via platform</td>
+        </tr>
+        <tr>
+            <td>Platform Not Installed</td>
+            <td>Epic not installed → should skip silently, no errors</td>
+        </tr>
+        <tr>
+            <td>Fence Refresh</td>
+            <td>Install/uninstall game → refresh fence → updates correctly</td>
+        </tr>
+    </table>
+
+    <h3>19.13 Future Platform Roadmap</h3>
+
+    <table>
+        <tr>
+            <th>Platform</th>
+            <th>Detection Method</th>
+            <th>Protocol</th>
+            <th>Priority</th>
+        </tr>
+        <tr>
+            <td>Ubisoft Connect</td>
+            <td>Registry + Configuration files</td>
+            <td><code>uplay://launch/{gameid}</code> or <code>ubisoft-connect://</code></td>
+            <td>High</td>
+        </tr>
+        <tr>
+            <td>EA App</td>
+            <td>Local storage JSON</td>
+            <td><code>origin2://game/launch?offerIds={offerid}</code></td>
+            <td>High</td>
+        </tr>
+        <tr>
+            <td>Amazon Games</td>
+            <td>SQLite database + Fuel.json</td>
+            <td><code>amazon-games://play/{productid}</code></td>
+            <td>Medium</td>
+        </tr>
+        <tr>
+            <td>Battle.net</td>
+            <td>Product database + .agent files</td>
+            <td><code>battlenet://launch/{productcode}</code></td>
+            <td>Medium</td>
+        </tr>
+        <tr>
+            <td>Rockstar Games</td>
+            <td>Registry</td>
+            <td><code>com.rockstargames.launcher://</code></td>
+            <td>Low</td>
+        </tr>
+        <tr>
+            <td>Xbox Game Pass</td>
+            <td>Windows Store / AppX manifests</td>
+            <td><code>ms-xbl-{gameid}://</code></td>
+            <td>Low (Complex)</td>
+        </tr>
+    </table>
+
+    <h3>19.14 Files Created/Modified</h3>
+
+    <table>
+        <tr>
+            <th>File</th>
+            <th>Type</th>
+            <th>Lines</th>
+            <th>Purpose</th>
+        </tr>
+        <tr>
+            <td>IGameStoreDetector.cs</td>
+            <td>New</td>
+            <td>70</td>
+            <td>Interface and GameInfo model</td>
+        </tr>
+        <tr>
+            <td>SteamStoreDetector.cs</td>
+            <td>New</td>
+            <td>60</td>
+            <td>Steam implementation of interface</td>
+        </tr>
+        <tr>
+            <td>EpicGamesStoreDetector.cs</td>
+            <td>New</td>
+            <td>380</td>
+            <td>Epic Games Store detector</td>
+        </tr>
+        <tr>
+            <td>GOGGalaxyDetector.cs</td>
+            <td>New</td>
+            <td>340</td>
+            <td>GOG Galaxy detector</td>
+        </tr>
+        <tr>
+            <td>SteamGameDetector.cs</td>
+            <td>Modified</td>
+            <td>+150</td>
+            <td>Added icon extraction methods</td>
+        </tr>
+        <tr>
+            <td>InstalledAppsUtil.cs</td>
+            <td>Modified</td>
+            <td>+120</td>
+            <td>Multi-platform integration</td>
+        </tr>
+        <tr>
+            <td>FenceEntry.cs</td>
+            <td>Modified</td>
+            <td>+30</td>
+            <td>IconPath support</td>
+        </tr>
+        <tr>
+            <td>FilesFenceHandlerWpf.cs</td>
+            <td>Modified</td>
+            <td>+10</td>
+            <td>Icon cache population</td>
+        </tr>
+        <tr>
+            <td>GAME_STORE_ABSTRACTION.md</td>
+            <td>New</td>
+            <td>600</td>
+            <td>Complete documentation</td>
+        </tr>
+    </table>
+
+    <h3>19.15 Benefits Summary</h3>
+
+    <table>
+        <tr>
+            <th>Before Session 6</th>
+            <th>After Session 6</th>
+        </tr>
+        <tr>
+            <td>
+                <ul>
+                    <li>Only Steam games supported</li>
+                    <li>Steam games had default icons</li>
+                    <li>Epic games not detected</li>
+                    <li>GOG games not detected</li>
+                    <li>Hard to add new platforms</li>
+                    <li>Platform-specific code everywhere</li>
+                </ul>
+            </td>
+            <td>
+                <ul>
+                    <li><strong>3 platforms supported</strong>: Steam, Epic, GOG</li>
+                    <li>Steam games show proper game icons</li>
+                    <li>Epic games fully detected with icons</li>
+                    <li>GOG games fully detected with icons</li>
+                    <li>Easy to add new platforms (implement interface)</li>
+                    <li>Clean abstraction with <code>IGameStoreDetector</code></li>
+                    <li>Universal GameInfo model</li>
+                    <li>Automatic platform detection</li>
+                    <li>Extensible architecture for future stores</li>
+                    <li>Comprehensive documentation</li>
+                </ul>
+            </td>
+        </tr>
+    </table>
+
+    <h3>19.16 Summary</h3>
+
+    <table>
+        <tr>
+            <th>Feature</th>
+            <th>Type</th>
+            <th>Impact</th>
+        </tr>
+        <tr>
+            <td>Game Store Abstraction</td>
+            <td>Architecture</td>
+            <td>IGameStoreDetector interface enables easy addition of new platforms</td>
+        </tr>
+        <tr>
+            <td>Steam Game Icons</td>
+            <td>Enhancement</td>
+            <td>Games now show proper game icons instead of generic Steam icon</td>
+        </tr>
+        <tr>
+            <td>Epic Games Store Support</td>
+            <td>New Feature</td>
+            <td>Full detection and display of Epic games with icons and shortcuts</td>
+        </tr>
+        <tr>
+            <td>GOG Galaxy Support</td>
+            <td>New Feature</td>
+            <td>Full detection and display of GOG games with icons and shortcuts</td>
+        </tr>
+        <tr>
+            <td>Multi-Platform Aggregation</td>
+            <td>Integration</td>
+            <td>Single Games fence shows games from all installed platforms</td>
+        </tr>
+        <tr>
+            <td>Icon Cache System</td>
+            <td>Enhancement</td>
+            <td>Efficient icon extraction with platform-specific icon paths</td>
+        </tr>
+        <tr>
+            <td>Launch Protocol Support</td>
+            <td>Feature</td>
+            <td>Platform-specific URL shortcuts for one-click game launching</td>
+        </tr>
+        <tr>
+            <td>Documentation</td>
+            <td>Documentation</td>
+            <td>600+ line guide for architecture, usage, and adding new platforms</td>
+        </tr>
+    </table>
+
+    <hr>
+
+    <h2>20. Session 6 (Continued): Complete 6-Platform Support</h2>
+
+    <div class="note">
+        <strong>Session Date:</strong> 2025-01-06 (Continuation)<br>
+        <strong>Focus:</strong> Add Ubisoft Connect, EA App, and Amazon Games detectors<br>
+        <strong>Status:</strong> ✅ COMPLETED - All 6 Major Platforms Supported
+    </div>
+
+    <h3>20.1 User Request</h3>
+
+    <blockquote>
+        "What about the other 3 I mentioned? Is it possible to include those too? Amazon Games, EA app, UbiConnect"
+    </blockquote>
+
+    <h3>20.2 Implementation Summary</h3>
+
+    <table>
+        <tr>
+            <th>Platform</th>
+            <th>Detector Class</th>
+            <th>Detection Method</th>
+            <th>Lines of Code</th>
+        </tr>
+        <tr>
+            <td>Ubisoft Connect</td>
+            <td>UbisoftConnectDetector</td>
+            <td>Registry scanning</td>
+            <td>360</td>
+        </tr>
+        <tr>
+            <td>EA App</td>
+            <td>EAAppDetector</td>
+            <td>Registry scanning (dual client support)</td>
+            <td>340</td>
+        </tr>
+        <tr>
+            <td>Amazon Games</td>
+            <td>AmazonGamesDetector</td>
+            <td>Fuel.json file parsing</td>
+            <td>320</td>
+        </tr>
+    </table>
+
+    <h3>20.3 Ubisoft Connect Implementation</h3>
+
+    <h4>Detection Strategy</h4>
+
+    <pre>
+Registry Path: HKLM\SOFTWARE\WOW6432Node\Ubisoft\Launcher\Installs
+Per-Game Data: InstallDir
+Launch Protocol: uplay://launch/{gameid}
+
+Executable Search Paths:
+1. {InstallDir}/*.exe
+2. {InstallDir}/bin/*.exe
+3. {InstallDir}/Binaries/*.exe
+4. {InstallDir}/Binaries/Win64/*.exe
+
+Filters: unins, crash, report, launcher, setup, install, updater,
+         uninstall, ubisoft, uplay, overlay
+    </pre>
+
+    <h4>Key Features</h4>
+
+    <ul>
+        <li>Scans registry for all installed Ubisoft games</li>
+        <li>Searches multiple common subdirectories for executables</li>
+        <li>Cleans game names (removes version numbers, parentheses)</li>
+        <li>Supports both UbisoftConnect.exe and legacy Uplay.exe</li>
+        <li>Icon extraction from game executables</li>
+    </ul>
+
+    <h4>Challenges Solved</h4>
+
+    <div class="solution">
+        <strong>Challenge:</strong> Ubisoft games often have complex directory structures<br>
+        <strong>Solution:</strong> Multi-path search strategy checking bin/, Binaries/, Binaries/Win64/, and Game/Binaries/Win64/
+    </div>
+
+    <h3>20.4 EA App Implementation</h3>
+
+    <h4>Detection Strategy</h4>
+
+    <pre>
+Registry Path: HKLM\SOFTWARE\WOW6432Node\EA Games
+Per-Game Data: DisplayName, Install Dir, InstallLocation
+Launch Protocol: origin2://game/launch?offerIds={offerid}
+
+Dual Client Support:
+- EA Desktop: %LOCALAPPDATA%\Electronic Arts\EA Desktop\EA Desktop.exe
+- Origin (Legacy): Registry + default paths in Program Files
+
+Filters: unins, crash, report, launcher, setup, install, updater,
+         uninstall, eadesktop, origin, ealink, activation
+    </pre>
+
+    <h4>Key Features</h4>
+
+    <ul>
+        <li>Supports both EA Desktop (new) and Origin (legacy) clients</li>
+        <li>Handles both "Install Dir" and "InstallLocation" registry keys</li>
+        <li>Multi-path executable search</li>
+        <li>Filters out EA overlay and launcher executables</li>
+        <li>Uses new origin2:// protocol for better compatibility</li>
+    </ul>
+
+    <h4>Challenges Solved</h4>
+
+    <div class="solution">
+        <strong>Challenge:</strong> EA transitioned from Origin to EA Desktop, with different paths and protocols<br>
+        <strong>Solution:</strong> Dual detection for both clients, prioritizing EA Desktop but falling back to Origin
+    </div>
+
+    <h3>20.5 Amazon Games Implementation</h3>
+
+    <h4>Detection Strategy</h4>
+
+    <pre>
+Data Location: %LOCALAPPDATA%\Amazon Games\Data\Games\{ProductId}\Fuel.json
+File Format: JSON (parsed with regex, no dependencies)
+Key Fields: Id (product ID), ProductTitle, InstallDirectory
+Launch Protocol: amazon-games://play/{productid}
+
+JSON Parsing:
+- Uses regex: "key"\s*:\s*"([^"]*)"
+- No external JSON library required
+- Handles escaped strings (\\, \/, \")
+
+Filters: unins, crash, report, launcher, setup, install,
+         updater, uninstall, amazon
+    </pre>
+
+    <h4>Key Features</h4>
+
+    <ul>
+        <li>Parses Fuel.json manifests without JSON library dependency</li>
+        <li>Scans all product folders in Amazon Games data directory</li>
+        <li>Each game has individual manifest file</li>
+        <li>Handles JSON string escaping properly</li>
+        <li>Multi-path executable search</li>
+        <li>Uses file modification time for LastUpdated</li>
+    </ul>
+
+    <h4>Challenges Solved</h4>
+
+    <div class="solution">
+        <strong>Challenge:</strong> Amazon Games doesn't use registry or central database<br>
+        <strong>Solution:</strong> Scan individual game folders, parse Fuel.json files with regex to avoid JSON library dependency
+    </div>
+
+    <h3>20.6 Complete Platform Comparison</h3>
+
+    <table>
+        <tr>
+            <th>Platform</th>
+            <th>Detection</th>
+            <th>Manifest Format</th>
+            <th>Launch Protocol</th>
+        </tr>
+        <tr>
+            <td>Steam</td>
+            <td>VDF files</td>
+            <td>appmanifest_*.acf (VDF)</td>
+            <td>steam://rungameid/{appid}</td>
+        </tr>
+        <tr>
+            <td>Epic Games Store</td>
+            <td>JSON manifests</td>
+            <td>*.item (JSON)</td>
+            <td>com.epicgames.launcher://apps/{appname}?action=launch</td>
+        </tr>
+        <tr>
+            <td>GOG Galaxy</td>
+            <td>Registry</td>
+            <td>Registry keys</td>
+            <td>goggalaxy://openGameView/{gameid}</td>
+        </tr>
+        <tr>
+            <td>Ubisoft Connect</td>
+            <td>Registry</td>
+            <td>Registry keys</td>
+            <td>uplay://launch/{gameid}</td>
+        </tr>
+        <tr>
+            <td>EA App</td>
+            <td>Registry</td>
+            <td>Registry keys</td>
+            <td>origin2://game/launch?offerIds={offerid}</td>
+        </tr>
+        <tr>
+            <td>Amazon Games</td>
+            <td>JSON files</td>
+            <td>Fuel.json per game</td>
+            <td>amazon-games://play/{productid}</td>
+        </tr>
+    </table>
+
+    <h3>20.7 Executable Discovery Strategy</h3>
+
+    <p>All 6 detectors use a consistent multi-tier executable discovery strategy:</p>
+
+    <pre>
+1. Primary Search
+   └─ Check game's declared executable (if available in manifest/registry)
+   └─ Verify file exists
+
+2. Multi-Path Search (if primary fails)
+   └─ {InstallDir}/*.exe
+   └─ {InstallDir}/bin/*.exe
+   └─ {InstallDir}/Binaries/*.exe
+   └─ {InstallDir}/Binaries/Win64/*.exe
+   └─ {InstallDir}/Binaries/Win32/*.exe
+   └─ {InstallDir}/Game/Binaries/Win64/*.exe
+
+3. Filtering
+   └─ Remove launchers: unins, crash, report, launcher, setup, install, updater
+   └─ Remove platform-specific: steam, epic, origin, uplay, ubisoft, amazon
+   └─ Remove anti-cheat: easyanticheat, battleye
+
+4. Name Matching
+   └─ Sanitize game name and exe name (remove special chars, lowercase)
+   └─ Check if exe name contains game name or vice versa
+   └─ Return best match
+
+5. Fallback
+   └─ Return first non-filtered executable
+   └─ If all filtered, return first executable
+   └─ If no executables, use platform client icon
+    </pre>
+
+    <h3>20.8 Icon Extraction Pipeline</h3>
+
+    <pre>
+For All 6 Platforms:
+
+Game Detected
+    ↓
+Find Game Executable (multi-tier search)
+    ↓
+Store in GameInfo.IconPath
+    ↓
+Create Shortcut with IconPath in metadata
+    ↓
+Convert to InstalledSoftware.IconPath
+    ↓
+Cache in FilesFenceHandlerWpf.iconPathCache[path] = IconPath
+    ↓
+Pass to FenceEntry.FromPath(path, iconPath)
+    ↓
+FenceEntry.ExtractIcon() uses IconPath for Icon.ExtractAssociatedIcon()
+    ↓
+Convert to WPF BitmapSource
+    ↓
+Display in fence with game-specific icon
+    </pre>
+
+    <h3>20.9 Files Created</h3>
+
+    <table>
+        <tr>
+            <th>File</th>
+            <th>Lines</th>
+            <th>Purpose</th>
+        </tr>
+        <tr>
+            <td>UbisoftConnectDetector.cs</td>
+            <td>360</td>
+            <td>Ubisoft Connect game detection via registry</td>
+        </tr>
+        <tr>
+            <td>EAAppDetector.cs</td>
+            <td>340</td>
+            <td>EA App/Origin game detection via registry</td>
+        </tr>
+        <tr>
+            <td>AmazonGamesDetector.cs</td>
+            <td>320</td>
+            <td>Amazon Games detection via Fuel.json parsing</td>
+        </tr>
+    </table>
+
+    <h3>20.10 Files Modified</h3>
+
+    <table>
+        <tr>
+            <th>File</th>
+            <th>Change</th>
+        </tr>
+        <tr>
+            <td>InstalledAppsUtil.cs</td>
+            <td>Added 3 new detectors to GetAllGames() list</td>
+        </tr>
+        <tr>
+            <td>GAME_STORE_ABSTRACTION.md</td>
+            <td>
+                <ul>
+                    <li>Updated supported platforms count (3 → 6)</li>
+                    <li>Added documentation for 3 new platforms</li>
+                    <li>Updated code examples to show all 6 detectors</li>
+                    <li>Moved implemented platforms from "Future" to "Implemented"</li>
+                </ul>
+            </td>
+        </tr>
+    </table>
+
+    <h3>20.11 Complete Platform Support Matrix</h3>
+
+    <table>
+        <tr>
+            <th>Feature</th>
+            <th>Steam</th>
+            <th>Epic</th>
+            <th>GOG</th>
+            <th>Ubisoft</th>
+            <th>EA</th>
+            <th>Amazon</th>
+        </tr>
+        <tr>
+            <td>Auto-Detection</td>
+            <td>✅</td>
+            <td>✅</td>
+            <td>✅</td>
+            <td>✅</td>
+            <td>✅</td>
+            <td>✅</td>
+        </tr>
+        <tr>
+            <td>Multi-Library</td>
+            <td>✅</td>
+            <td>❌</td>
+            <td>❌</td>
+            <td>❌</td>
+            <td>❌</td>
+            <td>❌</td>
+        </tr>
+        <tr>
+            <td>Icon Extraction</td>
+            <td>✅</td>
+            <td>✅</td>
+            <td>✅</td>
+            <td>✅</td>
+            <td>✅</td>
+            <td>✅</td>
+        </tr>
+        <tr>
+            <td>Shortcut Creation</td>
+            <td>✅</td>
+            <td>✅</td>
+            <td>✅</td>
+            <td>✅</td>
+            <td>✅</td>
+            <td>✅</td>
+        </tr>
+        <tr>
+            <td>One-Click Launch</td>
+            <td>✅</td>
+            <td>✅</td>
+            <td>✅</td>
+            <td>✅</td>
+            <td>✅</td>
+            <td>✅</td>
+        </tr>
+        <tr>
+            <td>Install Size</td>
+            <td>✅</td>
+            <td>✅</td>
+            <td>✅</td>
+            <td>✅</td>
+            <td>✅</td>
+            <td>✅</td>
+        </tr>
+        <tr>
+            <td>Last Updated</td>
+            <td>✅</td>
+            <td>✅</td>
+            <td>❌</td>
+            <td>❌</td>
+            <td>❌</td>
+            <td>✅</td>
+        </tr>
+    </table>
+
+    <h3>20.12 Testing Checklist</h3>
+
+    <div class="note">
+        <strong>Before Using:</strong> Test each platform individually
+    </div>
+
+    <table>
+        <tr>
+            <th>Test</th>
+            <th>Expected Result</th>
+        </tr>
+        <tr>
+            <td>1. Create Games fence (all platforms installed)</td>
+            <td>Shows games from all 6 platforms in single fence</td>
+        </tr>
+        <tr>
+            <td>2. Create Games fence (only Steam installed)</td>
+            <td>Shows only Steam games, no errors for other platforms</td>
+        </tr>
+        <tr>
+            <td>3. Verify icons</td>
+            <td>All games show proper game-specific icons, not platform icons</td>
+        </tr>
+        <tr>
+            <td>4. Double-click game shortcut</td>
+            <td>Game launches via platform client</td>
+        </tr>
+        <tr>
+            <td>5. Check Debug output</td>
+            <td>See detector logs for each platform (found X games)</td>
+        </tr>
+        <tr>
+            <td>6. Install new game</td>
+            <td>Refresh fence → new game appears</td>
+        </tr>
+        <tr>
+            <td>7. Uninstall game</td>
+            <td>Refresh fence → game disappears</td>
+        </tr>
+        <tr>
+            <td>8. Platform not installed</td>
+            <td>Silently skipped, no errors</td>
+        </tr>
+    </table>
+
+    <h3>20.13 Benefits Summary</h3>
+
+    <table>
+        <tr>
+            <th>Before</th>
+            <th>After</th>
+        </tr>
+        <tr>
+            <td>
+                <ul>
+                    <li>3 platforms (Steam, Epic, GOG)</li>
+                    <li>Missing major platforms</li>
+                    <li>No Ubisoft games</li>
+                    <li>No EA games</li>
+                    <li>No Amazon games</li>
+                </ul>
+            </td>
+            <td>
+                <ul>
+                    <li><strong>6 platforms fully supported</strong></li>
+                    <li>All major PC game stores covered</li>
+                    <li>✅ Ubisoft Connect games detected</li>
+                    <li>✅ EA App/Origin games detected</li>
+                    <li>✅ Amazon Games/Prime Gaming detected</li>
+                    <li>Consistent icon extraction across all platforms</li>
+                    <li>Unified Games fence showing all games</li>
+                    <li>One-click launching for all platforms</li>
+                    <li>Easy to add more platforms (Battle.net, etc.)</li>
+                </ul>
+            </td>
+        </tr>
+    </table>
+
+    <h3>20.14 Summary</h3>
+
+    <table>
+        <tr>
+            <th>Achievement</th>
+            <th>Details</th>
+        </tr>
+        <tr>
+            <td>Complete 6-Platform Support</td>
+            <td>Steam, Epic Games Store, GOG Galaxy, Ubisoft Connect, EA App, Amazon Games</td>
+        </tr>
+        <tr>
+            <td>Total Code Written</td>
+            <td>~1,020 lines (3 new detectors)</td>
+        </tr>
+        <tr>
+            <td>Detection Methods</td>
+            <td>VDF parsing, JSON manifests, Registry scanning, Fuel.json parsing</td>
+        </tr>
+        <tr>
+            <td>Launch Protocols</td>
+            <td>6 different platform-specific URL schemes</td>
+        </tr>
+        <tr>
+            <td>Icon Extraction</td>
+            <td>Game-specific icons for all platforms</td>
+        </tr>
+        <tr>
+            <td>Extensibility</td>
+            <td>Clean IGameStoreDetector interface for future platforms</td>
+        </tr>
+    </table>
+
+    <hr>
+
+    <p><em>Generated: 2025-01-07 (Updated - Session 8: Sprint 2 Behavior Extraction + Sprint 3 Panel Extraction)</em></p>
+</body>
+</html>

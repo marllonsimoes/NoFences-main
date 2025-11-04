@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Session 4: Smart File Filtering System</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            color: #e0e0e0;
+            background-color: #0a0a0a;
+            background-image:
+                linear-gradient(rgba(0, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+        }
+        h1 {
+            color: #00ffff;
+            text-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff, 0 0 30px #00ffff;
+            border-bottom: 3px solid #00ffff;
+            padding-bottom: 10px;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+        h2 {
+            color: #ff00ff;
+            text-shadow: 0 0 10px #ff00ff, 0 0 20px #ff00ff;
+            margin-top: 30px;
+            border-bottom: 2px solid #ff00ff;
+            padding-bottom: 5px;
+        }
+        h3 {
+            color: #ffff00;
+            text-shadow: 0 0 5px #ffff00;
+            margin-top: 20px;
+        }
+        code {
+            background-color: #1a1a1a;
+            border: 1px solid #00ff00;
+            color: #00ff00;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.9em;
+            box-shadow: 0 0 5px rgba(0, 255, 0, 0.3);
+        }
+        pre {
+            background-color: #0d0d0d;
+            border: 1px solid #00ffff;
+            border-left: 4px solid #00ffff;
+            padding: 15px;
+            overflow-x: auto;
+            border-radius: 4px;
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+            color: #00ff00;
+        }
+        .issue {
+            background-color: rgba(255, 193, 7, 0.1);
+            border-left: 4px solid #ffc107;
+            padding: 10px;
+            margin: 10px 0;
+            box-shadow: 0 0 10px rgba(255, 193, 7, 0.3);
+        }
+        .solution {
+            background-color: rgba(0, 255, 0, 0.1);
+            border-left: 4px solid #00ff00;
+            padding: 10px;
+            margin: 10px 0;
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+        }
+        .note {
+            background-color: rgba(0, 255, 255, 0.1);
+            border-left: 4px solid #00ffff;
+            padding: 10px;
+            margin: 10px 0;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+        }
+        .failed {
+            background-color: rgba(255, 0, 255, 0.1);
+            border-left: 4px solid #ff00ff;
+            padding: 10px;
+            margin: 10px 0;
+            box-shadow: 0 0 10px rgba(255, 0, 255, 0.3);
+        }
+        ul {
+            padding-left: 25px;
+        }
+        li {
+            margin: 8px 0;
+        }
+        li::marker {
+            color: #00ffff;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            border: 1px solid #00ffff;
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.2);
+        }
+        th, td {
+            border: 1px solid #333;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #1a1a1a;
+            font-weight: bold;
+            color: #00ffff;
+            text-shadow: 0 0 5px #00ffff;
+        }
+        tr:hover {
+            background-color: rgba(0, 255, 255, 0.05);
+        }
+        .file-path {
+            color: #ff00ff;
+            font-weight: 500;
+            text-shadow: 0 0 5px #ff00ff;
+        }
+        strong {
+            color: #ffff00;
+        }
+        a {
+            color: #00ffff;
+            text-decoration: none;
+            text-shadow: 0 0 5px #00ffff;
+        }
+        a:hover {
+            text-shadow: 0 0 10px #00ffff;
+        }
+        hr {
+            border: none;
+            border-top: 2px solid #00ffff;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+        }
+        @keyframes glow {
+            from {
+                text-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff, 0 0 30px #00ffff;
+            }
+            to {
+                text-shadow: 0 0 20px #00ffff, 0 0 30px #00ffff, 0 0 40px #00ffff, 0 0 50px #00ffff;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>NoFences Development Session - Change Summary</h1>
+    <p><strong>Date:</strong> 2025-01-04</p>
+    <p><strong>Branch:</strong> gemini/fencewindow-refactor</p>
+    <p><strong>Architecture:</strong> Canvas-based with WPF content rendering</p>
+    <p><strong>Total Changes:</strong> 12,617 lines added, 104 lines removed (49 files)</p>
+    <p><strong>Sessions:</strong> 2 (Architecture creation + Bug fixes)</p>
+
+    <div class="note">
+        <strong>Overview:</strong> This document covers changes across two development sessions:
+        <ul>
+    <h2>Session 4 (2025-01-06): Smart File Filtering System</h2>
+
+    <p>This session implemented a comprehensive smart file filtering system for Files fences, enabling users to filter content by file categories, extensions, and installed software. The system includes automatic software detection, categorization, and metadata extraction capabilities.</p>
+
+    <h3>16.1 Feature Overview</h3>
+
+    <div class="solution">
+        <strong>Smart File Filtering System:</strong> A complete filtering architecture that allows users to organize fence content by:
+        <ul>
+            <li><strong>File Categories:</strong> Predefined categories (Documents, Images, Videos, Audio, etc.)</li>
+            <li><strong>Custom Extensions:</strong> User-specified file extensions (.pdf, .docx, etc.)</li>
+            <li><strong>Installed Software:</strong> Automatically detected and categorized applications</li>
+            <li><strong>Legacy Patterns:</strong> Backward compatibility with regex-based filtering</li>
+        </ul>
+    </div>
+
+    <div class="note">
+        <strong>User Goal:</strong> "Create such a filtering system that the user only asks for a type and I am able to provide everything in the fence."
+    </div>
+
+    <h3>16.2 New Files Created</h3>
+
+    <table>
+        <tr>
+            <th>File</th>
+            <th>Lines</th>
+            <th>Purpose</th>
+        </tr>
+        <tr>
+            <td class="file-path">NoFencesCore/Model/FileCategory.cs</td>
+            <td>253</td>
+            <td>File category enum and FileTypeMapper utility with 100+ extension mappings</td>
+        </tr>
+        <tr>
+            <td class="file-path">NoFencesCore/Model/FileFilter.cs</td>
+            <td>163</td>
+            <td>Flexible filter model supporting multiple filter types</td>
+        </tr>
+        <tr>
+            <td class="file-path">NoFencesCore/Model/SoftwareCategory.cs</td>
+            <td>246</td>
+            <td>Software categorization system with publisher and keyword matching</td>
+        </tr>
+        <tr>
+            <td class="file-path">NoFencesCore/Model/InstalledSoftware.cs</td>
+            <td>76</td>
+            <td>Model for installed software with complete metadata</td>
+        </tr>
+        <tr>
+            <td class="file-path">NoFencesCore/Model/FileMetadata.cs</td>
+            <td>445</td>
+            <td>On-demand metadata extraction using Windows Shell API</td>
+        </tr>
+    </table>
+
+    <h3>16.3 File Category System</h3>
+
+    <div class="solution">
+        <strong>FileCategory Enum:</strong> 13 predefined categories covering all common file types.
+        <pre>public enum FileCategory
+{
+    All, Documents, Spreadsheets, Presentations, Images, Videos,
+    Audio, Archives, Executables, Code, Shortcuts, Folders, Custom
+}</pre>
+        <ul>
+            <li><strong>Extension Mapping:</strong> 100+ file extensions mapped to categories</li>
+            <li><strong>Documents:</strong> .pdf, .doc, .docx, .txt, .odt, .rtf, .md, .epub, .mobi</li>
+            <li><strong>Images:</strong> .jpg, .jpeg, .png, .gif, .bmp, .svg, .ico, .webp, .tiff</li>
+            <li><strong>Videos:</strong> .mp4, .avi, .mkv, .mov, .wmv, .flv, .webm</li>
+            <li><strong>Audio:</strong> .mp3, .wav, .flac, .aac, .ogg, .m4a, .wma</li>
+            <li><strong>Spreadsheets:</strong> .xls, .xlsx, .ods, .csv</li>
+            <li><strong>Presentations:</strong> .ppt, .pptx, .odp</li>
+            <li><strong>Code:</strong> .cs, .js, .py, .java, .cpp, .html, .css, .json, .xml, .sql</li>
+            <li><strong>Archives:</strong> .zip, .rar, .7z, .tar, .gz, .bz2</li>
+            <li><strong>Executables:</strong> .exe, .msi, .bat, .cmd, .ps1, .dll</li>
+            <li><strong>Shortcuts:</strong> .lnk, .url</li>
+        </ul>
+    </div>
+
+    <h3>16.4 Software Categorization System</h3>
+
+    <div class="solution">
+        <strong>SoftwareCategory Enum:</strong> 11 categories for installed applications.
+        <pre>public enum SoftwareCategory
+{
+    All, Games, GamingPlatforms, OfficeProductivity, Design,
+    Development, Media, Communication, Utilities, Security, Other
+}</pre>
+        <ul>
+            <li><strong>Gaming Platforms:</strong> Steam, Epic Games, GOG Galaxy, Origin, Uplay, Battle.net, Xbox</li>
+            <li><strong>Office & Productivity:</strong> Microsoft Office, LibreOffice, Google Workspace, Notion</li>
+            <li><strong>Design & Graphics:</strong> Adobe Suite, Affinity, GIMP, Blender, Autodesk</li>
+            <li><strong>Development Tools:</strong> Visual Studio, VS Code, JetBrains IDEs, Git, Docker</li>
+            <li><strong>Media & Entertainment:</strong> VLC, Spotify, OBS Studio, HandBrake</li>
+            <li><strong>Communication:</strong> Chrome, Firefox, Discord, Slack, Teams, Zoom</li>
+            <li><strong>Utilities:</strong> 7-Zip, WinRAR, CCleaner, PowerToys</li>
+            <li><strong>Security:</strong> Antivirus software, firewalls, security tools</li>
+        </ul>
+    </div>
+
+    <h4>Categorization Logic</h4>
+
+    <div class="solution">
+        <strong>Priority-Based Matching:</strong>
+        <ol>
+            <li><strong>Publisher matching:</strong> Checks against known publisher names (highest priority)</li>
+            <li><strong>Install location hints:</strong> Detects paths like "steamapps", "epicgames"</li>
+            <li><strong>Keyword matching:</strong> Searches app name for category keywords (fallback)</li>
+        </ol>
+        <pre>// Example: Steam app detection
+Publisher: "Valve Corporation" → GamingPlatforms
+InstallLocation: "C:\Steam\steamapps\..." → GamingPlatforms
+Name contains: "steam" → GamingPlatforms</pre>
+    </div>
+
+    <h3>16.5 Enhanced InstalledAppsUtil</h3>
+
+    <div class="solution">
+        <strong>Complete Rewrite:</strong> Transformed from debug-only utility to production software detector.
+        <ul>
+            <li><strong>Before:</strong> Only printed Debug.WriteLine() statements, returned empty list</li>
+            <li><strong>After:</strong> Comprehensive registry scanning with structured data return</li>
+        </ul>
+    </div>
+
+    <table>
+        <tr>
+            <th>Method</th>
+            <th>Description</th>
+        </tr>
+        <tr>
+            <td><code>GetAllInstalled()</code></td>
+            <td>Scans HKLM + HKCU registry, returns List&lt;InstalledSoftware&gt;</td>
+        </tr>
+        <tr>
+            <td><code>GetByCategory()</code></td>
+            <td>Filters installed software by SoftwareCategory</td>
+        </tr>
+        <tr>
+            <td><code>ScanRegistryKey()</code></td>
+            <td>Scans specific registry path for software entries</td>
+        </tr>
+        <tr>
+            <td><code>ExtractSoftwareInfo()</code></td>
+            <td>Extracts all metadata from registry key (name, publisher, version, etc.)</td>
+        </tr>
+        <tr>
+            <td><code>IsValidSoftware()</code></td>
+            <td>Filters out Windows updates, hotfixes, redistributables</td>
+        </tr>
+        <tr>
+            <td><code>FindExecutableInDirectory()</code></td>
+            <td>Attempts to locate main .exe file in installation directory</td>
+        </tr>
+    </table>
+
+    <h4>Registry Scanning Strategy</h4>
+
+    <div class="solution">
+        <strong>Registry Paths Scanned:</strong>
+        <pre>// Machine-wide installs
+HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall (64-bit)
+HKLM\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall (32-bit on 64-bit)
+
+// User installs
+HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall</pre>
+        <ul>
+            <li>Scans both HKLM and HKCU for complete coverage</li>
+            <li>Detects 32-bit apps on 64-bit Windows (WOW6432Node)</li>
+            <li>Removes duplicates (same software in multiple locations)</li>
+            <li>Filters out system components and updates</li>
+            <li>Auto-categorizes using SoftwareCategorizer</li>
+        </ul>
+    </div>
+
+    <h3>16.6 FileMetadata System</h3>
+
+    <div class="solution">
+        <strong>On-Demand Metadata Extraction:</strong> Lazy-loading metadata system using Windows Shell API.
+        <ul>
+            <li><strong>Basic Properties:</strong> Loaded immediately (name, size, dates, extension, category)</li>
+            <li><strong>Extended Metadata:</strong> Extracted on first access (lazy)</li>
+            <li><strong>Thread-safe:</strong> Uses lock for lazy initialization</li>
+            <li><strong>Type-specific:</strong> Different extraction methods for each file type</li>
+        </ul>
+    </div>
+
+    <table>
+        <tr>
+            <th>File Type</th>
+            <th>Metadata Extracted</th>
+            <th>Method</th>
+        </tr>
+        <tr>
+            <td>Documents</td>
+            <td>Title, Author, Subject, Keywords, Comments, PageCount, WordCount</td>
+            <td>Windows Shell Property System</td>
+        </tr>
+        <tr>
+            <td>Images</td>
+            <td>Width, Height, Dimensions, BitDepth, DateTaken, CameraModel</td>
+            <td>System.Drawing + Shell API</td>
+        </tr>
+        <tr>
+            <td>Executables</td>
+            <td>ProductName, CompanyName, FileVersion, ProductVersion, Description, Copyright</td>
+            <td>FileVersionInfo</td>
+        </tr>
+        <tr>
+            <td>Media (Video/Audio)</td>
+            <td>Duration, FrameWidth, FrameHeight, Bitrate</td>
+            <td>Windows Shell Property System</td>
+        </tr>
+        <tr>
+            <td>Shortcuts</td>
+            <td>TargetPath, Arguments, Description, WorkingDirectory, IconPath</td>
+            <td>Reuses existing ShortcutInfo</td>
+        </tr>
+    </table>
+
+    <h4>Lazy Loading Architecture</h4>
+
+    <pre>FileMetadata metadata = new FileMetadata(filePath);
+
+// Basic properties available immediately
+string name = metadata.FileName;
+long size = metadata.Size;
+FileCategory category = metadata.Category;
+
+// Extended metadata loaded on first access
+Dictionary&lt;string, object&gt; details = metadata.Metadata; // ← Triggers extraction
+object author = metadata.GetMetadataValue("Author");</pre>
+
+    <h3>16.7 FileFilter Model</h3>
+
+    <div class="solution">
+        <strong>Unified Filter Model:</strong> Single class supporting multiple filter types.
+        <pre>public class FileFilter
+{
+    public FileFilterType FilterType { get; set; } // None, Category, Extensions, Software, Pattern
+    public FileCategory Category { get; set; }
+    public List&lt;string&gt; Extensions { get; set; }
+    public SoftwareCategory SoftwareCategory { get; set; }
+    public string Pattern { get; set; } // Legacy
+    public bool IncludeSubfolders { get; set; }
+
+    public bool MatchesFile(string filePath) { /* filtering logic */ }
+    public string GetDescription() { /* human-readable description */ }
+}</pre>
+        <ul>
+            <li><strong>Factory Methods:</strong> FromCategory(), FromExtensions(), FromSoftwareCategory()</li>
+            <li><strong>Backward Compatible:</strong> Supports legacy Pattern filtering</li>
+            <li><strong>Flexible:</strong> Easy to add new filter types in future</li>
+        </ul>
+    </div>
+
+    <h3>16.8 Handler Integration</h3>
+
+    <div class="solution">
+        <strong>FilesFenceHandlerWpf Updates:</strong> Integrated smart filtering into existing handler.
+        <ul>
+            <li>Added <code>GetFilesWithSmartFilter()</code> method</li>
+            <li>Checks <code>fenceInfo.Filter</code> property (new smart filter)</li>
+            <li>Falls back to <code>fenceInfo.Filters</code> (legacy string list)</li>
+            <li>Handles Software filter type with InstalledAppsUtil</li>
+            <li>Supports subfolder scanning via <code>SearchOption</code></li>
+        </ul>
+    </div>
+
+    <h4>Software Filter Logic</h4>
+
+    <pre>if (filter.FilterType == FileFilterType.Software)
+{
+    var installedSoftware = InstalledAppsUtil.GetByCategory(filter.SoftwareCategory);
+
+    foreach (var software in installedSoftware)
+    {
+        // Prioritize executable path
+        if (File.Exists(software.ExecutablePath))
+            fileList.Add(software.ExecutablePath);
+        // Fall back to install location
+        else if (Directory.Exists(software.InstallLocation))
+            fileList.Add(software.InstallLocation);
+    }
+}</pre>
+
+    <h3>16.9 UI Implementation</h3>
+
+    <div class="solution">
+        <strong>Enhanced FilesPropertiesPanel:</strong> Completely redesigned with dynamic UI.
+        <ul>
+            <li><strong>Filter Type Dropdown:</strong> Select from None, Category, Extensions, Software, Pattern</li>
+            <li><strong>Dynamic Panel:</strong> Shows different controls based on selected filter type</li>
+            <li><strong>Category Filter:</strong> Dropdown with all FileCategory options</li>
+            <li><strong>Extensions Filter:</strong> Add/remove list of extensions</li>
+            <li><strong>Software Filter:</strong> Dropdown with all SoftwareCategory options</li>
+            <li><strong>Pattern Filter:</strong> Legacy regex pattern list (backward compatibility)</li>
+            <li><strong>Include Subfolders:</strong> Checkbox to enable recursive scanning</li>
+        </ul>
+    </div>
+
+    <h4>UI Flow</h4>
+
+    <pre>1. User opens Edit Fence dialog
+    ↓
+2. Selects "Files" fence type
+    ↓
+3. Type-Specific Properties panel appears
+    ↓
+4. Filter Type dropdown shown with 5 options
+    ↓
+5. User selects filter type (e.g., "Category")
+    ↓
+6. Dynamic panel updates to show category dropdown
+    ↓
+7. User selects category (e.g., "Documents")
+    ↓
+8. User checks "Include subfolders" if desired
+    ↓
+9. User clicks OK → Filter saved to FenceInfo</pre>
+
+    <h3>16.10 FenceInfo Model Updates</h3>
+
+    <table>
+        <tr>
+            <th>Property</th>
+            <th>Type</th>
+            <th>Purpose</th>
+        </tr>
+        <tr>
+            <td><code>Filter</code></td>
+            <td>FileFilter</td>
+            <td>New smart filter configuration (takes priority over legacy Filters)</td>
+        </tr>
+        <tr>
+            <td><code>Filters</code></td>
+            <td>List&lt;string&gt;</td>
+            <td>Legacy pattern list (maintained for backward compatibility)</td>
+        </tr>
+    </table>
+
+    <div class="note">
+        <strong>Backward Compatibility:</strong>
+        <ul>
+            <li>Existing fences with <code>Filters</code> list continue to work</li>
+            <li>Handler checks <code>Filter</code> property first, falls back to <code>Filters</code></li>
+            <li>Edit dialog can migrate legacy filters to Pattern filter type</li>
+            <li>When saving new Filter, legacy Filters list is cleared</li>
+        </ul>
+    </div>
+
+    <h3>16.11 Files Modified</h3>
+
+    <table>
+        <tr>
+            <th>File</th>
+            <th>Changes</th>
+        </tr>
+        <tr>
+            <td class="file-path">NoFencesCore/Util/InstalledAppsUtil.cs</td>
+            <td>
+                <ul>
+                    <li>Complete rewrite from 235 lines</li>
+                    <li>Changed from debug utility to production software detector</li>
+                    <li>Added GetAllInstalled(), GetByCategory() methods</li>
+                    <li>Implemented registry scanning with duplicate removal</li>
+                    <li>Added software validation and filtering</li>
+                    <li>Integrated auto-categorization</li>
+                </ul>
+            </td>
+        </tr>
+        <tr>
+            <td class="file-path">NoFencesCore/Model/FenceInfo.cs</td>
+            <td>
+                <ul>
+                    <li>Added <code>Filter</code> property (FileFilter type)</li>
+                    <li>XML-serialized for persistence</li>
+                    <li>Takes priority over legacy <code>Filters</code> property</li>
+                </ul>
+            </td>
+        </tr>
+        <tr>
+            <td class="file-path">NoFences/View/CanvasBased/Handlers/FilesFenceHandlerWpf.cs</td>
+            <td>
+                <ul>
+                    <li>Added <code>using NoFencesCore.Model;</code></li>
+                    <li>Updated GetFiles() to check for new Filter property</li>
+                    <li>Added GetFilesWithSmartFilter() method</li>
+                    <li>Implemented Software filter support with InstalledAppsUtil</li>
+                    <li>Added subfolder scanning via SearchOption</li>
+                    <li>Maintained backward compatibility with legacy Filters</li>
+                </ul>
+            </td>
+        </tr>
+        <tr>
+            <td class="file-path">NoFences/View/CanvasBased/FenceEditWindow.xaml.cs</td>
+            <td>
+                <ul>
+                    <li>Added <code>using NoFencesCore.Model;</code></li>
+                    <li>Complete rewrite of FilesPropertiesPanel class</li>
+                    <li>Added filter type dropdown with 5 options</li>
+                    <li>Implemented dynamic panel switching (UpdateFilterOptionsPanel)</li>
+                    <li>Added category, extensions, software UI controls</li>
+                    <li>Implemented load/save logic for new Filter property</li>
+                    <li>Added migration logic from legacy Filters to Pattern filter</li>
+                    <li>Updated CloneFenceInfo() to include Filter property</li>
+                </ul>
+            </td>
+        </tr>
+        <tr>
+            <td class="file-path">NoFencesCore/NoFencesCore.csproj</td>
+            <td>
+                <ul>
+                    <li>Added FileCategory.cs</li>
+                    <li>Added FileFilter.cs</li>
+                    <li>Added FileMetadata.cs</li>
+                    <li>Added InstalledSoftware.cs</li>
+                    <li>Added SoftwareCategory.cs</li>
+                </ul>
+            </td>
+        </tr>
+    </table>
+
+    <h3>16.12 Use Cases</h3>
+
+    <table>
+        <tr>
+            <th>Use Case</th>
+            <th>Configuration</th>
+            <th>Result</th>
+        </tr>
+        <tr>
+            <td>All My Documents</td>
+            <td>Filter Type: Category<br/>Category: Documents</td>
+            <td>Shows all .pdf, .doc, .docx, .txt, .odt, .rtf, .epub, .mobi files</td>
+        </tr>
+        <tr>
+            <td>Only PDFs</td>
+            <td>Filter Type: Extensions<br/>Extensions: .pdf</td>
+            <td>Shows only PDF files</td>
+        </tr>
+        <tr>
+            <td>Office Files</td>
+            <td>Filter Type: Extensions<br/>Extensions: .doc, .docx, .xls, .xlsx, .ppt, .pptx</td>
+            <td>Shows Microsoft Office files</td>
+        </tr>
+        <tr>
+            <td>My Games</td>
+            <td>Filter Type: Software<br/>Category: Games</td>
+            <td>Shows all installed games detected in registry</td>
+        </tr>
+        <tr>
+            <td>Gaming Platforms</td>
+            <td>Filter Type: Software<br/>Category: Gaming Platforms</td>
+            <td>Shows Steam, Epic, GOG, Origin, etc. launchers</td>
+        </tr>
+        <tr>
+            <td>Development Tools</td>
+            <td>Filter Type: Software<br/>Category: Development Tools</td>
+            <td>Shows VS Code, Visual Studio, Git, Docker, etc.</td>
+        </tr>
+        <tr>
+            <td>All Images</td>
+            <td>Filter Type: Category<br/>Category: Images</td>
+            <td>Shows all .jpg, .png, .gif, .bmp, .svg, .webp, .tiff files</td>
+        </tr>
+    </table>
+
+    <h3>16.13 Technical Architecture</h3>
+
+    <div class="solution">
+        <strong>Separation of Concerns:</strong>
+        <pre>NoFencesCore (Shared Library)
+├── Model
+│   ├── FileCategory.cs → File type categorization
+│   ├── FileFilter.cs → Filter configuration
+│   ├── FileMetadata.cs → Metadata extraction
+│   ├── SoftwareCategory.cs → Software categorization
+│   └── InstalledSoftware.cs → Software model
+└── Util
+    └── InstalledAppsUtil.cs → Registry scanning
+
+NoFences (Main Application)
+├── View/CanvasBased/Handlers
+│   └── FilesFenceHandlerWpf.cs → Filter application
+└── View/CanvasBased
+    └── FenceEditWindow.xaml.cs → Configuration UI</pre>
+        <ul>
+            <li><strong>Core in shared library:</strong> Allows future extensions to reuse code</li>
+            <li><strong>Handler layer:</strong> Applies filters to fence content</li>
+            <li><strong>UI layer:</strong> User-facing configuration interface</li>
+        </ul>
+    </div>
+
+    <h3>16.14 Benefits</h3>
+
+    <table>
+        <tr>
+            <th>Before</th>
+            <th>After</th>
+        </tr>
+        <tr>
+            <td>
+                <ul>
+                    <li>Only regex pattern matching</li>
+                    <li>Complex patterns for users to write</li>
+                    <li>No software detection</li>
+                    <li>No built-in categorization</li>
+                    <li>Limited to files in a folder</li>
+                </ul>
+            </td>
+            <td>
+                <ul>
+                    <li>Intuitive category selection</li>
+                    <li>One-click filtering (select category, done)</li>
+                    <li>Automatic software detection and categorization</li>
+                    <li>100+ file types supported</li>
+                    <li>Can display installed software from registry</li>
+                </ul>
+            </td>
+        </tr>
+    </table>
+
+    <h3>16.15 Performance Considerations</h3>
+
+    <div class="note">
+        <h4>Optimization Strategies</h4>
+        <ul>
+            <li><strong>Lazy metadata:</strong> Extended metadata only loaded when accessed</li>
+            <li><strong>Registry caching:</strong> InstalledAppsUtil scans once, could be cached in future</li>
+            <li><strong>Efficient filtering:</strong> Uses LINQ for clean, performant filtering</li>
+            <li><strong>Duplicate removal:</strong> Software list deduplicated to reduce clutter</li>
+            <li><strong>Validation filters:</strong> Removes system updates, hotfixes, redistributables automatically</li>
+        </ul>
+    </div>
+
+    <h3>16.16 Future Enhancements</h3>
+
+    <div class="note">
+        <h4>Potential Improvements</h4>
+        <ul>
+            <li><strong>Custom categories:</strong> Allow users to create their own categories with custom extension lists</li>
+            <li><strong>Metadata-based filtering:</strong> Filter documents by author, images by camera model, etc.</li>
+            <li><strong>Date-based filtering:</strong> Filter by creation/modification date ranges</li>
+            <li><strong>Size-based filtering:</strong> Filter by file size (e.g., large videos > 1GB)</li>
+            <li><strong>Tag-based system:</strong> User-defined tags for files</li>
+            <li><strong>Smart suggestions:</strong> Analyze folder contents and suggest appropriate filters</li>
+            <li><strong>Multiple filters:</strong> AND/OR combinations of filters</li>
+            <li><strong>Regex editor:</strong> Visual regex pattern builder for Pattern filter type</li>
+            <li><strong>Software icons:</strong> Display actual application icons in fence</li>
+            <li><strong>WMI integration:</strong> Combine registry + WMI queries for more complete software detection</li>
+        </ul>
+    </div>
+
+    <h3>16.17 Testing Checklist</h3>
+
+    <ul>
+        <li><strong>File Category Filtering:</strong>
+            <ul>
+                <li>Create files fence pointing to Downloads folder</li>
+                <li>Set Filter Type: Category → Documents</li>
+                <li>Verify only document files appear (PDF, Word, txt, etc.)</li>
+                <li>Test with different categories (Images, Videos, Audio, etc.)</li>
+                <li>Verify correct file types appear for each category</li>
+            </ul>
+        </li>
+        <li><strong>Custom Extension Filtering:</strong>
+            <ul>
+                <li>Set Filter Type: Extensions</li>
+                <li>Add extensions: .pdf, .docx</li>
+                <li>Verify only PDF and Word documents appear</li>
+                <li>Add/remove extensions → verify fence updates</li>
+                <li>Test with/without leading dot (should normalize)</li>
+            </ul>
+        </li>
+        <li><strong>Software Filtering:</strong>
+            <ul>
+                <li>Set Filter Type: Software → Category: Gaming Platforms</li>
+                <li>Verify Steam, Epic, GOG, etc. appear (if installed)</li>
+                <li>Test Category: Games → verify installed games appear</li>
+                <li>Test Category: Development Tools → verify IDEs, Git, etc. appear</li>
+                <li>Test Category: Office & Productivity → verify Office suite appears</li>
+            </ul>
+        </li>
+        <li><strong>Include Subfolders:</strong>
+            <ul>
+                <li>Create folder structure with nested subfolders</li>
+                <li>Set Category: Documents, uncheck subfolders</li>
+                <li>Verify only top-level documents appear</li>
+                <li>Check "Include subfolders"</li>
+                <li>Verify documents from all levels appear</li>
+            </ul>
+        </li>
+        <li><strong>Legacy Pattern Compatibility:</strong>
+            <ul>
+                <li>Open existing fence with old Filters list</li>
+                <li>Edit fence → verify patterns appear in Pattern filter type</li>
+                <li>Save without changes → verify fence still works</li>
+                <li>Switch to Category filter → save → verify new filter applied</li>
+            </ul>
+        </li>
+        <li><strong>UI Functionality:</strong>
+            <ul>
+                <li>Verify filter type dropdown shows all 5 options</li>
+                <li>Verify dynamic panel updates when filter type changes</li>
+                <li>Verify category dropdowns show all enum values</li>
+                <li>Verify extension add/remove buttons work</li>
+                <li>Verify load/save roundtrip for all filter types</li>
+            </ul>
+        </li>
+        <li><strong>Metadata Extraction:</strong>
+            <ul>
+                <li>Create FileMetadata object for various file types</li>
+                <li>Verify basic properties available immediately</li>
+                <li>Access Metadata property → verify extended data extracted</li>
+                <li>Test with documents, images, executables, media files</li>
+                <li>Verify metadata appropriate for each file type</li>
+            </ul>
+        </li>
+    </ul>
+
+    <h3>16.18 Summary</h3>
+
+    <table>
+        <tr>
+            <th>Feature</th>
+            <th>Type</th>
+            <th>Impact</th>
+        </tr>
+        <tr>
+            <td>Smart File Filtering System</td>
+            <td>New Feature</td>
+            <td>Complete filtering architecture with 5 filter types</td>
+        </tr>
+        <tr>
+            <td>File Category System</td>
+            <td>New Feature</td>
+            <td>100+ file extensions mapped to 13 predefined categories</td>
+        </tr>
+        <tr>
+            <td>Software Detection & Categorization</td>
+            <td>New Feature</td>
+            <td>Automatic detection of installed applications with smart categorization</td>
+        </tr>
+        <tr>
+            <td>FileMetadata Extraction</td>
+            <td>New Feature</td>
+            <td>On-demand metadata extraction using Windows Shell API</td>
+        </tr>
+        <tr>
+            <td>Enhanced InstalledAppsUtil</td>
+            <td>Complete Rewrite</td>
+            <td>Production-ready software detector with registry scanning</td>
+        </tr>
+        <tr>
+            <td>FilesPropertiesPanel UI</td>
+            <td>Complete Redesign</td>
+            <td>Dynamic UI with filter type selection and context-sensitive controls</td>
+        </tr>
+        <tr>
+            <td>Backward Compatibility</td>
+            <td>Maintenance</td>
+            <td>Legacy pattern filters still work, seamless migration path</td>
+        </tr>
+    </table>
+
+    <hr>
+
+    <p><em>Generated: 2025-01-07 (Updated - Session 8: Sprint 2 Behavior Extraction + Sprint 3 Panel Extraction)</em></p>
+</body>
+</html>

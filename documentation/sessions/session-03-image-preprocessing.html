@@ -1,0 +1,1644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Session 3: Image Preprocessing Pipeline</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            color: #e0e0e0;
+            background-color: #0a0a0a;
+            background-image:
+                linear-gradient(rgba(0, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+        }
+        h1 {
+            color: #00ffff;
+            text-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff, 0 0 30px #00ffff;
+            border-bottom: 3px solid #00ffff;
+            padding-bottom: 10px;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+        h2 {
+            color: #ff00ff;
+            text-shadow: 0 0 10px #ff00ff, 0 0 20px #ff00ff;
+            margin-top: 30px;
+            border-bottom: 2px solid #ff00ff;
+            padding-bottom: 5px;
+        }
+        h3 {
+            color: #ffff00;
+            text-shadow: 0 0 5px #ffff00;
+            margin-top: 20px;
+        }
+        code {
+            background-color: #1a1a1a;
+            border: 1px solid #00ff00;
+            color: #00ff00;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.9em;
+            box-shadow: 0 0 5px rgba(0, 255, 0, 0.3);
+        }
+        pre {
+            background-color: #0d0d0d;
+            border: 1px solid #00ffff;
+            border-left: 4px solid #00ffff;
+            padding: 15px;
+            overflow-x: auto;
+            border-radius: 4px;
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+            color: #00ff00;
+        }
+        .issue {
+            background-color: rgba(255, 193, 7, 0.1);
+            border-left: 4px solid #ffc107;
+            padding: 10px;
+            margin: 10px 0;
+            box-shadow: 0 0 10px rgba(255, 193, 7, 0.3);
+        }
+        .solution {
+            background-color: rgba(0, 255, 0, 0.1);
+            border-left: 4px solid #00ff00;
+            padding: 10px;
+            margin: 10px 0;
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+        }
+        .note {
+            background-color: rgba(0, 255, 255, 0.1);
+            border-left: 4px solid #00ffff;
+            padding: 10px;
+            margin: 10px 0;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+        }
+        .failed {
+            background-color: rgba(255, 0, 255, 0.1);
+            border-left: 4px solid #ff00ff;
+            padding: 10px;
+            margin: 10px 0;
+            box-shadow: 0 0 10px rgba(255, 0, 255, 0.3);
+        }
+        ul {
+            padding-left: 25px;
+        }
+        li {
+            margin: 8px 0;
+        }
+        li::marker {
+            color: #00ffff;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            border: 1px solid #00ffff;
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.2);
+        }
+        th, td {
+            border: 1px solid #333;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #1a1a1a;
+            font-weight: bold;
+            color: #00ffff;
+            text-shadow: 0 0 5px #00ffff;
+        }
+        tr:hover {
+            background-color: rgba(0, 255, 255, 0.05);
+        }
+        .file-path {
+            color: #ff00ff;
+            font-weight: 500;
+            text-shadow: 0 0 5px #ff00ff;
+        }
+        strong {
+            color: #ffff00;
+        }
+        a {
+            color: #00ffff;
+            text-decoration: none;
+            text-shadow: 0 0 5px #00ffff;
+        }
+        a:hover {
+            text-shadow: 0 0 10px #00ffff;
+        }
+        hr {
+            border: none;
+            border-top: 2px solid #00ffff;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+        }
+        @keyframes glow {
+            from {
+                text-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff, 0 0 30px #00ffff;
+            }
+            to {
+                text-shadow: 0 0 20px #00ffff, 0 0 30px #00ffff, 0 0 40px #00ffff, 0 0 50px #00ffff;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>NoFences Development Session - Change Summary</h1>
+    <p><strong>Date:</strong> 2025-01-04</p>
+    <p><strong>Branch:</strong> gemini/fencewindow-refactor</p>
+    <p><strong>Architecture:</strong> Canvas-based with WPF content rendering</p>
+    <p><strong>Total Changes:</strong> 12,617 lines added, 104 lines removed (49 files)</p>
+    <p><strong>Sessions:</strong> 2 (Architecture creation + Bug fixes)</p>
+
+    <div class="note">
+        <strong>Overview:</strong> This document covers changes across two development sessions:
+        <ul>
+    <h2>Session 3 (2025-01-06): Image Preprocessing Pipeline</h2>
+
+    <p>This session focused on implementing an automated solution to the pure black pixel transparency issue identified in Session 2. Instead of requiring users to manually edit their images, we created a preprocessing pipeline that automatically converts pure black pixels to near-black during image loading.</p>
+
+    <h3>12.1 Problem Statement</h3>
+
+    <div class="issue">
+        <strong>Issue:</strong> The canvas uses <code>TransparencyKey = RGB(0,0,0)</code> which causes any pure black pixels in images to become transparent. This was identified as an acceptable limitation with "user-managed images" approach, but it creates a poor user experience.
+    </div>
+
+    <h3>12.2 Solution: Automatic Image Preprocessing</h3>
+
+    <div class="solution">
+        <strong>Implemented Solution:</strong> Created an automatic preprocessing pipeline that converts pure black pixels to near-black RGB(1,1,1) during image load, which is visually identical but doesn't trigger transparency.
+        <ul>
+            <li><strong>Transparent to user:</strong> Works automatically without user intervention</li>
+            <li><strong>Configurable:</strong> Can be enabled/disabled per fence via UI checkbox</li>
+            <li><strong>Efficient:</strong> Only processes images that actually contain pure black pixels</li>
+            <li><strong>Safe:</strong> Preserves alpha channel and only modifies opaque black pixels</li>
+        </ul>
+    </div>
+
+    <h3>12.3 New File Created</h3>
+
+    <table>
+        <tr>
+            <th>File</th>
+            <th>Lines</th>
+            <th>Purpose</th>
+        </tr>
+        <tr>
+            <td class="file-path">NoFences/Util/ImagePreprocessor.cs</td>
+            <td>253</td>
+            <td>Image preprocessing utility with pixel manipulation, statistics, and configuration</td>
+        </tr>
+    </table>
+
+    <h3>12.4 ImagePreprocessor Features</h3>
+
+    <table>
+        <tr>
+            <th>Method</th>
+            <th>Description</th>
+        </tr>
+        <tr>
+            <td><code>PreprocessImage()</code></td>
+            <td>Main preprocessing method - converts RGB(0,0,0) to RGB(1,1,1) while preserving alpha</td>
+        </tr>
+        <tr>
+            <td><code>MightContainBlackPixels()</code></td>
+            <td>Fast heuristic check (samples first row) to skip preprocessing when not needed</td>
+        </tr>
+        <tr>
+            <td><code>GetImageStatistics()</code></td>
+            <td>Detailed analysis - counts black pixels and calculates percentage (for debugging)</td>
+        </tr>
+        <tr>
+            <td><code>IsEnabled</code> property</td>
+            <td>Global toggle for preprocessing (default: true)</td>
+        </tr>
+    </table>
+
+    <h3>12.5 Implementation Details</h3>
+
+    <div class="solution">
+        <strong>Pixel Conversion Logic:</strong>
+        <pre>// For each pixel in image
+if (r == 0 && g == 0 && b == 0 && alpha > 0)
+{
+    // Convert pure black to near-black
+    r = 1, g = 1, b = 1  // RGB(1,1,1)
+    // Keep original alpha
+}</pre>
+        <ul>
+            <li>Only converts <strong>opaque</strong> black pixels (alpha > 0)</li>
+            <li>Transparent black pixels (alpha = 0) are left unchanged</li>
+            <li>Uses BGRA32 format for manipulation</li>
+            <li>Returns frozen <code>WriteableBitmap</code> for thread safety</li>
+        </ul>
+    </div>
+
+    <h3>12.6 Integration Points</h3>
+
+    <table>
+        <tr>
+            <th>Component</th>
+            <th>Integration</th>
+        </tr>
+        <tr>
+            <td class="file-path">PictureFenceHandlerWpf.cs</td>
+            <td>
+                <strong>Method:</strong> <code>LoadImageIntoControl()</code> (line 342-348)<br/>
+                <strong>Logic:</strong> Check <code>fenceInfo.PreprocessImages</code>, apply preprocessor before setting Image.Source
+            </td>
+        </tr>
+        <tr>
+            <td class="file-path">LazyImage.cs</td>
+            <td>
+                <strong>Method:</strong> <code>LoadImage()</code> (line 86-94)<br/>
+                <strong>Constructor:</strong> Added <code>preprocessImages</code> parameter (default: true)<br/>
+                <strong>Logic:</strong> Apply preprocessor based on constructor parameter
+            </td>
+        </tr>
+    </table>
+
+    <h3>12.7 Configuration System</h3>
+
+    <div class="solution">
+        <strong>Per-Fence Configuration:</strong> Added new property to <code>FenceInfo</code>
+        <ul>
+            <li><strong>Property:</strong> <code>PreprocessImages</code> (bool, default: true)</li>
+            <li><strong>XML Serialized:</strong> Persists with fence metadata</li>
+            <li><strong>UI Control:</strong> Checkbox in Edit Fence dialog: "Fix pure black pixels in images"</li>
+            <li><strong>Tooltip:</strong> Explains the feature and recommends it for picture fences</li>
+        </ul>
+    </div>
+
+    <h3>12.8 Files Modified</h3>
+
+    <table>
+        <tr>
+            <th>File</th>
+            <th>Changes</th>
+        </tr>
+        <tr>
+            <td class="file-path">NoFencesCore/Model/FenceInfo.cs</td>
+            <td>
+                <ul>
+                    <li>Added <code>PreprocessImages</code> property (bool, default: true)</li>
+                    <li>Comprehensive XML documentation explaining the feature</li>
+                </ul>
+            </td>
+        </tr>
+        <tr>
+            <td class="file-path">NoFences/View/CanvasBased/Handlers/PictureFenceHandlerWpf.cs</td>
+            <td>
+                <ul>
+                    <li>Updated <code>LoadImageIntoControl()</code> to conditionally apply preprocessing</li>
+                    <li>Updated all 3 <code>new LazyImage()</code> calls to pass <code>fenceInfo.PreprocessImages</code></li>
+                </ul>
+            </td>
+        </tr>
+        <tr>
+            <td class="file-path">NoFences/View/CanvasBased/Controls/LazyImage.cs</td>
+            <td>
+                <ul>
+                    <li>Added <code>preprocessImages</code> field and constructor parameter</li>
+                    <li>Updated <code>LoadImage()</code> to conditionally apply preprocessing</li>
+                </ul>
+            </td>
+        </tr>
+        <tr>
+            <td class="file-path">NoFences/View/CanvasBased/FenceEditWindow.xaml</td>
+            <td>
+                <ul>
+                    <li>Added <code>chkPreprocessImages</code> checkbox to "Display Options" group</li>
+                    <li>Added descriptive tooltip</li>
+                </ul>
+            </td>
+        </tr>
+        <tr>
+            <td class="file-path">NoFences/View/CanvasBased/FenceEditWindow.xaml.cs</td>
+            <td>
+                <ul>
+                    <li>Added load logic for <code>chkPreprocessImages</code> in <code>LoadFenceInfo()</code></li>
+                    <li>Added save logic in <code>BtnOk_Click()</code></li>
+                    <li>Added property to <code>CloneFenceInfo()</code> method</li>
+                </ul>
+            </td>
+        </tr>
+    </table>
+
+    <h3>12.9 Performance Considerations</h3>
+
+    <div class="note">
+        <h4>Optimization Strategy</h4>
+        <ul>
+            <li><strong>Lazy evaluation:</strong> Only processes images when they're actually loaded</li>
+            <li><strong>Conditional processing:</strong> Skips preprocessing if feature is disabled</li>
+            <li><strong>Original preserved:</strong> If no black pixels found, returns original bitmap (no copy)</li>
+            <li><strong>Frozen bitmaps:</strong> Result is frozen for thread safety and performance</li>
+            <li><strong>Future optimization:</strong> Could add <code>MightContainBlackPixels()</code> heuristic check</li>
+        </ul>
+    </div>
+
+    <h3>12.10 User Experience Improvements</h3>
+
+    <table>
+        <tr>
+            <th>Before (Session 2)</th>
+            <th>After (Session 3)</th>
+        </tr>
+        <tr>
+            <td>
+                <ul>
+                    <li>User must manually edit images</li>
+                    <li>Batch processing required for large collections</li>
+                    <li>Easy to miss images with black content</li>
+                    <li>Poor out-of-box experience</li>
+                </ul>
+            </td>
+            <td>
+                <ul>
+                    <li>Fully automatic - no user action needed</li>
+                    <li>Works with any existing image collection</li>
+                    <li>Processes all images consistently</li>
+                    <li>Can be disabled if desired</li>
+                </ul>
+            </td>
+        </tr>
+    </table>
+
+    <h3>12.11 Testing Notes</h3>
+
+    <div class="note">
+        <strong>Testing Requirements:</strong>
+        <ul>
+            <li>Create picture fence with images containing pure black RGB(0,0,0) pixels</li>
+            <li>Verify black pixels are NOT transparent (should appear black, not see-through)</li>
+            <li>Verify checkbox in Edit Fence dialog loads/saves correctly</li>
+            <li>Test with preprocessing disabled - verify black pixels become transparent</li>
+            <li>Test all display modes: Slideshow, MasonryGrid, Hybrid</li>
+            <li>Check performance with large image sets</li>
+            <li>Verify logging output shows preprocessing activity</li>
+        </ul>
+    </div>
+
+    <h3>12.12 Logging Output</h3>
+
+    <p>When preprocessing finds black pixels, it logs:</p>
+    <pre>ImagePreprocessor: Converted 1523 pure black pixels to near-black</pre>
+
+    <h3>12.13 Future Enhancements</h3>
+
+    <div class="note">
+        <h4>Potential Improvements</h4>
+        <ul>
+            <li><strong>Caching:</strong> Cache preprocessed images to avoid repeated processing</li>
+            <li><strong>Background processing:</strong> Preprocess images on background thread before display</li>
+            <li><strong>Heuristic check:</strong> Use <code>MightContainBlackPixels()</code> to skip processing when safe</li>
+            <li><strong>Statistics UI:</strong> Show preprocessing stats in fence properties (X images processed, Y pixels converted)</li>
+            <li><strong>Batch preprocessing:</strong> Tool to preprocess entire image folder at once</li>
+            <li><strong>Alternative colors:</strong> Allow configuration of replacement color (currently RGB(1,1,1))</li>
+        </ul>
+    </div>
+
+    <h3>12.14 Technical Architecture</h3>
+
+    <p>The preprocessing pipeline integrates seamlessly into the existing image loading architecture:</p>
+
+    <pre>Image File
+    ↓
+BitmapImage.Load (WPF)
+    ↓
+EXIF Rotation Applied
+    ↓
+Freeze for Thread Safety
+    ↓
+ImagePreprocessor.PreprocessImage() ← NEW
+    ↓
+Display in UI (Image control)</pre>
+
+    <hr>
+
+    <h2>Session 3 Continued (2025-01-06): Additional Improvements</h2>
+
+    <p>After implementing the image preprocessing pipeline, three additional improvements were requested and implemented in the same session.</p>
+
+    <h3>13.1 Enhancement: Auto-Expand Height (Content-Aware)</h3>
+
+    <div class="solution">
+        <strong>Feature Description:</strong> Enhanced the existing "Auto-expand height to fit all content" checkbox to use intelligent content-aware sizing that respects both content and available screen space.
+        <ul>
+            <li><strong>Accessibility:</strong> Available via Edit Fence dialog → Display Options → "Auto-expand height to fit all content"</li>
+            <li><strong>Content-aware:</strong> Measures actual content desired height using WPF layout system</li>
+            <li><strong>Space-aware:</strong> Calculates available height from current Y position to bottom of canvas</li>
+            <li><strong>Smart sizing:</strong> Uses the smaller of content height or available height</li>
+            <li><strong>Minimum height:</strong> Enforces minimum of 100px (reduced from previous 200px)</li>
+            <li><strong>Auto-recalculation:</strong> Height adjusts automatically when content changes or loads</li>
+            <li><strong>Screen boundaries:</strong> Never expands beyond screen bottom</li>
+        </ul>
+    </div>
+
+    <h4>Implementation Details</h4>
+
+    <table>
+        <tr>
+            <th>File</th>
+            <th>Changes</th>
+        </tr>
+        <tr>
+            <td class="file-path">FenceContainer.cs</td>
+            <td>
+                <ul>
+                    <li>Removed "Fit to Height" context menu item (redundant)</li>
+                    <li>Removed <code>fitToHeightMenuItem</code> field</li>
+                    <li>Removed <code>FitToHeight()</code> method</li>
+                    <li>Enhanced <code>AdjustHeightToContent()</code> with content-aware logic</li>
+                    <li>Now measures: <code>availableHeight = parentBounds.Height - currentY</code></li>
+                    <li>Uses: <code>newHeight = Min(contentHeight, availableHeight)</code></li>
+                    <li>Reduced minimum from 200px to 100px for consistency</li>
+                    <li>Updates <code>prevHeight</code> for proper minify behavior</li>
+                </ul>
+            </td>
+        </tr>
+    </table>
+
+    <h4>Behavior Changes</h4>
+
+    <table>
+        <tr>
+            <th>Before</th>
+            <th>After</th>
+        </tr>
+        <tr>
+            <td>
+                <ul>
+                    <li>AutoHeight only considered content size</li>
+                    <li>Could expand beyond screen bottom</li>
+                    <li>Minimum 200px height</li>
+                    <li>Separate "Fit to Height" context menu item</li>
+                </ul>
+            </td>
+            <td>
+                <ul>
+                    <li>AutoHeight considers BOTH content and available space</li>
+                    <li>Never expands beyond screen bottom</li>
+                    <li>Minimum 100px height</li>
+                    <li>Single unified feature via checkbox</li>
+                </ul>
+            </td>
+        </tr>
+    </table>
+
+    <div class="note">
+        <strong>Usage:</strong> Edit Fence → Display Options → Check "Auto-expand height to fit all content" → Fence automatically sizes to fit content (or screen limit)
+    </div>
+
+    <h3>13.2 Feature: Customizable Masonry Column Widths</h3>
+
+    <div class="solution">
+        <strong>Feature Description:</strong> Made masonry grid column widths configurable per-fence, with automatic capping at 1/3 screen width.
+        <ul>
+            <li><strong>Minimum column width:</strong> User-configurable (default: 200px, absolute minimum: 100px)</li>
+            <li><strong>Maximum column width:</strong> User-configurable (default: 400px, capped at 1/3 screen width)</li>
+            <li><strong>Applies to:</strong> Both MasonryGrid and Hybrid display modes</li>
+            <li><strong>Validation:</strong> Ensures max >= min at save time</li>
+        </ul>
+    </div>
+
+    <h4>New Properties</h4>
+
+    <table>
+        <tr>
+            <th>Property</th>
+            <th>Type</th>
+            <th>Default</th>
+            <th>Description</th>
+        </tr>
+        <tr>
+            <td><code>MasonryMinColumnWidth</code></td>
+            <td>int</td>
+            <td>200</td>
+            <td>Minimum column width in pixels (absolute minimum: 100px)</td>
+        </tr>
+        <tr>
+            <td><code>MasonryMaxColumnWidth</code></td>
+            <td>int</td>
+            <td>400</td>
+            <td>Maximum column width in pixels (runtime cap: 1/3 screen width)</td>
+        </tr>
+    </table>
+
+    <h4>Files Modified</h4>
+
+    <table>
+        <tr>
+            <th>File</th>
+            <th>Changes</th>
+        </tr>
+        <tr>
+            <td class="file-path">NoFencesCore/Model/FenceInfo.cs</td>
+            <td>
+                <ul>
+                    <li>Added <code>MasonryMinColumnWidth</code> property</li>
+                    <li>Added <code>MasonryMaxColumnWidth</code> property</li>
+                    <li>Both are XML-serialized</li>
+                </ul>
+            </td>
+        </tr>
+        <tr>
+            <td class="file-path">PictureFenceHandlerWpf.cs</td>
+            <td>
+                <ul>
+                    <li>Updated <code>CreateMasonryGridContent()</code> to use fence settings</li>
+                    <li>Updated <code>CreateHybridContent()</code> to use fence settings</li>
+                    <li>Applied runtime cap: <code>Math.Min(maxWidth, screenWidth / 3.0)</code></li>
+                    <li>Added validation: <code>maxColWidth = Math.Max(minColWidth, maxColWidth)</code></li>
+                    <li>Added logging for debugging</li>
+                </ul>
+            </td>
+        </tr>
+        <tr>
+            <td class="file-path">FenceEditWindow.xaml.cs</td>
+            <td>
+                <ul>
+                    <li>Added <code>txtMinColumnWidth</code> and <code>txtMaxColumnWidth</code> controls to <code>PicturePropertiesPanel</code></li>
+                    <li>Added load logic in <code>LoadFromFenceInfo()</code></li>
+                    <li>Added save logic with validation in <code>SaveToFenceInfo()</code></li>
+                    <li>Updated <code>CloneFenceInfo()</code> to include new properties</li>
+                </ul>
+            </td>
+        </tr>
+    </table>
+
+    <h4>UI Layout</h4>
+
+    <div class="note">
+        <strong>Location:</strong> Edit Fence dialog → Type-Specific Properties (Pictures) → "Masonry Column Widths (px)"
+        <pre>Min: [200]  Max: [400]
+Controls image column sizes in MasonryGrid and Hybrid modes
+(Max capped at 1/3 screen width)</pre>
+    </div>
+
+    <h3>13.3 Change: Preprocessing Made Obligatory</h3>
+
+    <div class="solution">
+        <strong>Change Description:</strong> Removed the configurable option for image preprocessing and made it always-on.
+        <ul>
+            <li><strong>Rationale:</strong> Pure black pixel transparency is a fundamental issue that should always be fixed</li>
+            <li><strong>User experience:</strong> Simplifies configuration, ensures consistent behavior</li>
+            <li><strong>Performance:</strong> Minimal impact - only processes images with actual black pixels</li>
+            <li><strong>Global toggle:</strong> <code>ImagePreprocessor.IsEnabled</code> still exists for emergency disable if needed</li>
+        </ul>
+    </div>
+
+    <h4>Removed Components</h4>
+
+    <table>
+        <tr>
+            <th>Component</th>
+            <th>Action</th>
+        </tr>
+        <tr>
+            <td><code>FenceInfo.PreprocessImages</code> property</td>
+            <td>Removed from model</td>
+        </tr>
+        <tr>
+            <td><code>chkPreprocessImages</code> checkbox</td>
+            <td>Removed from XAML</td>
+        </tr>
+        <tr>
+            <td>Load/save logic for preprocessing setting</td>
+            <td>Removed from <code>FenceEditWindow.xaml.cs</code></td>
+        </tr>
+        <tr>
+            <td><code>LazyImage(preprocessImages)</code> parameter</td>
+            <td>Removed - constructor always preprocesses</td>
+        </tr>
+    </table>
+
+    <h4>Updated Logic</h4>
+
+    <table>
+        <tr>
+            <th>Location</th>
+            <th>Before</th>
+            <th>After</th>
+        </tr>
+        <tr>
+            <td><code>PictureFenceHandlerWpf.LoadImageIntoControl()</code></td>
+            <td>
+                <pre>if (fenceInfo.PreprocessImages)
+    finalBitmap = ImagePreprocessor.PreprocessImage(bitmap);</pre>
+            </td>
+            <td>
+                <pre>// Always preprocess
+finalBitmap = ImagePreprocessor.PreprocessImage(bitmap);</pre>
+            </td>
+        </tr>
+        <tr>
+            <td><code>LazyImage.LoadImage()</code></td>
+            <td>
+                <pre>if (preprocessImages)
+    finalBitmap = ImagePreprocessor.PreprocessImage(bitmap);</pre>
+            </td>
+            <td>
+                <pre>// Always preprocess
+finalBitmap = ImagePreprocessor.PreprocessImage(bitmap);</pre>
+            </td>
+        </tr>
+        <tr>
+            <td><code>new LazyImage()</code> calls</td>
+            <td>
+                <pre>new LazyImage(imagePath, fenceInfo.PreprocessImages)</pre>
+            </td>
+            <td>
+                <pre>new LazyImage(imagePath)</pre>
+            </td>
+        </tr>
+    </table>
+
+    <h3>13.4 Bug Fix: Masonry Grid Images Being Cut Off</h3>
+
+    <div class="issue">
+        <strong>Bug:</strong> Images in masonry grid were being cut off/clipped, showing only partial content.
+    </div>
+
+    <div class="solution">
+        <strong>Root Cause:</strong> Size mismatch between explicit Width/Height set on LazyImage and actual column width calculated by MasonryPanel
+        <ul>
+            <li><strong>Problem 1:</strong> Images were sized with estimated column width (350px)</li>
+            <li><strong>Problem 2:</strong> Actual MasonryPanel column width varies (200-400px, capped at 1/3 screen)</li>
+            <li><strong>Problem 3:</strong> Mismatch caused images to overflow and get clipped by ClipToBounds</li>
+        </ul>
+    </div>
+
+    <h4>Fix Implementation</h4>
+
+    <table>
+        <tr>
+            <th>Component</th>
+            <th>Changes</th>
+        </tr>
+        <tr>
+            <td class="file-path">LazyImage.cs</td>
+            <td>
+                <ul>
+                    <li>Changed <code>ClipToBounds</code> from true to false</li>
+                    <li>Changed Image alignment from Center to Stretch (both H and V)</li>
+                    <li>Added <code>MeasureOverride()</code> method to properly report desired size</li>
+                    <li>Measures based on aspect ratio: <code>height = width × aspectRatio</code></li>
+                    <li>Clamps height to reasonable range (100-800px)</li>
+                </ul>
+            </td>
+        </tr>
+        <tr>
+            <td class="file-path">PictureFenceHandlerWpf.cs</td>
+            <td>
+                <ul>
+                    <li>Removed explicit Width/Height setting on LazyImage elements</li>
+                    <li>Let MasonryPanel measure children naturally</li>
+                    <li>Removed <code>estimatedColumnWidth</code> variable</li>
+                    <li>Removed calls to <code>CalculateDisplaySize()</code></li>
+                    <li>Updated: MasonryGrid creation, Hybrid creation, LoadRandomImagesIntoMasonry(), Timer_Tick methods</li>
+                </ul>
+            </td>
+        </tr>
+    </table>
+
+    <h4>How It Works Now</h4>
+
+    <div class="note">
+        <strong>Before (Broken):</strong>
+        <ol>
+            <li>LazyImage created with explicit Width=350, Height=calculated</li>
+            <li>MasonryPanel tries to measure with actual columnWidth (e.g., 280px)</li>
+            <li>Size mismatch causes overflow</li>
+            <li>ClipToBounds=true clips the overflow</li>
+            <li>Result: Images appear cut off</li>
+        </ol>
+    </div>
+
+    <div class="solution">
+        <strong>After (Fixed):</strong>
+        <ol>
+            <li>LazyImage created without explicit size</li>
+            <li>MasonryPanel calls Measure() with actual columnWidth</li>
+            <li>LazyImage.MeasureOverride() calculates proper height based on aspect ratio</li>
+            <li>Reports correct desired size back to panel</li>
+            <li>Image.Stretch=Uniform fills the measured size correctly</li>
+            <li>Result: Images render at correct size, no clipping</li>
+        </ol>
+    </div>
+
+    <h3>13.5 Summary of Session 3 Changes</h3>
+
+    <table>
+        <tr>
+            <th>Feature</th>
+            <th>Type</th>
+            <th>Impact</th>
+        </tr>
+        <tr>
+            <td>Image Preprocessing Pipeline</td>
+            <td>New Feature</td>
+            <td>Automatically fixes black pixel transparency issue</td>
+        </tr>
+        <tr>
+            <td>Auto-Expand Height (Content-Aware)</td>
+            <td>Enhancement</td>
+            <td>Intelligently sizes fences to fit content or available space automatically</td>
+        </tr>
+        <tr>
+            <td>Customizable Masonry Columns</td>
+            <td>Enhancement</td>
+            <td>User control over grid layout appearance</td>
+        </tr>
+        <tr>
+            <td>Obligatory Preprocessing</td>
+            <td>Simplification</td>
+            <td>Consistent behavior, simplified configuration</td>
+        </tr>
+        <tr>
+            <td>Masonry Grid Image Clipping Fix</td>
+            <td>Bug Fix</td>
+            <td>Images now render correctly without being cut off</td>
+        </tr>
+    </table>
+
+    <h3>13.6 Testing Checklist for Session 3</h3>
+
+    <ul>
+        <li><strong>Image Preprocessing:</strong>
+            <ul>
+                <li>Test with images containing pure black pixels</li>
+                <li>Verify black pixels appear black (not transparent)</li>
+                <li>Check all display modes: Slideshow, MasonryGrid, Hybrid</li>
+                <li>Verify logging shows preprocessing activity</li>
+            </ul>
+        </li>
+        <li><strong>Auto-Expand Height (Content-Aware):</strong>
+            <ul>
+                <li>Right-click fence title → verify NO "Fit to Height" menu item (removed)</li>
+                <li>Edit Fence → Display Options → Enable "Auto-expand height to fit all content"</li>
+                <li>Picture fence with few images near top → should expand to content height</li>
+                <li>Picture fence with many images near top → should expand to bottom of screen</li>
+                <li>Picture fence with many images near bottom → should expand to content but capped at screen bottom</li>
+                <li>Position fence at different Y positions → verify height adjusts appropriately</li>
+                <li>Verify minimum 100px height enforcement</li>
+                <li>Add/remove images → verify height auto-adjusts</li>
+                <li>Disable checkbox → verify height stops auto-adjusting</li>
+            </ul>
+        </li>
+        <li><strong>Masonry Column Widths:</strong>
+            <ul>
+                <li>Open Edit Fence dialog for picture fence</li>
+                <li>Verify "Masonry Column Widths" controls exist in Type-Specific Properties</li>
+                <li>Change min/max values → save → verify grid updates</li>
+                <li>Set max width very high → verify 1/3 screen cap is applied</li>
+                <li>Set max < min → save → verify validation fixes it</li>
+                <li>Check both MasonryGrid and Hybrid modes</li>
+            </ul>
+        </li>
+        <li><strong>Preprocessing Obligatory:</strong>
+            <ul>
+                <li>Verify no preprocessing checkbox in Edit Fence dialog</li>
+                <li>Create new picture fence → verify preprocessing happens automatically</li>
+                <li>Load existing fence → verify preprocessing applies</li>
+            </ul>
+        </li>
+        <li><strong>Masonry Grid Image Clipping Fix:</strong>
+            <ul>
+                <li>Create picture fence in MasonryGrid mode</li>
+                <li>Load various images with different aspect ratios (portrait, landscape, square)</li>
+                <li>Verify images are NOT cut off - all content should be visible</li>
+                <li>Test with different masonry column width settings (min/max)</li>
+                <li>Test Hybrid mode - verify images render correctly</li>
+                <li>Resize fence width → verify images adapt correctly without clipping</li>
+            </ul>
+        </li>
+    </ul>
+
+    <hr>
+
+    <h2>Session 3 Continued (2025-01-06): Dynamic Auto-Height and Resize Conflict Resolution</h2>
+
+    <p>This continuation of Session 3 addressed two critical issues with the auto-height feature: conflicts with manual resizing and lack of dynamic updates when content changes.</p>
+
+    <h3>14.1 Issue: Auto-Height and Manual Resize Conflict</h3>
+
+    <div class="issue">
+        <strong>Problem:</strong> When AutoHeight is enabled, the fence height is automatically adjusted based on content. However, users could still manually resize the height via top/bottom borders, creating a conflict between automatic and manual sizing.
+        <ul>
+            <li>Auto-height adjusts based on content</li>
+            <li>User drags bottom border to resize</li>
+            <li>Next content change overrides user's manual adjustment</li>
+            <li>Confusing user experience</li>
+        </ul>
+    </div>
+
+    <h3>14.2 Solution: Conditional Border Enabling</h3>
+
+    <div class="solution">
+        <strong>Implementation:</strong> Disable vertical resize borders when AutoHeight is enabled, keeping only horizontal resizing available.
+        <ul>
+            <li><strong>AutoHeight ON:</strong> Top, bottom, and corner borders disabled (only width resizing)</li>
+            <li><strong>AutoHeight OFF:</strong> All borders enabled (full manual control)</li>
+            <li>Dynamically updates when AutoHeight setting changes</li>
+            <li><strong>Width resize handling:</strong> After horizontal resize completes, height is automatically recalculated to fit content at new width</li>
+        </ul>
+    </div>
+
+    <h4>Implementation Details</h4>
+
+    <table>
+        <tr>
+            <th>File</th>
+            <th>Changes</th>
+        </tr>
+        <tr>
+            <td class="file-path">FenceContainer.cs</td>
+            <td>
+                <ul>
+                    <li>Added <code>UpdateResizeBordersForAutoHeight()</code> method (lines 446-491)</li>
+                    <li>Called after <code>CreateResizeBorders()</code> in constructor</li>
+                    <li>Called after <code>RecreateWpfContent()</code> in edit dialog handler</li>
+                    <li>Sets <code>Visible</code> and <code>Enabled</code> properties on border panels</li>
+                    <li>Added auto-height recalculation in <code>Border_MouseUp()</code> after resize (lines 653-668)</li>
+                    <li>Uses 50ms delay to allow WPF layout to settle after width change</li>
+                </ul>
+            </td>
+        </tr>
+    </table>
+
+    <h4>Border State Logic</h4>
+
+    <pre>if (AutoHeight enabled)
+{
+    borderTop.Visible = false;
+    borderTop.Enabled = false;
+    borderBottom.Visible = false;
+    borderBottom.Enabled = false;
+    borderBottomRight.Visible = false;
+    borderBottomRight.Enabled = false;
+    // borderLeft and borderRight remain enabled
+}
+else
+{
+    // All borders enabled
+}</pre>
+
+    <h3>14.3 Issue: Auto-Height Not Updating on Content Changes</h3>
+
+    <div class="issue">
+        <strong>Problem:</strong> Auto-height only calculated on fence creation. Dynamic content changes did not trigger height recalculation:
+        <ul>
+            <li>Picture fence: Images rotate in slideshow/hybrid modes</li>
+            <li>Files fence: Files added/removed via drag-and-drop</li>
+            <li>Height remained static despite content changes</li>
+            <li>Users had to manually trigger "Fit to Height"</li>
+        </ul>
+    </div>
+
+    <h3>14.4 Solution: Event-Based ContentChanged System</h3>
+
+    <div class="solution">
+        <strong>Implementation:</strong> Event-driven architecture where fence handlers notify FenceContainer of content changes, triggering automatic height adjustment.
+        <ul>
+            <li><strong>Interface:</strong> Added <code>ContentChanged</code> event to <code>IFenceHandlerWpf</code></li>
+            <li><strong>Handlers:</strong> Raise event when content changes (rotation, file changes, etc.)</li>
+            <li><strong>Container:</strong> Subscribe to event, call <code>AdjustHeightToContent()</code></li>
+            <li>Only triggers if <code>AutoHeight</code> is enabled</li>
+        </ul>
+    </div>
+
+    <h4>Architecture Flow</h4>
+
+    <pre>Content Change Occurs
+    ↓
+Handler Raises ContentChanged Event
+    ↓
+FenceContainer.FenceHandler_ContentChanged()
+    ↓
+Check if AutoHeight Enabled
+    ↓
+AdjustHeightToContent()
+    ↓
+Fence Height Adjusted to Content</pre>
+
+    <h4>Files Modified</h4>
+
+    <table>
+        <tr>
+            <th>File</th>
+            <th>Changes</th>
+        </tr>
+        <tr>
+            <td class="file-path">IFenceHandlerWpf.cs</td>
+            <td>
+                <ul>
+                    <li>Added <code>event EventHandler ContentChanged;</code> to interface (line 21)</li>
+                    <li>All fence handlers must implement this event</li>
+                </ul>
+            </td>
+        </tr>
+        <tr>
+            <td class="file-path">PictureFenceHandlerWpf.cs</td>
+            <td>
+                <ul>
+                    <li>Added <code>public event EventHandler ContentChanged;</code> field (line 48)</li>
+                    <li>Raise event in <code>Timer_Tick_Slideshow()</code> after image changes (line 491)</li>
+                    <li>Raise event in <code>Timer_Tick_Hybrid_NewSet()</code> after grid refresh (line 516)</li>
+                    <li>Raise event in <code>Timer_Tick_Hybrid()</code> after image swaps (line 593)</li>
+                </ul>
+            </td>
+        </tr>
+        <tr>
+            <td class="file-path">FilesFenceHandlerWpf.cs</td>
+            <td>
+                <ul>
+                    <li>Added <code>public event EventHandler ContentChanged;</code> field (line 38)</li>
+                    <li>Raise event in <code>Refresh()</code> after items updated (line 204)</li>
+                    <li>Triggered when files added/removed via drag-and-drop</li>
+                </ul>
+            </td>
+        </tr>
+        <tr>
+            <td class="file-path">FenceContainer.cs</td>
+            <td>
+                <ul>
+                    <li>Subscribe to event in <code>CreateWpfContentArea()</code> (line 666)</li>
+                    <li>Added <code>FenceHandler_ContentChanged()</code> event handler (lines 1418-1426)</li>
+                    <li>Unsubscribe in <code>Dispose()</code> (line 1731)</li>
+                    <li>Unsubscribe/resubscribe in <code>RecreateWpfContent()</code> (lines 964, 977)</li>
+                </ul>
+            </td>
+        </tr>
+    </table>
+
+    <h4>Event Handler Implementation</h4>
+
+    <pre>private void FenceHandler_ContentChanged(object sender, EventArgs e)
+{
+    // Only adjust height if auto-height is enabled
+    if (fenceInfo.AutoHeight)
+    {
+        Logger.Log($"FenceContainer: Content changed for fence '{fenceInfo.Name}', adjusting height");
+        AdjustHeightToContent();
+    }
+}</pre>
+
+    <h4>Event Raising Examples</h4>
+
+    <table>
+        <tr>
+            <th>Scenario</th>
+            <th>Handler</th>
+            <th>When Raised</th>
+        </tr>
+        <tr>
+            <td>Slideshow image rotation</td>
+            <td>PictureFenceHandlerWpf</td>
+            <td>After <code>LoadCurrentPicture()</code> in timer tick</td>
+        </tr>
+        <tr>
+            <td>Hybrid mode full grid refresh</td>
+            <td>PictureFenceHandlerWpf</td>
+            <td>After <code>LoadRandomImagesIntoMasonry()</code></td>
+        </tr>
+        <tr>
+            <td>Hybrid mode image swap</td>
+            <td>PictureFenceHandlerWpf</td>
+            <td>After swapping 1-3 images in grid</td>
+        </tr>
+        <tr>
+            <td>Files added via drag-and-drop</td>
+            <td>FilesFenceHandlerWpf</td>
+            <td>After <code>items</code> collection updated in <code>Refresh()</code></td>
+        </tr>
+    </table>
+
+    <h3>14.5 Benefits of Event-Based Approach</h3>
+
+    <table>
+        <tr>
+            <th>Before</th>
+            <th>After</th>
+        </tr>
+        <tr>
+            <td>
+                <ul>
+                    <li>Height set only on creation</li>
+                    <li>User must manually trigger "Fit to Height"</li>
+                    <li>No dynamic updates</li>
+                    <li>Poor UX with rotating content</li>
+                </ul>
+            </td>
+            <td>
+                <ul>
+                    <li>Height updates automatically on content changes</li>
+                    <li>Seamless adjustment during rotation</li>
+                    <li>No manual intervention needed</li>
+                    <li>Clean event-driven architecture</li>
+                </ul>
+            </td>
+        </tr>
+    </table>
+
+    <h3>14.6 Testing Checklist</h3>
+
+    <ul>
+        <li><strong>Border Conflict Resolution:</strong>
+            <ul>
+                <li>Enable AutoHeight on fence</li>
+                <li>Verify top, bottom, corner borders are hidden</li>
+                <li>Verify left/right borders still work (width resizing)</li>
+                <li>Resize fence width → verify height automatically adjusts to fit content</li>
+                <li>Try different widths → verify height recalculates each time</li>
+                <li>Disable AutoHeight</li>
+                <li>Verify all borders reappear and work</li>
+            </ul>
+        </li>
+        <li><strong>Dynamic Auto-Height (Picture Fence):</strong>
+            <ul>
+                <li>Create picture fence with AutoHeight enabled</li>
+                <li>Slideshow mode: Verify height adjusts when images rotate (different aspect ratios)</li>
+                <li>Hybrid mode: Verify height adjusts when grid refreshes</li>
+                <li>MasonryGrid mode: Verify height stays appropriate</li>
+            </ul>
+        </li>
+        <li><strong>Dynamic Auto-Height (Files Fence):</strong>
+            <ul>
+                <li>Create files fence with AutoHeight enabled</li>
+                <li>Drag-and-drop files to fence</li>
+                <li>Verify height adjusts to show new items</li>
+                <li>Remove items (clear list)</li>
+                <li>Verify height adjusts down</li>
+            </ul>
+        </li>
+        <li><strong>Event Cleanup:</strong>
+            <ul>
+                <li>Create fence with AutoHeight</li>
+                <li>Edit fence (change type or properties)</li>
+                <li>Verify no memory leaks or duplicate event subscriptions</li>
+                <li>Close fence</li>
+                <li>Verify proper cleanup (check logs)</li>
+            </ul>
+        </li>
+    </ul>
+
+    <h3>14.7 Summary</h3>
+
+    <table>
+        <tr>
+            <th>Feature</th>
+            <th>Type</th>
+            <th>Impact</th>
+        </tr>
+        <tr>
+            <td>Border Conflict Resolution</td>
+            <td>Enhancement</td>
+            <td>Prevents conflicts between auto-height and manual resizing</td>
+        </tr>
+        <tr>
+            <td>ContentChanged Event System</td>
+            <td>New Feature</td>
+            <td>Enables dynamic auto-height updates on content changes</td>
+        </tr>
+        <tr>
+            <td>Event-Driven Architecture</td>
+            <td>Architecture Improvement</td>
+            <td>Clean separation of concerns, extensible for future features</td>
+        </tr>
+    </table>
+
+    <h3>14.8 Enhancement: Configurable Max Images for Masonry/Hybrid Modes</h3>
+
+    <div class="solution">
+        <strong>Feature:</strong> Added user-configurable limit for maximum number of images displayed in MasonryGrid and Hybrid modes.
+        <ul>
+            <li><strong>Default:</strong> 50 images (memory efficient)</li>
+            <li><strong>Range:</strong> 1-200 images (validated on save)</li>
+            <li><strong>Applies to:</strong> Both MasonryGrid and Hybrid display modes</li>
+            <li><strong>UI Location:</strong> Edit Fence → Type-Specific Properties (Pictures) → "Max Images to Display"</li>
+        </ul>
+    </div>
+
+    <h4>Implementation Details</h4>
+
+    <table>
+        <tr>
+            <th>File</th>
+            <th>Changes</th>
+        </tr>
+        <tr>
+            <td class="file-path">FenceInfo.cs</td>
+            <td>
+                <ul>
+                    <li>Added <code>MasonryMaxImages</code> property (line 91)</li>
+                    <li>Default value: 50</li>
+                    <li>XML-serialized for persistence</li>
+                </ul>
+            </td>
+        </tr>
+        <tr>
+            <td class="file-path">FenceEditWindow.xaml.cs</td>
+            <td>
+                <ul>
+                    <li>Added <code>txtMaxImages</code> TextBox control</li>
+                    <li>Added to PicturePropertiesPanel (row 3)</li>
+                    <li>Load logic: <code>txtMaxImages.Text = fenceInfo.MasonryMaxImages.ToString();</code> (line 570)</li>
+                    <li>Save logic with validation: Range 1-200 (line 603-606)</li>
+                    <li>Added to <code>CloneFenceInfo()</code> method (line 217)</li>
+                </ul>
+            </td>
+        </tr>
+        <tr>
+            <td class="file-path">PictureFenceHandlerWpf.cs</td>
+            <td>
+                <ul>
+                    <li>Removed hardcoded constants <code>MaxVisibleImages</code> and <code>HybridGridSize</code></li>
+                    <li>Updated <code>CreateMasonryGridContent()</code> to use <code>fenceInfo.MasonryMaxImages</code> (line 170)</li>
+                    <li>Updated <code>CreateHybridContent()</code> to use configurable value (line 264)</li>
+                    <li>Updated <code>Timer_Tick_Hybrid_NewSet()</code> (line 513)</li>
+                    <li>Updated <code>Refresh()</code> method (line 617)</li>
+                    <li>All usages include validation: <code>Math.Max(1, fenceInfo.MasonryMaxImages)</code></li>
+                </ul>
+            </td>
+        </tr>
+    </table>
+
+    <h4>UI Description</h4>
+
+    <div class="note">
+        <strong>Control Layout:</strong>
+        <pre>Max Images to Display: [50]
+
+Maximum number of images to show at once in MasonryGrid and Hybrid modes
+(Higher values use more memory)</pre>
+    </div>
+
+    <h4>Rationale</h4>
+
+    <table>
+        <tr>
+            <th>Benefit</th>
+            <th>Description</th>
+        </tr>
+        <tr>
+            <td>Memory Control</td>
+            <td>Users can reduce max images for better performance on low-memory systems</td>
+        </tr>
+        <tr>
+            <td>Visual Preference</td>
+            <td>Users can increase limit to see more images at once if desired</td>
+        </tr>
+        <tr>
+            <td>Performance Tuning</td>
+            <td>Large image collections can be limited to prevent slowdowns</td>
+        </tr>
+        <tr>
+            <td>Flexibility</td>
+            <td>Different fences can have different limits based on content/usage</td>
+        </tr>
+    </table>
+
+    <h4>Testing</h4>
+
+    <ul>
+        <li>Create picture fence in MasonryGrid mode with 100+ images</li>
+        <li>Set max images to 20 → verify only 20 images displayed</li>
+        <li>Set max images to 100 → verify 100 images displayed</li>
+        <li>Test with Hybrid mode → verify limit applies during rotation</li>
+        <li>Test validation: Enter 0 → should clamp to 1</li>
+        <li>Test validation: Enter 500 → should clamp to 200</li>
+    </ul>
+
+    <hr>
+
+    <h2>Session 3 Continued (2025-01-06): Weather Integration for Clock Fence</h2>
+
+    <p>After implementing the auto-height features and image preprocessing, the user requested weather display functionality for the clock fence.</p>
+
+    <h3>15.1 Feature Request</h3>
+
+    <div class="note">
+        <strong>User Request:</strong>
+        <p>"Now the clock fence - as it is showing more information already like the current date, can we make it show the weather based on a location the user chooses? I would like only the temperature and an icon with current weather (raining, sunny, cloudy...) If we need to consume some api, let's work it out."</p>
+    </div>
+
+    <h3>15.2 Solution: OpenWeatherMap API Integration</h3>
+
+    <div class="solution">
+        <strong>Implementation:</strong> Integrated OpenWeatherMap API with automatic caching and Unicode weather emoji display.
+        <ul>
+            <li><strong>API Provider:</strong> OpenWeatherMap (free tier: 1000 calls/day)</li>
+            <li><strong>Caching:</strong> 15-minute cache to minimize API calls</li>
+            <li><strong>Display:</strong> Unicode weather emojis (☀️, ☁️, 🌧️, etc.) + temperature in Celsius</li>
+            <li><strong>Configuration:</strong> User-configurable location and optional API key</li>
+            <li><strong>Graceful degradation:</strong> Shows default thermometer icon if weather unavailable</li>
+        </ul>
+    </div>
+
+    <h3>15.3 New File Created</h3>
+
+    <table>
+        <tr>
+            <th>File</th>
+            <th>Lines</th>
+            <th>Purpose</th>
+        </tr>
+        <tr>
+            <td class="file-path">NoFences/Util/WeatherService.cs</td>
+            <td>182</td>
+            <td>Weather API integration with OpenWeatherMap, caching, and emoji mapping</td>
+        </tr>
+    </table>
+
+    <h3>15.4 WeatherService Features</h3>
+
+    <table>
+        <tr>
+            <th>Method</th>
+            <th>Description</th>
+        </tr>
+        <tr>
+            <td><code>GetWeatherAsync()</code></td>
+            <td>Fetches weather data from OpenWeatherMap API, returns cached data if available</td>
+        </tr>
+        <tr>
+            <td><code>GetWeatherEmoji()</code></td>
+            <td>Maps weather descriptions to Unicode emojis (Clear→☀️, Clouds→☁️, Rain→🌧️, etc.)</td>
+        </tr>
+        <tr>
+            <td><code>ClearCache()</code></td>
+            <td>Manually clears weather cache (for testing or manual refresh)</td>
+        </tr>
+    </table>
+
+    <h3>15.5 WeatherData Model</h3>
+
+    <pre>public class WeatherData
+{
+    public double Temperature { get; set; } // In Celsius
+    public string Description { get; set; } // "Clear", "Clouds", "Rain", etc.
+    public string IconCode { get; set; }    // OpenWeatherMap icon code
+    public DateTime LastUpdated { get; set; }
+}</pre>
+
+    <h3>15.6 API Integration Details</h3>
+
+    <div class="solution">
+        <strong>OpenWeatherMap API:</strong>
+        <ul>
+            <li><strong>Endpoint:</strong> <code>https://api.openweathermap.org/data/2.5/weather</code></li>
+            <li><strong>Parameters:</strong> <code>q={location}&appid={apiKey}&units=metric</code></li>
+            <li><strong>Units:</strong> Metric (Celsius for temperature)</li>
+            <li><strong>Caching Strategy:</strong> 15-minute cache per location</li>
+            <li><strong>Free Tier Limit:</strong> 1000 calls/day</li>
+            <li><strong>API Key:</strong> Users can get free key at <a href="https://openweathermap.org/api">https://openweathermap.org/api</a></li>
+        </ul>
+    </div>
+
+    <h3>15.7 Files Modified</h3>
+
+    <table>
+        <tr>
+            <th>File</th>
+            <th>Changes</th>
+        </tr>
+        <tr>
+            <td class="file-path">NoFencesCore/Model/FenceInfo.cs</td>
+            <td>
+                <ul>
+                    <li>Added <code>WeatherLocation</code> property (string, default: "")</li>
+                    <li>Added <code>WeatherApiKey</code> property (string, default: "")</li>
+                    <li>Both XML-serialized for persistence</li>
+                </ul>
+            </td>
+        </tr>
+        <tr>
+            <td class="file-path">NoFences/View/CanvasBased/Handlers/ClockFenceHandlerWpf.cs</td>
+            <td>
+                <ul>
+                    <li>Added <code>weatherTimer</code>, <code>weatherTextBlock</code>, <code>temperatureTextBlock</code> fields</li>
+                    <li>Modified <code>CreateContentElement()</code> to display weather UI conditionally</li>
+                    <li>Added <code>WeatherTimer_Tick()</code> method (updates every 15 minutes)</li>
+                    <li>Added <code>UpdateWeather()</code> async method (fetches and displays weather data)</li>
+                    <li>Updated <code>Cleanup()</code> to dispose weather timer</li>
+                    <li>Uses <code>Dispatcher.Invoke()</code> for thread-safe UI updates</li>
+                </ul>
+            </td>
+        </tr>
+        <tr>
+            <td class="file-path">NoFences/View/CanvasBased/FenceEditWindow.xaml.cs</td>
+            <td>
+                <ul>
+                    <li>Added <code>txtWeatherLocation</code> and <code>txtWeatherApiKey</code> fields to <code>ClockPropertiesPanel</code></li>
+                    <li>Enhanced UI with weather configuration section (separator, location input, API key input)</li>
+                    <li>Implemented <code>LoadFromFenceInfo()</code> to load weather properties</li>
+                    <li>Implemented <code>SaveToFenceInfo()</code> to save weather properties</li>
+                    <li>Updated <code>CloneFenceInfo()</code> to include weather properties</li>
+                </ul>
+            </td>
+        </tr>
+    </table>
+
+    <h3>15.8 UI Implementation</h3>
+
+    <div class="solution">
+        <strong>Clock Fence Display:</strong>
+        <pre>╔════════════════════════╗
+║     Clock Fence        ║
+╠════════════════════════╣
+║      12:34:56          ║ ← Time display
+║ Monday, January 06, 2025 ║ ← Date display
+║      ☀️ 22°C           ║ ← Weather display (if location configured)
+╚════════════════════════╝</pre>
+    </div>
+
+    <div class="solution">
+        <strong>Configuration UI (Edit Fence → Clock Properties):</strong>
+        <ul>
+            <li><strong>Weather Location:</strong> Text input for city name (e.g., "London", "New York", "Tokyo")</li>
+            <li><strong>Hint:</strong> "Leave empty to disable weather display"</li>
+            <li><strong>Weather API Key:</strong> Optional text input for OpenWeatherMap API key</li>
+            <li><strong>Hint:</strong> "Get a free API key at https://openweathermap.org/api"</li>
+            <li><strong>Hint:</strong> "Leave empty to use the default demo key (limited)"</li>
+        </ul>
+    </div>
+
+    <h3>15.9 Weather Emoji Mapping</h3>
+
+    <table>
+        <tr>
+            <th>Weather Description</th>
+            <th>Emoji</th>
+        </tr>
+        <tr>
+            <td>Clear</td>
+            <td>☀️ (Sun)</td>
+        </tr>
+        <tr>
+            <td>Clouds</td>
+            <td>☁️ (Cloud)</td>
+        </tr>
+        <tr>
+            <td>Rain / Drizzle</td>
+            <td>🌧️ (Cloud with Rain)</td>
+        </tr>
+        <tr>
+            <td>Thunderstorm</td>
+            <td>⛈️ (Cloud with Lightning and Rain)</td>
+        </tr>
+        <tr>
+            <td>Snow</td>
+            <td>❄️ (Snowflake)</td>
+        </tr>
+        <tr>
+            <td>Mist / Fog / Haze</td>
+            <td>🌫️ (Fog)</td>
+        </tr>
+        <tr>
+            <td>Default / Error</td>
+            <td>🌡️ (Thermometer)</td>
+        </tr>
+    </table>
+
+    <h3>15.10 Technical Implementation Details</h3>
+
+    <h4>Async/Await Pattern</h4>
+    <div class="solution">
+        <pre>private async void UpdateWeather()
+{
+    var weatherData = await WeatherService.GetWeatherAsync(
+        fenceInfo.WeatherLocation,
+        fenceInfo.WeatherApiKey);
+
+    // Update UI on dispatcher thread
+    weatherTextBlock.Dispatcher.Invoke(() =>
+    {
+        weatherTextBlock.Text = WeatherService.GetWeatherEmoji(weatherData.Description);
+        temperatureTextBlock.Text = $"{weatherData.Temperature}°C";
+    });
+}</pre>
+        <p><strong>Key Points:</strong></p>
+        <ul>
+            <li>Non-blocking async API call doesn't freeze UI</li>
+            <li><code>Dispatcher.Invoke()</code> ensures thread-safe UI updates</li>
+            <li>Error handling shows default thermometer icon on failure</li>
+        </ul>
+    </div>
+
+    <h4>Caching Strategy</h4>
+    <div class="solution">
+        <pre>private static WeatherData cachedWeather = null;
+private static string cachedLocation = null;
+private static DateTime lastFetchTime = DateTime.MinValue;
+private static readonly TimeSpan CacheDuration = TimeSpan.FromMinutes(15);
+
+// Check cache before API call
+if (cachedWeather != null &&
+    cachedLocation == location &&
+    DateTime.Now - lastFetchTime < CacheDuration)
+{
+    return cachedWeather;
+}</pre>
+        <p><strong>Rationale:</strong></p>
+        <ul>
+            <li>Reduces API calls (free tier: 1000/day)</li>
+            <li>Weather doesn't change frequently (15 minutes is reasonable)</li>
+            <li>Per-location caching allows multiple clock fences with different locations</li>
+            <li>Static cache shared across all clock fence instances</li>
+        </ul>
+    </div>
+
+    <h4>Timer-Based Updates</h4>
+    <div class="solution">
+        <pre>weatherTimer = new DispatcherTimer
+{
+    Interval = TimeSpan.FromMinutes(15)
+};
+weatherTimer.Tick += WeatherTimer_Tick;
+weatherTimer.Start();
+
+// Initial weather fetch
+UpdateWeather();</pre>
+        <p><strong>Behavior:</strong></p>
+        <ul>
+            <li>Weather updates every 15 minutes (matches cache duration)</li>
+            <li>Initial fetch happens immediately on fence creation</li>
+            <li>Timer disposed properly in <code>Cleanup()</code> method</li>
+        </ul>
+    </div>
+
+    <h3>15.11 Error Handling</h3>
+
+    <table>
+        <tr>
+            <th>Error Scenario</th>
+            <th>Behavior</th>
+        </tr>
+        <tr>
+            <td>Empty location</td>
+            <td>Weather display not shown (gracefully disabled)</td>
+        </tr>
+        <tr>
+            <td>Invalid location</td>
+            <td>Shows thermometer icon 🌡️ and "--°C", logs error</td>
+        </tr>
+        <tr>
+            <td>API key missing/invalid</td>
+            <td>Shows thermometer icon 🌡️ and "--°C", logs error message</td>
+        </tr>
+        <tr>
+            <td>Network error</td>
+            <td>Shows thermometer icon 🌡️ and "--°C", logs HTTP error</td>
+        </tr>
+        <tr>
+            <td>JSON parse error</td>
+            <td>Returns null, displays default state</td>
+        </tr>
+    </table>
+
+    <h3>15.12 Performance Considerations</h3>
+
+    <div class="note">
+        <h4>Optimization Strategies</h4>
+        <ul>
+            <li><strong>Async API calls:</strong> Don't block UI thread during weather fetch</li>
+            <li><strong>Static cache:</strong> Shared across all clock fence instances, reduces duplicate API calls</li>
+            <li><strong>15-minute updates:</strong> Balance between freshness and API usage</li>
+            <li><strong>Conditional display:</strong> Weather UI only created if location is configured</li>
+            <li><strong>Graceful failures:</strong> Network errors don't crash the application</li>
+        </ul>
+    </div>
+
+    <h3>15.13 Testing Checklist</h3>
+
+    <ul>
+        <li><strong>Basic Weather Display:</strong>
+            <ul>
+                <li>Create clock fence</li>
+                <li>Edit fence → Clock Properties</li>
+                <li>Enter weather location (e.g., "London")</li>
+                <li>Optionally enter API key (or leave empty for demo key)</li>
+                <li>Save and verify weather appears below date</li>
+                <li>Check logs for successful API fetch</li>
+            </ul>
+        </li>
+        <li><strong>Different Weather Conditions:</strong>
+            <ul>
+                <li>Test different cities with various weather (sunny, cloudy, rainy)</li>
+                <li>Verify correct emoji appears for each condition</li>
+                <li>Verify temperature displayed in Celsius</li>
+            </ul>
+        </li>
+        <li><strong>Caching:</strong>
+            <ul>
+                <li>Create clock fence with location</li>
+                <li>Check logs - should see "Fetching weather"</li>
+                <li>Wait 1 minute, check logs again</li>
+                <li>Should see "Returning cached weather"</li>
+                <li>Wait 16 minutes, check logs</li>
+                <li>Should see new "Fetching weather" (cache expired)</li>
+            </ul>
+        </li>
+        <li><strong>Error Handling:</strong>
+            <ul>
+                <li>Enter invalid location (e.g., "InvalidCity123")</li>
+                <li>Verify shows thermometer icon 🌡️ and "--°C"</li>
+                <li>Check logs for error message</li>
+                <li>Verify fence doesn't crash</li>
+            </ul>
+        </li>
+        <li><strong>Disable Weather:</strong>
+            <ul>
+                <li>Create clock fence with weather location</li>
+                <li>Verify weather appears</li>
+                <li>Edit fence → clear weather location</li>
+                <li>Save and verify weather display is removed</li>
+            </ul>
+        </li>
+        <li><strong>Multiple Clock Fences:</strong>
+            <ul>
+                <li>Create 3 clock fences with same location</li>
+                <li>Check logs - should see only ONE API call (shared cache)</li>
+                <li>Create fence with different location</li>
+                <li>Should see new API call for new location</li>
+            </ul>
+        </li>
+    </ul>
+
+    <h3>15.14 API Key Configuration</h3>
+
+    <div class="note">
+        <strong>Getting an OpenWeatherMap API Key:</strong>
+        <ol>
+            <li>Visit <a href="https://openweathermap.org/api">https://openweathermap.org/api</a></li>
+            <li>Click "Get API Key" or "Sign Up"</li>
+            <li>Create free account</li>
+            <li>Navigate to API Keys section</li>
+            <li>Copy your API key</li>
+            <li>Paste into Clock fence properties → "OpenWeatherMap API Key" field</li>
+        </ol>
+        <p><strong>Note:</strong> Free tier allows 1000 API calls per day. With 15-minute caching, a single clock fence makes ~96 calls/day.</p>
+    </div>
+
+    <h3>15.15 Future Enhancements</h3>
+
+    <div class="note">
+        <h4>Potential Improvements</h4>
+        <ul>
+            <li><strong>Forecast display:</strong> Show upcoming weather (3-day forecast)</li>
+            <li><strong>Temperature units:</strong> Toggle between Celsius and Fahrenheit</li>
+            <li><strong>Additional data:</strong> Humidity, wind speed, pressure</li>
+            <li><strong>Weather alerts:</strong> Display weather warnings/alerts</li>
+            <li><strong>Custom icons:</strong> Option to use custom weather icons instead of emojis</li>
+            <li><strong>Multiple locations:</strong> Display weather for multiple cities simultaneously</li>
+            <li><strong>Configurable update interval:</strong> User-selectable refresh rate</li>
+            <li><strong>Alternative API providers:</strong> Support for other weather APIs</li>
+        </ul>
+    </div>
+
+    <h3>15.16 Summary</h3>
+
+    <table>
+        <tr>
+            <th>Feature</th>
+            <th>Type</th>
+            <th>Impact</th>
+        </tr>
+        <tr>
+            <td>Weather Integration (Clock Fence)</td>
+            <td>New Feature</td>
+            <td>Displays current weather with temperature and emoji icon</td>
+        </tr>
+        <tr>
+            <td>OpenWeatherMap API Integration</td>
+            <td>External API</td>
+            <td>Fetches real-time weather data with free tier support</td>
+        </tr>
+        <tr>
+            <td>15-Minute Caching</td>
+            <td>Performance Optimization</td>
+            <td>Reduces API calls, stays within free tier limits</td>
+        </tr>
+        <tr>
+            <td>Unicode Weather Emojis</td>
+            <td>UI Enhancement</td>
+            <td>Visual weather representation (☀️, ☁️, 🌧️, etc.)</td>
+        </tr>
+        <tr>
+            <td>User-Configurable Location</td>
+            <td>Configuration UI</td>
+            <td>Users can set any city for weather display</td>
+        </tr>
+    </table>
+
+    <hr>
+
+    <p><em>Generated: 2025-01-07 (Updated - Session 8: Sprint 2 Behavior Extraction + Sprint 3 Panel Extraction)</em></p>
+</body>
+</html>

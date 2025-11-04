@@ -1,4 +1,4 @@
-﻿using NoFences.Model;
+﻿using NoFences.Core.Model;
 using SharpShell.Attributes;
 using SharpShell.SharpContextMenu;
 using System;

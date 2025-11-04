@@ -4,7 +4,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace NoFencesCore.Util
+namespace NoFences.Core.Util
 {
 
     public class ShortcutInfo
