@@ -202,7 +202,7 @@ namespace NoFences.View
                 log.Info("Opening GitHub repository from preferences");
                 Process.Start(new ProcessStartInfo
                 {
-                    FileName = "https://github.com/TinySoft/NoFences",
+                    FileName = "https://github.com/marllonsimoes/NoFences-main",
                     UseShellExecute = true
                 });
             }
