@@ -1,0 +1,272 @@
+<mah:MetroWindow x:Class="NoFences.View.Canvas.FenceEditWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
+        xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+        mc:Ignorable="d"
+        Title="Edit Fence Properties"
+        Width="500"
+        SizeToContent="Height"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize"
+        ShowInTaskbar="False"
+        GlowBrush="{DynamicResource MahApps.Brushes.Accent}"
+        BorderThickness="1"
+        SaveWindowPosition="False"
+        TitleCharacterCasing="Normal">
+
+    <mah:MetroWindow.Resources>
+        <!-- Custom color scheme for better accessibility and contrast -->
+
+        <!-- Softer accent color (teal instead of bright blue) -->
+        <SolidColorBrush x:Key="CustomAccentBrush" Color="#FF00897B"/>
+        <SolidColorBrush x:Key="CustomAccentBrush2" Color="#FF009688"/>
+        <SolidColorBrush x:Key="CustomAccentBrush3" Color="#FF26A69A"/>
+
+        <!-- Better text contrast -->
+        <SolidColorBrush x:Key="LabelForeground" Color="#FF9E9E9E"/>
+        <SolidColorBrush x:Key="SubtleHeaderBrush" Color="#FF607D8B"/>
+        <SolidColorBrush x:Key="SubtleBorderBrush" Color="#FFCFD8DC"/>
+
+        <!-- Value converter for uppercase text -->
+        <mah:ToUpperConverter x:Key="ToUpperConverter"/>
+
+        <!-- Elegant GroupBox style - subtle and professional -->
+        <Style x:Key="ElegantGroupBox" TargetType="GroupBox">
+            <Setter Property="Foreground" Value="{StaticResource SubtleHeaderBrush}"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="BorderBrush" Value="{StaticResource SubtleBorderBrush}"/>
+            <Setter Property="BorderThickness" Value="0,1,0,0"/>
+            <Setter Property="Padding" Value="0,8,0,0"/>
+            <Setter Property="HeaderTemplate">
+                <Setter.Value>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding Converter={StaticResource ToUpperConverter}}"
+                                   Foreground="{StaticResource SubtleHeaderBrush}"
+                                   FontSize="11"
+                                   FontWeight="SemiBold"
+                                   Margin="0,0,0,4"
+                                   Opacity="0.7"/>
+                    </DataTemplate>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="GroupBox">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+
+                            <!-- Header -->
+                            <ContentPresenter Grid.Row="0"
+                                            ContentSource="Header"
+                                            Margin="0,0,0,8"/>
+
+                            <!-- Top border line -->
+                            <Border Grid.Row="0"
+                                    Height="1"
+                                    VerticalAlignment="Top"
+                                    Background="{TemplateBinding BorderBrush}"
+                                    Opacity="0.3"/>
+
+                            <!-- Content -->
+                            <ContentPresenter Grid.Row="1"
+                                            Margin="{TemplateBinding Padding}"/>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- TextBlock style with better contrast -->
+        <Style TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{StaticResource LabelForeground}"/>
+        </Style>
+
+        <!-- CheckBox style with custom accent -->
+        <Style TargetType="CheckBox" BasedOn="{StaticResource {x:Type CheckBox}}">
+            <Setter Property="Foreground" Value="{StaticResource LabelForeground}"/>
+        </Style>
+
+        <!-- Custom button styles -->
+        <Style x:Key="AccentButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="{StaticResource CustomAccentBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource CustomAccentBrush2}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="2">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                            VerticalAlignment="Center"
+                                            Margin="{TemplateBinding Padding}"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="{StaticResource CustomAccentBrush3}"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Background" Value="{StaticResource CustomAccentBrush}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </mah:MetroWindow.Resources>
+
+    <!-- Help button in title bar -->
+    <mah:MetroWindow.RightWindowCommands>
+        <mah:WindowCommands>
+            <Button x:Name="btnHelp"
+                    Content="Help"
+                    Click="BtnHelp_Click"
+                    ToolTip="View help and tips for this fence type">
+                <Button.ContentTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Horizontal">
+                            <iconPacks:PackIconMaterial Kind="HelpCircle"
+                                                       Width="14"
+                                                       Height="14"
+                                                       VerticalAlignment="Center"
+                                                       Margin="0,0,4,0"/>
+                            <TextBlock Text="{Binding}" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </DataTemplate>
+                </Button.ContentTemplate>
+            </Button>
+        </mah:WindowCommands>
+    </mah:MetroWindow.RightWindowCommands>
+
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Common Properties Section -->
+        <GroupBox Grid.Row="0" Header="General" Margin="0,0,0,12" Style="{StaticResource ElegantGroupBox}">
+            <Grid Margin="8">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="120"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Name -->
+                <TextBlock Grid.Row="0" Grid.Column="0" Text="Fence Name:" VerticalAlignment="Center" Margin="0,0,0,8"/>
+                <TextBox Grid.Row="0" Grid.Column="1" x:Name="txtName" Margin="0,0,0,8"/>
+
+                <!-- Title Height -->
+                <TextBlock Grid.Row="1" Grid.Column="0" Text="Title Height (px):" VerticalAlignment="Center" Margin="0,0,0,8"/>
+                <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" Margin="0,0,0,8">
+                    <TextBox x:Name="txtTitleHeight" Width="80" Text="25"/>
+                    <Slider x:Name="sliderTitleHeight" Width="200" Minimum="16" Maximum="60" Value="25"
+                            TickFrequency="1" IsSnapToTickEnabled="True" Margin="12,0,0,0" VerticalAlignment="Center"/>
+                </StackPanel>
+
+                <!-- Fence Type -->
+                <TextBlock Grid.Row="2" Grid.Column="0" Text="Fence Type:" VerticalAlignment="Center"/>
+                <StackPanel Grid.Row="2" Grid.Column="1" Orientation="Horizontal">
+                    <ComboBox x:Name="cmbType" SelectionChanged="CmbType_SelectionChanged" Width="200"/>
+                    <Button x:Name="btnTypeHelp"
+                            Width="30"
+                            Height="30"
+                            Margin="8,0,0,0"
+                            ToolTip="View help for selected fence type"
+                            Click="BtnTypeHelp_Click">
+                        <iconPacks:PackIconMaterial Kind="HelpCircle"
+                                                   Width="16"
+                                                   Height="16"/>
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </GroupBox>
+
+        <!-- Theme Selection -->
+        <GroupBox Grid.Row="1" Header="Appearance" Margin="0,0,0,12" Style="{StaticResource ElegantGroupBox}">
+            <Grid Margin="8">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="120"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Theme -->
+                <TextBlock Grid.Row="0" Grid.Column="0" Text="Fence Theme:" VerticalAlignment="Center" Margin="0,0,0,8"/>
+                <ComboBox Grid.Row="0" Grid.Column="1" x:Name="cmbTheme" Margin="0,0,0,8"/>
+
+                <!-- Corner Radius -->
+                <TextBlock Grid.Row="1" Grid.Column="0" Text="Corner Radius (px):" VerticalAlignment="Center"/>
+                <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal">
+                    <mah:NumericUpDown x:Name="numCornerRadius" Width="80" Minimum="0" Maximum="15" Value="0"
+                                       Interval="1" StringFormat="N0" HideUpDownButtons="False"
+                                       ToolTip="Corner radius in pixels (0 = sharp corners, 8-12 = rounded)"/>
+                    <Slider x:Name="sliderCornerRadius" Width="200" Minimum="0" Maximum="15" Value="0"
+                            TickFrequency="1" IsSnapToTickEnabled="True" Margin="12,0,0,0" VerticalAlignment="Center"
+                            ToolTip="Drag to adjust corner radius"/>
+                </StackPanel>
+            </Grid>
+        </GroupBox>
+
+        <!-- Desktop Layer & Auto-Height & Minify -->
+        <GroupBox Grid.Row="2" Header="Display Options" Margin="0,0,0,12" Style="{StaticResource ElegantGroupBox}">
+            <StackPanel Margin="8">
+                <CheckBox x:Name="chkBehindIcons" Content="Show fence behind desktop icons" Margin="0,0,0,8"
+                          ToolTip="When enabled, the fence appears in the wallpaper layer behind desktop icons"/>
+                <CheckBox x:Name="chkAutoHeight" Content="Auto-expand height to fit all content" Margin="0,0,0,8"
+                          ToolTip="Automatically adjusts fence height to show all images (useful for masonry grids)"/>
+                <CheckBox x:Name="chkCanMinify" Content="Can minimize when mouse leaves" Margin="0,0,0,8"
+                          ToolTip="Fence collapses to title bar when mouse leaves, staying at 30% opacity"/>
+                <CheckBox x:Name="chkEnableFade" Content="Enable fade effect" Margin="0,0,0,0"
+                          ToolTip="When enabled, fence fades to 30% opacity when mouse is not hovering over it"/>
+            </StackPanel>
+        </GroupBox>
+
+        <!-- Type-Specific Properties Section -->
+        <GroupBox Grid.Row="3" x:Name="grpTypeSpecific" Header="Type-Specific Properties" Margin="0,0,0,12" Visibility="Collapsed" Style="{StaticResource ElegantGroupBox}">
+            <Grid Margin="8">
+                <!-- Content will be dynamically added here -->
+                <ContentControl x:Name="typeSpecificContent"/>
+            </Grid>
+        </GroupBox>
+
+        <!-- Scrollable container for overflow -->
+        <ScrollViewer Grid.Row="4" VerticalScrollBarVisibility="Auto" MaxHeight="300">
+            <StackPanel x:Name="additionalPropertiesPanel"/>
+        </ScrollViewer>
+
+        <!-- Action Buttons -->
+        <StackPanel Grid.Row="5" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,12,0,0">
+            <Button x:Name="btnOk" Content="OK"
+                    Style="{StaticResource AccentButtonStyle}"
+                    Click="BtnOk_Click" IsDefault="True"
+                    Margin="0,0,8,0" MinWidth="80" Height="32"/>
+            <Button x:Name="btnCancel" Content="Cancel"
+                    Click="BtnCancel_Click" IsCancel="True"
+                    MinWidth="80" Height="32"/>
+        </StackPanel>
+    </Grid>
+</mah:MetroWindow>

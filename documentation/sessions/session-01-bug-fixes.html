@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Session 1: Bug Fixes and Enhancements</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            color: #e0e0e0;
+            background-color: #0a0a0a;
+            background-image:
+                linear-gradient(rgba(0, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+        }
+        h1 {
+            color: #00ffff;
+            text-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff, 0 0 30px #00ffff;
+            border-bottom: 3px solid #00ffff;
+            padding-bottom: 10px;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+        h2 {
+            color: #ff00ff;
+            text-shadow: 0 0 10px #ff00ff, 0 0 20px #ff00ff;
+            margin-top: 30px;
+            border-bottom: 2px solid #ff00ff;
+            padding-bottom: 5px;
+        }
+        h3 {
+            color: #ffff00;
+            text-shadow: 0 0 5px #ffff00;
+            margin-top: 20px;
+        }
+        code {
+            background-color: #1a1a1a;
+            border: 1px solid #00ff00;
+            color: #00ff00;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.9em;
+            box-shadow: 0 0 5px rgba(0, 255, 0, 0.3);
+        }
+        pre {
+            background-color: #0d0d0d;
+            border: 1px solid #00ffff;
+            border-left: 4px solid #00ffff;
+            padding: 15px;
+            overflow-x: auto;
+            border-radius: 4px;
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+            color: #00ff00;
+        }
+        .issue {
+            background-color: rgba(255, 193, 7, 0.1);
+            border-left: 4px solid #ffc107;
+            padding: 10px;
+            margin: 10px 0;
+            box-shadow: 0 0 10px rgba(255, 193, 7, 0.3);
+        }
+        .solution {
+            background-color: rgba(0, 255, 0, 0.1);
+            border-left: 4px solid #00ff00;
+            padding: 10px;
+            margin: 10px 0;
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+        }
+        .note {
+            background-color: rgba(0, 255, 255, 0.1);
+            border-left: 4px solid #00ffff;
+            padding: 10px;
+            margin: 10px 0;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+        }
+        .failed {
+            background-color: rgba(255, 0, 255, 0.1);
+            border-left: 4px solid #ff00ff;
+            padding: 10px;
+            margin: 10px 0;
+            box-shadow: 0 0 10px rgba(255, 0, 255, 0.3);
+        }
+        ul {
+            padding-left: 25px;
+        }
+        li {
+            margin: 8px 0;
+        }
+        li::marker {
+            color: #00ffff;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            border: 1px solid #00ffff;
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.2);
+        }
+        th, td {
+            border: 1px solid #333;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #1a1a1a;
+            font-weight: bold;
+            color: #00ffff;
+            text-shadow: 0 0 5px #00ffff;
+        }
+        tr:hover {
+            background-color: rgba(0, 255, 255, 0.05);
+        }
+        .file-path {
+            color: #ff00ff;
+            font-weight: 500;
+            text-shadow: 0 0 5px #ff00ff;
+        }
+        strong {
+            color: #ffff00;
+        }
+        a {
+            color: #00ffff;
+            text-decoration: none;
+            text-shadow: 0 0 5px #00ffff;
+        }
+        a:hover {
+            text-shadow: 0 0 10px #00ffff;
+        }
+        hr {
+            border: none;
+            border-top: 2px solid #00ffff;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+        }
+        @keyframes glow {
+            from {
+                text-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff, 0 0 30px #00ffff;
+            }
+            to {
+                text-shadow: 0 0 20px #00ffff, 0 0 30px #00ffff, 0 0 40px #00ffff, 0 0 50px #00ffff;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>NoFences Development Session - Change Summary</h1>
+    <p><strong>Date:</strong> 2025-01-04</p>
+    <p><strong>Branch:</strong> gemini/fencewindow-refactor</p>
+    <p><strong>Architecture:</strong> Canvas-based with WPF content rendering</p>
+    <p><strong>Total Changes:</strong> 12,617 lines added, 104 lines removed (49 files)</p>
+    <p><strong>Sessions:</strong> 2 (Architecture creation + Bug fixes)</p>
+
+    <div class="note">
+        <strong>Overview:</strong> This document covers changes across two development sessions:
+        <ul>
+    <h2>1. Current Session: Bug Fixes and Enhancements</h2>
+
+    <p>This session focused on fixing bugs in the newly created canvas-based architecture and improving z-order management, transparency handling, and UI functionality.</p>
+
+    <h2>2. Initial Bug Fixes</h2>
+
+    <h3>2.1 Minified Fence Initial State</h3>
+    <div class="issue">
+        <strong>Issue:</strong> Fences with <code>CanMinify=true</code> did not initialize at 30% opacity when minified on startup.
+    </div>
+    <div class="solution">
+        <strong>Solution:</strong> Added fade state initialization after <code>Minify()</code> call in <code>FenceContainer</code> constructor.
+        <pre>if (fenceInfo.CanMinify)
+{
+    Minify();
+    isFadedOut = true;
+    currentOpacity = 0.3;
+    ApplyFadeOpacity();
+}</pre>
+        <p class="file-path">File: NoFences/View/CanvasBased/FenceContainer.cs (lines 127-136)</p>
+    </div>
+
+    <h3>2.2 Right-Click Desktop Context Menu</h3>
+    <div class="issue">
+        <strong>Issue:</strong> Right-clicking empty canvas areas did not display the Windows desktop context menu. The <code>HTTRANSPARENT</code> return in <code>WM_NCHITTEST</code> prevented right-click messages from being delivered.
+    </div>
+    <div class="solution">
+        <strong>Solution:</strong> Moved right-click message handling before <code>WM_NCHITTEST</code> check in <code>DesktopCanvas.WndProc()</code>. Added Win32 API calls to forward right-clicks to desktop shell window.
+        <ul>
+            <li>Added P/Invoke declarations for <code>FindWindow</code>, <code>FindWindowEx</code>, <code>PostMessage</code></li>
+            <li>Implemented <code>ShowDesktopContextMenu()</code> method</li>
+            <li>Traverses window hierarchy: Progman → SHELLDLL_DefView → SysListView32</li>
+            <li>Posts <code>WM_CONTEXTMENU</code> message to desktop icons window</li>
+        </ul>
+        <p class="file-path">File: NoFences/View/CanvasBased/DesktopCanvas.cs (lines 357-425)</p>
+    </div>
+
+    <h3>2.3 CanMinify Property UI</h3>
+    <div class="issue">
+        <strong>Issue:</strong> No UI element existed to toggle the <code>CanMinify</code> property for fences.
+    </div>
+    <div class="solution">
+        <strong>Solution:</strong> Added checkbox to fence edit window and wired up property binding.
+        <ul>
+            <li>Added checkbox to <code>FenceEditWindow.xaml</code></li>
+            <li>Implemented load/save logic in <code>FenceEditWindow.xaml.cs</code></li>
+            <li>Modified context menu handler to use property setter (not direct field access)</li>
+            <li>Added auto-expansion logic when <code>CanMinify</code> is disabled</li>
+        </ul>
+        <p class="file-path">Files: NoFences/View/CanvasBased/FenceEditWindow.xaml, FenceEditWindow.xaml.cs, FenceContainer.cs</p>
+    </div>
+
+    <h2>3. Compilation and Compatibility Fixes</h2>
+
+    <h3>3.1 C# 7.3 Compatibility</h3>
+    <div class="issue">
+        <strong>Issue:</strong> Missing namespace imports caused compilation errors. References to removed <code>EntryType.Folder</code> remained in codebase.
+    </div>
+    <div class="solution">
+        <strong>Solution:</strong> Added required namespace imports and removed obsolete type references.
+        <ul>
+            <li>Added <code>using System.IO;</code> and <code>using System.Linq;</code> to <code>FenceContainer.cs</code></li>
+            <li>Removed <code>EntryType.Folder</code> enum value from <code>EntryType.cs</code></li>
+            <li>Changed folder references to <code>EntryType.Files</code> in <code>FenceEntry.cs</code></li>
+            <li>Removed folder handler registrations from dependency injection</li>
+        </ul>
+    </div>
+
+    <h3>3.2 Drag-and-Drop Simplification</h3>
+    <div class="issue">
+        <strong>Issue:</strong> Complex drag-and-drop logic attempted automatic fence type conversion (300+ lines of code). Architecture question raised about responsibility separation.
+    </div>
+    <div class="solution">
+        <strong>Solution:</strong> Simplified drag-and-drop to type-specific acceptance without automatic conversion.
+        <ul>
+            <li><strong>Pictures fence:</strong> Accepts only image files, shows warning for non-images</li>
+            <li><strong>Files fence:</strong> Accepts everything, adds to item list</li>
+            <li><strong>Clock/Widget fences:</strong> Reject drops with informational message</li>
+            <li>Removed fence type conversion logic (user manually changes type if needed)</li>
+            <li>Reduced code from ~350 lines to ~50 lines</li>
+        </ul>
+        <p class="file-path">File: NoFences/View/CanvasBased/FenceContainer.cs</p>
+    </div>
+
+    <h2>4. Desktop Integration and Z-Order Enforcement</h2>
+
+    <h3>4.1 Initial Z-Order Implementation</h3>
+    <div class="issue">
+        <strong>Issue:</strong> Canvas window appeared on top of other applications at startup and when applications were opened/focused.
+    </div>
+    <div class="solution">
+        <strong>Solution:</strong> Moved desktop integration from <code>Load</code> event to <code>OnHandleCreated</code> override.
+        <ul>
+            <li>Desktop integration now occurs before window becomes visible</li>
+            <li>Ensures correct z-order from first frame</li>
+            <li>Added <code>WS_EX_TOOLWINDOW</code> style to lower z-order priority</li>
+            <li>Uses <code>HWND_BOTTOM</code> in <code>SetWindowPos</code> calls</li>
+        </ul>
+        <p class="file-path">Files: NoFences/View/CanvasBased/DesktopCanvas.cs, NoFences/Win32/WorkerWIntegration.cs</p>
+    </div>
+
+    <h3>6.2 Aggressive Z-Order Enforcement</h3>
+    <div class="issue">
+        <strong>Issue:</strong> Single <code>SetWindowPos</code> call was insufficient. Windows or other applications changed z-order after initial positioning.
+    </div>
+    <div class="solution">
+        <strong>Solution:</strong> Implemented multi-layered z-order enforcement strategy.
+        <ul>
+            <li><strong>Repeated SetWindowPos calls:</strong> Call <code>SetWindowPos</code> 5 times with 10ms delays during initialization</li>
+            <li><strong>WM_WINDOWPOSCHANGING intercept:</strong> Override <code>WndProc</code> to intercept z-order change attempts, force <code>HWND_BOTTOM</code></li>
+            <li><strong>Periodic enforcement timer:</strong> Timer runs every 2 seconds to re-enforce <code>HWND_BOTTOM</code></li>
+        </ul>
+        <p class="file-path">Files: NoFences/Win32/WorkerWIntegration.cs (lines 160-176), NoFences/View/CanvasBased/DesktopCanvas.cs</p>
+    </div>
+
+    <h2>5. Transparency System Evolution</h2>
+
+    <h3>6.1 Initial Approach: Magenta TransparencyKey</h3>
+    <div class="issue">
+        <strong>Issue:</strong> Using <code>Color.Magenta</code> RGB(255,0,255) as <code>TransparencyKey</code> caused purple tint during fade animations. Semi-transparent fence backgrounds blended with magenta canvas color.
+    </div>
+
+    <h3>6.2 Black TransparencyKey Attempt</h3>
+    <div class="issue">
+        <strong>Issue:</strong> Changed to pure black RGB(0,0,0) to eliminate purple tint. However, images containing pure black pixels became transparent.
+    </div>
+
+    <h3>6.3 Almost-Black TransparencyKey</h3>
+    <div class="issue">
+        <strong>Issue:</strong> Changed to RGB(1,1,1) to protect pure black pixels. Problem remained: any pixel matching <code>TransparencyKey</code> becomes transparent.
+    </div>
+
+    <h3>6.4 Rare Color TransparencyKey</h3>
+    <div class="issue">
+        <strong>Issue:</strong> Changed to RGB(254,0,254) (bright magenta-ish) to use statistically rare color. Purple tint returned and backgrounds did not reach full opacity.
+    </div>
+
+    <h3>6.5 Layered Window Attempt (Failed)</h3>
+    <div class="failed">
+        <strong>Attempted Solution:</strong> Implemented layered windows with per-pixel alpha transparency using <code>WS_EX_LAYERED</code> style and <code>UpdateLayeredWindow</code> API.
+        <ul>
+            <li>Added Win32 APIs: <code>UpdateLayeredWindow</code>, <code>GetDC</code>, <code>CreateCompatibleDC</code>, etc.</li>
+            <li>Implemented bitmap-based rendering with alpha channel</li>
+            <li>Rendered all fences to ARGB bitmap, called <code>UpdateLayeredWindow</code></li>
+        </ul>
+        <strong>Result:</strong> Complete rendering failure. Nothing displayed on screen. <code>DrawToBitmap</code> does not properly capture WPF content in <code>ElementHost</code>. Layered windows do not automatically render child controls.
+    </div>
+    <div class="solution">
+        <strong>Reverted:</strong> Removed all layered window code and returned to <code>TransparencyKey</code> approach.
+    </div>
+
+    <h3>6.6 Final Solution: Black TransparencyKey with User-Managed Images</h3>
+    <div class="solution">
+        <strong>Implemented Solution:</strong> Pure black RGB(0,0,0) <code>TransparencyKey</code> with full alpha range (0-255), no minimum alpha restriction.
+        <ul>
+            <li><strong>TransparencyKey:</strong> RGB(0,0,0) - eliminates purple tint</li>
+            <li><strong>Fence backgrounds:</strong> Use theme colors (RGB(30,30,33) for Dark theme, etc.) - never pure black</li>
+            <li><strong>Full alpha range:</strong> Backgrounds can fade from alpha=255 (fully opaque) to alpha=0 (fully transparent)</li>
+            <li><strong>Image handling:</strong> User responsible for ensuring images do not contain pure black RGB(0,0,0) pixels</li>
+            <li><strong>Image background:</strong> Images wrapped in Grid with theme background color</li>
+        </ul>
+        <p class="file-path">Files: NoFences/View/CanvasBased/DesktopCanvas.cs, FenceContainer.cs, Handlers/PictureFenceHandlerWpf.cs</p>
+    </div>
+
+    <h2>6. Technical Implementation Details</h2>
+
+    <h3>6.1 Fade Animation System</h3>
+    <table>
+        <tr>
+            <th>Component</th>
+            <th>Implementation</th>
+        </tr>
+        <tr>
+            <td>Opacity Tracking</td>
+            <td><code>currentOpacity</code> (double, 0.0-1.0), <code>isFadedOut</code> (bool)</td>
+        </tr>
+        <tr>
+            <td>Animation</td>
+            <td>Timer-based incremental opacity changes</td>
+        </tr>
+        <tr>
+            <td>WinForms Elements</td>
+            <td>Adjust <code>BackColor</code> alpha channel directly</td>
+        </tr>
+        <tr>
+            <td>WPF Elements</td>
+            <td>Recursive traversal, set <code>Background</code> brush with alpha</td>
+        </tr>
+        <tr>
+            <td>Target Opacity</td>
+            <td>Faded out: 30% (0.3), Faded in: 100% (1.0)</td>
+        </tr>
+    </table>
+
+    <h3>6.2 Property Setter Pattern</h3>
+    <p>The <code>CanMinify</code> property setter now includes expansion logic:</p>
+    <pre>public bool CanMinify
+{
+    get => fenceInfo.CanMinify;
+    set
+    {
+        fenceInfo.CanMinify = value;
+        if (minifyMenuItem != null)
+            minifyMenuItem.Checked = value;
+
+        // Auto-expand if disabled while minified
+        if (!value && isMinified)
+        {
+            isMinified = false;
+            this.Height = prevHeight;
+            if (isFadedOut)
+            {
+                isFadedOut = false;
+                currentOpacity = 1.0;
+                ApplyFadeOpacity();
+            }
+        }
+        NotifyChanged();
+    }
+}</pre>
+    <p class="file-path">File: NoFences/View/CanvasBased/FenceContainer.cs (lines 290-316)</p>
+
+    <h3>6.3 UpdateFenceInfo Enhancement</h3>
+    <p>Enhanced to detect <code>CanMinify</code> state changes and trigger expansion:</p>
+    <pre>public void UpdateFenceInfo(FenceInfo updatedInfo, FenceHandlerFactoryWpf handlerFactory)
+{
+    bool wasMinifyEnabled = fenceInfo.CanMinify;
+    bool willMinifyBeEnabled = updatedInfo.CanMinify;
+
+    // Update properties including CanMinify
+    fenceInfo.CanMinify = updatedInfo.CanMinify;
+
+    // If disabled while minified, expand
+    if (wasMinifyEnabled && !willMinifyBeEnabled && isMinified)
+    {
+        isMinified = false;
+        this.Height = prevHeight;
+        if (isFadedOut)
+        {
+            isFadedOut = false;
+            currentOpacity = 1.0;
+            ApplyFadeOpacity();
+        }
+    }
+    // ... remaining update logic
+}</pre>
+    <p class="file-path">File: NoFences/View/CanvasBased/FenceContainer.cs (lines 1381-1429)</p>
+
+    <h2>7. Files Modified</h2>
+
+    <table>
+        <tr>
+            <th>File</th>
+            <th>Changes</th>
+        </tr>
+        <tr>
+            <td class="file-path">NoFences/View/CanvasBased/DesktopCanvas.cs</td>
+            <td>
+                <ul>
+                    <li>Added Win32 APIs for right-click handling</li>
+                    <li>Implemented <code>ShowDesktopContextMenu()</code></li>
+                    <li>Moved desktop integration to <code>OnHandleCreated()</code></li>
+                    <li>Added z-order enforcement timer</li>
+                    <li>Added <code>WM_WINDOWPOSCHANGING</code> intercept</li>
+                    <li>Set <code>TransparencyKey</code> to RGB(0,0,0)</li>
+                </ul>
+            </td>
+        </tr>
+        <tr>
+            <td class="file-path">NoFences/View/CanvasBased/FenceContainer.cs</td>
+            <td>
+                <ul>
+                    <li>Added namespace imports (System.IO, System.Linq)</li>
+                    <li>Fixed minified fence initial opacity</li>
+                    <li>Enhanced <code>CanMinify</code> property setter</li>
+                    <li>Updated <code>UpdateFenceInfo()</code> method</li>
+                    <li>Simplified drag-and-drop logic</li>
+                    <li>Removed minimum alpha restriction in <code>FadeWpfElementBackgrounds()</code></li>
+                    <li>Updated context menu to use property setter</li>
+                </ul>
+            </td>
+        </tr>
+        <tr>
+            <td class="file-path">NoFences/View/CanvasBased/FenceEditWindow.xaml</td>
+            <td>
+                <ul>
+                    <li>Added <code>CanMinify</code> checkbox control</li>
+                </ul>
+            </td>
+        </tr>
+        <tr>
+            <td class="file-path">NoFences/View/CanvasBased/FenceEditWindow.xaml.cs</td>
+            <td>
+                <ul>
+                    <li>Added load/save logic for <code>CanMinify</code></li>
+                    <li>Removed <code>EntryType.Folder</code> handling</li>
+                </ul>
+            </td>
+        </tr>
+        <tr>
+            <td class="file-path">NoFences/Win32/WorkerWIntegration.cs</td>
+            <td>
+                <ul>
+                    <li>Added <code>GetWindowLong</code> and <code>SetWindowLong</code> APIs</li>
+                    <li>Enhanced <code>ParentToAboveDesktopIcons()</code> with repeated calls</li>
+                    <li>Added <code>WS_EX_TOOLWINDOW</code> style setting</li>
+                </ul>
+            </td>
+        </tr>
+        <tr>
+            <td class="file-path">NoFencesCore/Model/EntryType.cs</td>
+            <td>
+                <ul>
+                    <li>Removed <code>Folder</code> enum value</li>
+                </ul>
+            </td>
+        </tr>
+        <tr>
+            <td class="file-path">NoFences/Model/FenceEntry.cs</td>
+            <td>
+                <ul>
+                    <li>Changed folder type from <code>Folder</code> to <code>Files</code></li>
+                </ul>
+            </td>
+        </tr>
+        <tr>
+            <td class="file-path">NoFences/ApplicationLogic/CanvasBased/DependencyInjectionSetupNew.cs</td>
+            <td>
+                <ul>
+                    <li>Removed folder handler registration</li>
+                </ul>
+            </td>
+        </tr>
+        <tr>
+            <td class="file-path">NoFences/View/CanvasBased/Handlers/PictureFenceHandlerWpf.cs</td>
+            <td>
+                <ul>
+                    <li>Wrapped images in Grid with theme background</li>
+                </ul>
+            </td>
+        </tr>
+    </table>
+
+    <h2>7. Known Limitations and User Responsibilities</h2>
+
+    <div class="note">
+        <h3>Image Black Pixel Transparency</h3>
+        <p>Images containing pure black RGB(0,0,0) pixels will have those pixels rendered transparent due to <code>TransparencyKey</code> matching. This is an accepted limitation with user-side mitigation strategies:</p>
+        <ul>
+            <li><strong>Image editing:</strong> Adjust black pixels to RGB(1,1,1) or RGB(5,5,5) (visually identical)</li>
+            <li><strong>Batch processing:</strong> Apply filters to shift pure blacks to near-blacks</li>
+            <li><strong>Image selection:</strong> Use images without pure black content</li>
+        </ul>
+        <p>This approach was chosen over alternatives (minimum alpha enforcement, rare color keys, layered windows) due to:</p>
+        <ul>
+            <li>Elimination of purple/magenta tint during fades</li>
+            <li>Full opacity range (alpha 0-255) for proper fade animations</li>
+            <li>Simplicity and performance of <code>TransparencyKey</code> method</li>
+            <li>Fence theme backgrounds naturally avoid pure black</li>
+        </ul>
+    </div>
+
+    <h2>9. Testing Checklist</h2>
+
+    <ul>
+        <li>Minified fences start at 30% opacity when <code>CanMinify=true</code></li>
+        <li>Right-clicking empty canvas areas displays Windows desktop context menu</li>
+        <li><code>CanMinify</code> checkbox functional in edit dialog</li>
+        <li>Unchecking <code>CanMinify</code> expands minified fences (both context menu and edit dialog)</li>
+        <li>Fences remain below all application windows (never appear on top)</li>
+        <li>Z-order maintained when opening new applications</li>
+        <li>Fences fade smoothly from 100% to 30% opacity without purple tint</li>
+        <li>Fences fully opaque (alpha=255) when mouse is over them</li>
+        <li>Drag-and-drop works according to fence type rules</li>
+        <li>No compilation errors with C# 7.3</li>
+    </ul>
+
+    <h2>10. Future Considerations</h2>
+
+    <div class="note">
+        <h3>Potential Improvements</h3>
+        <ul>
+            <li><strong>Image preprocessing pipeline:</strong> Automatic near-black conversion on image load</li>
+            <li><strong>Layered windows revisit:</strong> Custom rendering pipeline with proper WPF-to-bitmap conversion</li>
+            <li><strong>Alternative transparency:</strong> DWM (Desktop Window Manager) integration for modern transparency</li>
+            <li><strong>Z-order monitoring:</strong> Window message hook to detect external z-order changes</li>
+        </ul>
+    </div>
+
+    <h2>11. Architecture Notes</h2>
+
+    <p>This session operated within the <strong>canvas-based architecture</strong> with WPF content rendering:</p>
+    <ul>
+        <li><strong>Main window:</strong> <code>DesktopCanvas</code> (WinForms Form, fullscreen, transparent)</li>
+        <li><strong>Fence containers:</strong> <code>FenceContainer</code> (WinForms UserControl)</li>
+        <li><strong>Content rendering:</strong> WPF elements hosted via <code>ElementHost</code></li>
+        <li><strong>Handlers:</strong> <code>IFenceHandlerWpf</code> implementations (Pictures, Files, Clock, Widget)</li>
+        <li><strong>Desktop integration:</strong> WorkerW method via Win32 APIs</li>
+        <li><strong>Transparency:</strong> <code>TransparencyKey</code> color-based (RGB(0,0,0))</li>
+    </ul>
+
+    <hr>
+
+    <p><em>Generated: 2025-01-07 (Updated - Session 8: Sprint 2 Behavior Extraction + Sprint 3 Panel Extraction)</em></p>
+</body>
+</html>

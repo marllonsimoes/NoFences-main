@@ -1,53 +1,357 @@
-﻿using Microsoft.Win32;
+﻿using log4net;
+using Microsoft.Win32;
+using NoFences.Core.Model;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace NoFencesCore
+namespace NoFences.Core.Util
 {
-    internal class InstalledAppsUtil
+    /// <summary>
+    /// Utility for detecting and categorizing installed software on Windows
+    /// </summary>
+    public static class InstalledAppsUtil
     {
-        List<string> GetAllInstalledInRegistry()
+
+        private static readonly ILog log = LogManager.GetLogger(typeof(InstalledAppsUtil));
+
+        // Registry paths for installed software
+        private static readonly string[] RegistryPaths = new[]
         {
+            // Machine-wide installs (64-bit)
+            @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall",
+            // Machine-wide installs (32-bit on 64-bit Windows)
+            @"SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall"
+        };
 
-            List<string> installed = new List<string>();
+        private static readonly string[] UserRegistryPaths = new[]
+        {
+            // Current user installs
+            @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall"
+        };
 
-            string registry_key = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall";
+        /// <summary>
+        /// Gets all installed software from registry (both machine and user installs)
+        /// Includes Steam games detected via VDF parsing
+        /// </summary>
+        public static List<InstalledSoftware> GetAllInstalled()
+        {
+            var software = new List<InstalledSoftware>();
 
-            using (Microsoft.Win32.RegistryKey key = Registry.LocalMachine.OpenSubKey(registry_key))
+            // Scan HKLM (machine-wide installs)
+            foreach (var path in RegistryPaths)
             {
-                foreach (string subkey_name in key.GetSubKeyNames())
-                {
-                    Debug.WriteLine("============================================");
-                    using (RegistryKey subkey = key.OpenSubKey(subkey_name))
-                    {
-                        Debug.WriteLine($"{subkey.GetValue("DisplayName")}");
-                    }
-                }
+                software.AddRange(ScanRegistryKey(Registry.LocalMachine, path, path.Contains("WOW6432Node")));
             }
 
-            Debug.WriteLine("============================================ x64");
-
-            string registry_key64 = @"SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall";
-            using (Microsoft.Win32.RegistryKey key = Registry.LocalMachine.OpenSubKey(registry_key64))
+            // Scan HKCU (user installs)
+            foreach (var path in UserRegistryPaths)
             {
-                foreach (string subkey_name in key.GetSubKeyNames())
+                software.AddRange(ScanRegistryKey(Registry.CurrentUser, path, false));
+            }
+            
+            log.Info($"Found {software.Count} software entries from registry");
+            foreach (var soft in software) {
+                log.Info($"\t - {soft}");
+            }
+            // Add games from all supported game stores
+            var games = GetAllGames();
+            log.Info($"Found {games.Count} games entries from registry");
+            foreach (var game in games)
+            {
+                log.Info($"\t - {game}");
+            }
+
+            software.AddRange(games);
+
+            // Remove duplicates (same software might appear multiple times)
+            var uniqueSoftware = software
+                .GroupBy(s => s.Name?.ToLower())
+                .Select(g => g.First())
+                .Where(s => !string.IsNullOrWhiteSpace(s.Name))
+                .OrderBy(s => s.Name)
+                .ToList();
+
+            log.Info($"Found {uniqueSoftware.Count} unique software installations");
+
+            return uniqueSoftware;
+        }
+
+        /// <summary>
+        /// Gets installed software filtered by category
+        /// </summary>
+        public static List<InstalledSoftware> GetByCategory(SoftwareCategory category)
+        {
+            var allSoftware = GetAllInstalled();
+
+            if (category == SoftwareCategory.All)
+                return allSoftware;
+
+            return allSoftware.Where(s => s.Category == category).ToList();
+        }
+
+        /// <summary>
+        /// Scans a specific registry key for installed software
+        /// </summary>
+        private static List<InstalledSoftware> ScanRegistryKey(RegistryKey root, string path, bool isWow64)
+        {
+            var software = new List<InstalledSoftware>();
+
+            try
+            {
+                using (RegistryKey key = root.OpenSubKey(path))
                 {
-                    Debug.WriteLine("============================================");
-                    using (RegistryKey subkey = key.OpenSubKey(subkey_name))
+                    if (key == null)
+                        return software;
+
+                    foreach (string subkeyName in key.GetSubKeyNames())
                     {
-                        foreach (string valueKey in subkey.GetValueNames())
+                        try
                         {
-                            Debug.WriteLine($"{valueKey} - {subkey.GetValue(valueKey)}");
+                            using (RegistryKey subkey = key.OpenSubKey(subkeyName))
+                            {
+                                if (subkey == null)
+                                    continue;
+
+                                var app = ExtractSoftwareInfo(subkey, subkeyName, isWow64);
+                                if (app != null && IsValidSoftware(app))
+                                {
+                                    software.Add(app);
+                                }
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            log.Error($"Error reading subkey {subkeyName}: {ex.Message}", ex);
                         }
                     }
                 }
             }
+            catch (Exception ex)
+            {
+                log.Error($"Error scanning registry path {path}: {ex.Message}", ex);
+            }
 
-            return installed;
+            return software;
+        }
+
+        /// <summary>
+        /// Extracts software information from a registry key
+        /// </summary>
+        private static InstalledSoftware ExtractSoftwareInfo(RegistryKey key, string keyName, bool isWow64)
+        {
+            try
+            {
+                var name = key.GetValue("DisplayName") as string;
+                if (string.IsNullOrWhiteSpace(name))
+                    return null;
+
+                var publisher = key.GetValue("Publisher") as string;
+                var installLocation = key.GetValue("InstallLocation") as string;
+
+                var app = new InstalledSoftware
+                {
+                    Name = name?.Trim(),
+                    Publisher = publisher?.Trim(),
+                    Version = key.GetValue("DisplayVersion") as string,
+                    InstallLocation = installLocation?.Trim(),
+                    UninstallString = key.GetValue("UninstallString") as string,
+                    IconPath = key.GetValue("DisplayIcon") as string,
+                    RegistryKey = keyName,
+                    IsWow64 = isWow64
+                };
+
+                // Try to parse install date
+                var installDate = key.GetValue("InstallDate") as string;
+                if (!string.IsNullOrEmpty(installDate) && installDate.Length == 8)
+                {
+                    // Format is usually YYYYMMDD
+                    if (DateTime.TryParseExact(installDate, "yyyyMMdd", null,
+                        System.Globalization.DateTimeStyles.None, out DateTime date))
+                    {
+                        app.InstallDate = date;
+                    }
+                }
+
+                // Try to find executable path
+                if (!string.IsNullOrEmpty(app.InstallLocation))
+                {
+                    app.ExecutablePath = FindExecutableInDirectory(app.InstallLocation, app.Name);
+                }
+
+                // Auto-categorize
+                app.Category = SoftwareCategorizer.Categorize(app.Name, app.Publisher, app.InstallLocation);
+
+                return app;
+            }
+            catch (Exception ex)
+            {
+                log.Error($"Error extracting software info: {ex.Message}", ex);
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Validates that the software entry has meaningful data
+        /// </summary>
+        private static bool IsValidSoftware(InstalledSoftware app)
+        {
+            // Filter out system components, updates, and garbage entries
+            if (string.IsNullOrWhiteSpace(app.Name))
+                return false;
+
+            var lowerName = app.Name.ToLower();
+
+            // Filter out Windows updates and hotfixes
+            if (lowerName.Contains("hotfix") || lowerName.Contains("update for") ||
+                lowerName.Contains("security update") || lowerName.StartsWith("kb"))
+                return false;
+
+            // Filter out Visual C++ redistributables (too many)
+            if (lowerName.Contains("microsoft visual c++") && lowerName.Contains("redistributable"))
+                return false;
+
+            // Filter out .NET Framework updates
+            if (lowerName.Contains("microsoft .net") && lowerName.Contains("update"))
+                return false;
+
+            return true;
+        }
+
+        /// <summary>
+        /// Attempts to find the main executable in an installation directory
+        /// </summary>
+        private static string FindExecutableInDirectory(string directory, string appName)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(directory) || !System.IO.Directory.Exists(directory))
+                    return null;
+
+                // Look for exe with similar name
+                var exeFiles = System.IO.Directory.GetFiles(directory, "*.exe", System.IO.SearchOption.TopDirectoryOnly);
+
+                // Try to find exe with matching name
+                var simpleName = System.IO.Path.GetFileNameWithoutExtension(appName)?.ToLower();
+                if (!string.IsNullOrEmpty(simpleName))
+                {
+                    var match = exeFiles.FirstOrDefault(f =>
+                        System.IO.Path.GetFileNameWithoutExtension(f)?.ToLower() == simpleName);
+                    if (match != null)
+                        return match;
+                }
+
+                // Return first exe if any
+                return exeFiles.FirstOrDefault();
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Gets games from all supported game store platforms
+        /// </summary>
+        private static List<InstalledSoftware> GetAllGames()
+        {
+            var allGames = new List<InstalledSoftware>();
+
+            // Create list of all game store detectors
+            var detectors = new List<IGameStoreDetector>
+            {
+                new SteamStoreDetector(),
+                new EpicGamesStoreDetector(),
+                new GOGGalaxyDetector(),
+                new UbisoftConnectDetector(),
+                new EAAppDetector(),
+                new AmazonGamesDetector()
+            };
+
+            foreach (var detector in detectors)
+            {
+                try
+                {
+                    if (!detector.IsInstalled())
+                    {
+                        log.Debug($"{detector.PlatformName} not installed, skipping");
+                        continue;
+                    }
+
+                    var games = GetGamesFromStore(detector);
+                    allGames.AddRange(games);
+                    log.Debug($"Added {games.Count} games from {detector.PlatformName}");
+                }
+                catch (Exception ex)
+                {
+                    log.Error($"Error getting games from {detector.PlatformName}: {ex.Message}", ex);
+                }
+            }
+
+            return allGames;
+        }
+
+        /// <summary>
+        /// Gets games from a specific game store detector
+        /// Converts GameInfo to InstalledSoftware format
+        /// </summary>
+        private static List<InstalledSoftware> GetGamesFromStore(IGameStoreDetector detector)
+        {
+            var softwareList = new List<InstalledSoftware>();
+
+            try
+            {
+                var games = detector.GetInstalledGames();
+
+                foreach (var game in games)
+                {
+                    var software = new InstalledSoftware
+                    {
+                        Name = game.Name,
+                        Publisher = GetPublisherForPlatform(detector.PlatformName),
+                        InstallLocation = game.InstallDir,
+                        ExecutablePath = game.ExecutablePath ?? game.ShortcutPath,
+                        IconPath = game.IconPath,
+                        Category = SoftwareCategory.Games,
+                        Version = null,
+                        InstallDate = game.LastUpdated,
+                        RegistryKey = $"{detector.PlatformName}:{game.GameId}",
+                        IsWow64 = false
+                    };
+
+                    softwareList.Add(software);
+                }
+            }
+            catch (Exception ex)
+            {
+                log.Error($"Error processing games from {detector.PlatformName}: {ex.Message}", ex);
+            }
+
+            return softwareList;
+        }
+
+        /// <summary>
+        /// Gets the publisher name for a game platform
+        /// </summary>
+        private static string GetPublisherForPlatform(string platformName)
+        {
+            switch (platformName)
+            {
+                case "Steam":
+                    return "Valve Corporation";
+                case "Epic Games Store":
+                    return "Epic Games";
+                case "GOG Galaxy":
+                    return "GOG.com";
+                case "Ubisoft Connect":
+                    return "Ubisoft";
+                case "EA App":
+                    return "Electronic Arts";
+                case "Amazon Games":
+                    return "Amazon";
+                default:
+                    return platformName;
+            }
         }
     }
 }

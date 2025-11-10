@@ -115,7 +115,7 @@ public class CustomActions
     {
         return session.HandleErrors(() =>
         {
-            Tasks.InstallService(session.Property("INSTALLDIR") + "NoFencesService.exe", true);
+            Tasks.InstallService(session.Property("INSTALLDIR") + "NoFences.Service.exe", true);
             Tasks.StartService("NoFencesService", false);
         });
     }
@@ -125,7 +125,7 @@ public class CustomActions
     {
         return session.HandleErrors(() =>
         {
-            Tasks.InstallService(session.Property("INSTALLDIR") + "NoFencesService.exe", false);
+            Tasks.InstallService(session.Property("INSTALLDIR") + "NoFences.Service.exe", false);
         });
     }
 }

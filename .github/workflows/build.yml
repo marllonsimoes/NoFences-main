@@ -2,23 +2,78 @@ name: Build and Package
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, master ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, master ]
   workflow_dispatch:
 
 jobs:
   build:
     runs-on: windows-2022
-    
+
     env:
       Solution_Name: NoFences.sln
       Configuration: Release
-      
+
     steps:
     - name: Checkout
       uses: actions/checkout@v4
-      
+      with:
+        fetch-depth: 0  # Fetch all history for versioning
+
+    - name: Determine Version
+      id: version
+      run: |
+        # Get the current version from AssemblyInfo.cs
+        $assemblyInfoPath = "NoFences\Properties\AssemblyInfo.cs"
+        $content = Get-Content $assemblyInfoPath -Raw
+
+        if ($content -match 'AssemblyVersion\("(\d+\.\d+\.\d+)\.') {
+          $currentVersion = $matches[1]
+          Write-Host "Current version: $currentVersion"
+        } else {
+          Write-Error "Could not find version in AssemblyInfo.cs"
+          exit 1
+        }
+
+        # Check if this is a push to main/master (not a PR)
+        $isPushToMain = "${{ github.event_name }}" -eq "push" -and ("${{ github.ref }}" -eq "refs/heads/main" -or "${{ github.ref }}" -eq "refs/heads/master")
+
+        if ($isPushToMain) {
+          # Increment patch version for main/master pushes
+          $versionParts = $currentVersion.Split('.')
+          $major = [int]$versionParts[0]
+          $minor = [int]$versionParts[1]
+          $patch = [int]$versionParts[2] + 1
+          $newVersion = "$major.$minor.$patch"
+
+          Write-Host "New version: $newVersion"
+          echo "version=$newVersion" >> $env:GITHUB_OUTPUT
+          echo "should_tag=true" >> $env:GITHUB_OUTPUT
+          echo "is_release=true" >> $env:GITHUB_OUTPUT
+        } else {
+          # Use current version for PRs
+          echo "version=$currentVersion" >> $env:GITHUB_OUTPUT
+          echo "should_tag=false" >> $env:GITHUB_OUTPUT
+          echo "is_release=false" >> $env:GITHUB_OUTPUT
+        }
+      shell: pwsh
+
+    - name: Update AssemblyInfo Version
+      if: steps.version.outputs.is_release == 'true'
+      run: |
+        $newVersion = "${{ steps.version.outputs.version }}"
+        $assemblyInfoPath = "NoFences\Properties\AssemblyInfo.cs"
+
+        $content = Get-Content $assemblyInfoPath -Raw
+        $content = $content -replace 'AssemblyVersion\("(\d+\.\d+\.\d+)\.\d+"\)', "AssemblyVersion(""$newVersion.0"")"
+        $content = $content -replace 'AssemblyFileVersion\("(\d+\.\d+\.\d+)\.\d+"\)', "AssemblyFileVersion(""$newVersion.0"")"
+
+        Set-Content -Path $assemblyInfoPath -Value $content
+
+        Write-Host "Updated AssemblyInfo.cs to version $newVersion.0"
+      shell: pwsh
+
     - name: Setup MSBuild
       uses: microsoft/setup-msbuild@v1.3.1
       with:
@@ -57,3 +112,53 @@ jobs:
       with:
         name: NoFences-Installer-bootstrap
         path: NoFences.Installer\bin\Release\NoFences.bootstrap.exe
+
+    - name: Commit Version Bump
+      if: steps.version.outputs.is_release == 'true'
+      run: |
+        git config --local user.email "github-actions[bot]@users.noreply.github.com"
+        git config --local user.name "github-actions[bot]"
+
+        git add NoFences\Properties\AssemblyInfo.cs
+        git commit -m "chore: bump version to ${{ steps.version.outputs.version }}" || echo "No changes to commit"
+
+        git push origin ${{ github.ref_name }}
+      shell: pwsh
+
+    - name: Create Git Tag
+      if: steps.version.outputs.should_tag == 'true'
+      run: |
+        $version = "v${{ steps.version.outputs.version }}"
+
+        git tag -a $version -m "Release $version"
+        git push origin $version
+
+        Write-Host "Created and pushed tag: $version"
+      shell: pwsh
+
+    - name: Create GitHub Release
+      if: steps.version.outputs.is_release == 'true'
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: v${{ steps.version.outputs.version }}
+        name: NoFences v${{ steps.version.outputs.version }}
+        draft: false
+        prerelease: false
+        files: |
+          NoFences.Installer/bin/Release/NoFences.msi
+          NoFences.Installer/bin/Release/NoFences.bootstrap.exe
+        body: |
+          ## NoFences v${{ steps.version.outputs.version }}
+
+          ### Installation
+          Download and run `NoFences.bootstrap.exe` to install NoFences with automatic .NET Framework 4.8.1 prerequisites.
+
+          ### Changes
+          - Auto-generated release from build pipeline
+          - See commit history for details
+
+          ### Files
+          - `NoFences.bootstrap.exe` - Bootstrapper with .NET Framework installer (recommended)
+          - `NoFences.msi` - MSI installer (requires .NET Framework 4.8.1 pre-installed)
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
