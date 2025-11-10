@@ -1,4 +1,5 @@
 using log4net;
+using Newtonsoft.Json;
 using NoFences.Core.Settings;
 using NoFences.Model;
 using NoFences.Services;
@@ -30,7 +31,7 @@ namespace NoFences.Services.Managers
         private NotifyIcon trayIcon; // For balloon notifications
 
         // GitHub API endpoint format: https://api.github.com/repos/{owner}/{repo}/releases/latest
-        private const string DEFAULT_GITHUB_API = "https://api.github.com/marllonsimoes/NoFences-main/releases/latest";
+        private const string DEFAULT_GITHUB_API = "https://api.github.com/repos/marllonsimoes/NoFences-main/releases/latest";
 
         /// <summary>
         /// Initializes a new instance of the UpdateManager.
@@ -152,25 +153,21 @@ namespace NoFences.Services.Managers
             {
                 var updateInfo = new UpdateInfo();
 
-                // Extract tag_name (version)
-                var tagMatch = Regex.Match(json, @"""tag_name""\s*:\s*""v?([0-9.]+)""");
-                if (tagMatch.Success)
+                dynamic data = JsonConvert.DeserializeObject(json);
+
+                // Extract tag_name (version
+                if (data != null)
                 {
-                    string versionString = tagMatch.Groups[1].Value;
-                    updateInfo.Version = new Version(versionString);
+                    string versionString = data.tag_name;
+                    updateInfo.Version = new Version(versionString.Substring(1));
                     log.Debug($"Parsed version: {updateInfo.Version}");
-                }
-                else
-                {
-                    log.Error("Could not find 'tag_name' in GitHub release JSON");
-                    return null;
                 }
 
                 // Extract published_at (release date)
-                var dateMatch = Regex.Match(json, @"""published_at""\s*:\s*""([^""]+)""");
-                if (dateMatch.Success)
+                string dateMatch = data.published_at;
+                if (dateMatch != null)
                 {
-                    if (DateTime.TryParse(dateMatch.Groups[1].Value, out DateTime releaseDate))
+                    if (DateTime.TryParse(dateMatch, out DateTime releaseDate))
                     {
                         updateInfo.ReleaseDate = releaseDate.ToUniversalTime();
                         log.Debug($"Parsed release date: {updateInfo.ReleaseDate}");
@@ -178,43 +175,43 @@ namespace NoFences.Services.Managers
                 }
 
                 // Extract html_url (release notes page)
-                var urlMatch = Regex.Match(json, @"""html_url""\s*:\s*""([^""]+)""");
-                if (urlMatch.Success)
+                string urlMatch = data.html_url;
+                if (urlMatch != null)
                 {
-                    updateInfo.ReleaseNotesUrl = urlMatch.Groups[1].Value;
+                    updateInfo.ReleaseNotesUrl = urlMatch;
                     log.Debug($"Release notes URL: {updateInfo.ReleaseNotesUrl}");
                 }
 
                 // Extract body (release notes markdown)
-                var bodyMatch = Regex.Match(json, @"""body""\s*:\s*""((?:[^""\\]|\\.)*)""");
-                if (bodyMatch.Success)
+                string bodyMatch = data.body;
+                if (bodyMatch != null)
                 {
                     // Unescape JSON string
-                    string body = bodyMatch.Groups[1].Value;
+                    string body = bodyMatch;
                     body = Regex.Unescape(body);
                     updateInfo.ReleaseNotes = body;
                     log.Debug($"Parsed release notes: {body.Length} characters");
                 }
 
                 // Extract assets (find .exe installer)
-                var assetsMatch = Regex.Match(json, @"""assets""\s*:\s*\[(.*?)\]", RegexOptions.Singleline);
-                if (assetsMatch.Success)
+                var assetsMatch = data.assets;
+                if (assetsMatch != null)
                 {
-                    string assetsJson = assetsMatch.Groups[1].Value;
+                    dynamic assetsJson = assetsMatch[0];
 
                     // Look for .exe file in assets
-                    var exeMatch = Regex.Match(assetsJson, @"""browser_download_url""\s*:\s*""([^""]*\.exe)""");
-                    if (exeMatch.Success)
+                    string exeMatch = assetsJson.browser_download_url;
+                    if (exeMatch != null)
                     {
-                        updateInfo.DownloadUrl = exeMatch.Groups[1].Value;
+                        updateInfo.DownloadUrl = exeMatch;
                         log.Debug($"Found installer download URL: {updateInfo.DownloadUrl}");
                     }
 
                     // Extract file size
-                    var sizeMatch = Regex.Match(assetsJson, @"""size""\s*:\s*(\d+)");
-                    if (sizeMatch.Success && long.TryParse(sizeMatch.Groups[1].Value, out long fileSize))
+                    long sizeMatch = assetsJson.size;
+                    if (sizeMatch != 0)
                     {
-                        updateInfo.FileSize = fileSize;
+                        updateInfo.FileSize = sizeMatch;
                         log.Debug($"Installer file size: {updateInfo.FormattedFileSize}");
                     }
                 }

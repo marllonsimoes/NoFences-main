@@ -10,7 +10,7 @@ namespace NoFencesDataLayer.Services
     /// </summary>
     public class CatalogDownloadService
     {
-        private const string DEFAULT_CATALOG_URL = "https://example.com/catalogs/software_catalog.db";
+        private const string DEFAULT_CATALOG_URL = "https://raw.githubusercontent.com/marllonsimoes/NoFences-main/refs/heads/main/catalog/software_catalog.db";
         private const int DOWNLOAD_TIMEOUT_SECONDS = 300; // 5 minutes
 
         /// <summary>
