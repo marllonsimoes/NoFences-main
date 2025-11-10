@@ -1,18 +1,22 @@
+using log4net;
 using Microsoft.Win32;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using NoFences.Core.Util;
 
-namespace NoFences.Core.Util
+namespace NoFencesDataLayer.Services
 {
     /// <summary>
     /// Detects installed Epic Games Store games via manifest files
     /// </summary>
     public class EpicGamesStoreDetector : IGameStoreDetector
     {
+
+        private static readonly ILog log = LogManager.GetLogger(typeof(EpicGamesStoreDetector));
         public string PlatformName => "Epic Games Store";
 
         private const string ManifestFolder = @"C:\ProgramData\Epic\EpicGamesLauncher\Data\Manifests";
@@ -26,15 +30,15 @@ namespace NoFences.Core.Util
             {
                 if (!Directory.Exists(ManifestFolder))
                 {
-                    Debug.WriteLine($"EpicGamesStoreDetector: Manifest folder not found at {ManifestFolder}");
+                    log.Debug($"Manifest folder not found at {ManifestFolder}");
                     return games;
                 }
 
-                Debug.WriteLine($"EpicGamesStoreDetector: Scanning {ManifestFolder}");
+                log.Debug($"Scanning {ManifestFolder}");
 
                 // Epic uses .item files for game manifests
                 var manifestFiles = Directory.GetFiles(ManifestFolder, "*.item");
-                Debug.WriteLine($"EpicGamesStoreDetector: Found {manifestFiles.Length} manifest files");
+                log.Debug($"Found {manifestFiles.Length} manifest files");
 
                 foreach (var manifestFile in manifestFiles)
                 {
@@ -46,15 +50,15 @@ namespace NoFences.Core.Util
                     }
                     catch (Exception ex)
                     {
-                        Debug.WriteLine($"EpicGamesStoreDetector: Error parsing {manifestFile}: {ex.Message}");
+                        log.Error($"Error parsing {manifestFile}: {ex.Message}", ex);
                     }
                 }
 
-                Debug.WriteLine($"EpicGamesStoreDetector: Total {games.Count} Epic games found");
+                log.Debug($"Total {games.Count} Epic games found");
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"EpicGamesStoreDetector: Error detecting Epic games: {ex.Message}");
+                log.Error($"Error detecting Epic games: {ex.Message}", ex);
             }
 
             return games;
@@ -111,13 +115,13 @@ namespace NoFences.Core.Util
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"EpicGamesStoreDetector: Error finding Epic install path: {ex.Message}");
+                log.Error($"Error finding Epic install path: {ex.Message}", ex);
             }
 
             return null;
         }
 
-        public string CreateGameShortcut(string gameId, string gameName, string outputDirectory, string iconPath = null)
+        public string FindOrCreateGameShortcut(string gameId, string gameName, string outputDirectory, string iconPath = null)
         {
             try
             {
@@ -125,8 +129,14 @@ namespace NoFences.Core.Util
                     Directory.CreateDirectory(outputDirectory);
 
                 // Sanitize filename
-                string safeGameName = string.Join("_", gameName.Split(Path.GetInvalidFileNameChars()));
+                string safeGameName = string.Join("", gameName.Split(Path.GetInvalidFileNameChars()));
                 string shortcutPath = Path.Combine(outputDirectory, $"{safeGameName}.url");
+
+                if (File.Exists(shortcutPath))
+                {
+                    log.Debug($"Shortcut already exists at {shortcutPath}");
+                    return shortcutPath;
+                }
 
                 // Determine icon file
                 string iconFile = iconPath;
@@ -151,12 +161,12 @@ IconFile={iconFile ?? ""}
 ";
 
                 File.WriteAllText(shortcutPath, urlContent);
-                Debug.WriteLine($"EpicGamesStoreDetector: Created shortcut at {shortcutPath}");
+                log.Debug($"Created shortcut at {shortcutPath}");
                 return shortcutPath;
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"EpicGamesStoreDetector: Error creating shortcut for {gameName}: {ex.Message}");
+                log.Error($"Error creating shortcut for {gameName}: {ex.Message}", ex);
                 return null;
             }
         }
@@ -170,13 +180,18 @@ IconFile={iconFile ?? ""}
             try
             {
                 string content = File.ReadAllText(manifestPath);
+                log.Debug($"Parsing manifest: {manifestPath}");
+                log.Debug($"Manifest content: {content}");
 
                 // Extract key fields using regex (Epic manifests are JSON)
-                string appName = ExtractJsonValue(content, "AppName");
-                string displayName = ExtractJsonValue(content, "DisplayName");
-                string installLocation = ExtractJsonValue(content, "InstallLocation");
-                string launchExecutable = ExtractJsonValue(content, "LaunchExecutable");
-                string installSizeStr = ExtractJsonValue(content, "InstallSize");
+
+                dynamic manifestData = JsonConvert.DeserializeObject(content);
+
+                string appName = manifestData.AppName;
+                string displayName = manifestData.DisplayName;
+                string installLocation = manifestData.InstallLocation;
+                string launchExecutable = manifestData.LaunchExecutable;
+                string installSizeStr = manifestData.InstallSize;
 
                 if (string.IsNullOrEmpty(appName) || string.IsNullOrEmpty(displayName))
                     return null;
@@ -184,7 +199,7 @@ IconFile={iconFile ?? ""}
                 // Verify install location exists
                 if (string.IsNullOrEmpty(installLocation) || !Directory.Exists(installLocation))
                 {
-                    Debug.WriteLine($"EpicGamesStoreDetector: Install location not found for {displayName}");
+                    log.Debug($"Install location not found for {displayName}");
                     return null;
                 }
 
@@ -200,7 +215,7 @@ IconFile={iconFile ?? ""}
                     }
                     else
                     {
-                        Debug.WriteLine($"EpicGamesStoreDetector: Executable not found: {executablePath}");
+                        log.Debug($"Executable not found: {executablePath}");
                         executablePath = null;
                     }
                 }
@@ -220,10 +235,9 @@ IconFile={iconFile ?? ""}
 
                 // Create shortcut
                 string shortcutDir = Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                    "NoFences", "EpicShortcuts");
+                    Environment.GetFolderPath(Environment.SpecialFolder.Desktop));
 
-                string shortcutPath = CreateGameShortcut(appName, displayName, shortcutDir, iconPath);
+                string shortcutPath = FindOrCreateGameShortcut(appName, displayName, shortcutDir, iconPath);
 
                 return new GameInfo
                 {
@@ -245,31 +259,9 @@ IconFile={iconFile ?? ""}
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"EpicGamesStoreDetector: Error parsing manifest {manifestPath}: {ex.Message}");
+                log.Error($"Error parsing manifest {manifestPath}: {ex.Message}", ex);
                 return null;
             }
-        }
-
-        /// <summary>
-        /// Extracts a value from JSON content using regex
-        /// </summary>
-        private string ExtractJsonValue(string json, string key)
-        {
-            try
-            {
-                // Pattern: "key": "value" or "key":"value"
-                var pattern = $@"""{key}""\s*:\s*""([^""]*)""";
-                var match = Regex.Match(json, pattern, RegexOptions.IgnoreCase);
-
-                if (match.Success && match.Groups.Count > 1)
-                    return match.Groups[1].Value.Replace("\\\\", "\\");
-            }
-            catch
-            {
-                // Ignore parsing errors
-            }
-
-            return null;
         }
 
         /// <summary>
@@ -328,7 +320,7 @@ IconFile={iconFile ?? ""}
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"EpicGamesStoreDetector: Error finding executable for {gameName}: {ex.Message}");
+                log.Error($"Error finding executable for {gameName}: {ex.Message}", ex);
             }
 
             return null;

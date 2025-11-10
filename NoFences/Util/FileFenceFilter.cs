@@ -20,12 +20,34 @@ namespace NoFences.Util
         private static readonly ILog log = LogManager.GetLogger(typeof(FileFenceFilter));
 
         /// <summary>
-        /// Result of filtering operation containing file paths and optional icon cache entries
+        /// Result of filtering operation containing InstalledSoftware objects.
+        /// Enhanced in Session 11 to preserve all metadata instead of just file paths.
         /// </summary>
         public class FilterResult
         {
-            public List<string> FilePaths { get; set; } = new List<string>();
-            public Dictionary<string, string> IconCache { get; set; } = new Dictionary<string, string>();
+            /// <summary>
+            /// Software items from database (with full metadata)
+            /// </summary>
+            public List<InstalledSoftware> SoftwareItems { get; set; } = new List<InstalledSoftware>();
+
+            /// <summary>
+            /// File/folder items from local filesystem (with basic metadata)
+            /// </summary>
+            public List<InstalledSoftware> FileItems { get; set; } = new List<InstalledSoftware>();
+
+            /// <summary>
+            /// Gets all items combined (software + files)
+            /// </summary>
+            public List<InstalledSoftware> AllItems
+            {
+                get
+                {
+                    var combined = new List<InstalledSoftware>();
+                    combined.AddRange(SoftwareItems);
+                    combined.AddRange(FileItems);
+                    return combined;
+                }
+            }
         }
 
         /// <summary>
@@ -58,6 +80,7 @@ namespace NoFences.Util
         /// <summary>
         /// Applies software category filter (e.g., Games, Browsers)
         /// Uses enhanced categorization from software catalog database when available.
+        /// Enhanced in Session 11 to return full InstalledSoftware objects instead of just paths.
         /// </summary>
         private static FilterResult ApplySoftwareFilter(FileFilter filter)
         {
@@ -67,35 +90,24 @@ namespace NoFences.Util
 
             foreach (var software in installedSoftware)
             {
-                // Prioritize executable path, fall back to install location
-                string path = null;
+                // Only include items with valid paths
+                bool hasValidPath = (!string.IsNullOrEmpty(software.ExecutablePath) && File.Exists(software.ExecutablePath)) ||
+                                   (!string.IsNullOrEmpty(software.InstallLocation) && Directory.Exists(software.InstallLocation));
 
-                if (!string.IsNullOrEmpty(software.ExecutablePath) && File.Exists(software.ExecutablePath))
+                if (hasValidPath)
                 {
-                    path = software.ExecutablePath;
-                }
-                else if (!string.IsNullOrEmpty(software.InstallLocation) && Directory.Exists(software.InstallLocation))
-                {
-                    path = software.InstallLocation;
-                }
-
-                if (path != null)
-                {
-                    result.FilePaths.Add(path);
-
-                    // Cache icon path for software items (especially for Steam games)
-                    if (!string.IsNullOrEmpty(software.IconPath))
-                    {
-                        result.IconCache[path] = software.IconPath;
-                    }
+                    // Return the complete InstalledSoftware object - preserves ALL metadata!
+                    result.SoftwareItems.Add(software);
                 }
             }
 
+            log.Info($"FileFenceFilter: Returning {result.SoftwareItems.Count} software items with full metadata");
             return result;
         }
 
         /// <summary>
         /// Applies file-based filters (Category, Extensions, Pattern, None)
+        /// Enhanced in Session 11 to return InstalledSoftware objects instead of just paths.
         /// </summary>
         private static FilterResult ApplyFileBasedFilter(FileFilter filter, string monitorPath, List<string> manualItems)
         {
@@ -122,7 +134,8 @@ namespace NoFences.Util
                     {
                         if (filter.MatchesFile(filePath))
                         {
-                            result.FilePaths.Add(filePath);
+                            // Convert path to InstalledSoftware object
+                            result.FileItems.Add(InstalledSoftware.FromPath(filePath));
                         }
                     }
                 }
@@ -138,12 +151,13 @@ namespace NoFences.Util
                 {
                     if ((Directory.Exists(item) || File.Exists(item)) && filter.MatchesFile(item))
                     {
-                        result.FilePaths.Add(item);
+                        // Convert path to InstalledSoftware object
+                        result.FileItems.Add(InstalledSoftware.FromPath(item));
                     }
                 }
             }
 
-            log.Info($"FileFenceFilter: Smart filter returned {result.FilePaths.Count} items");
+            log.Info($"FileFenceFilter: File-based filter returned {result.FileItems.Count} items");
             return result;
         }
 

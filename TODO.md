@@ -1,24 +1,19 @@
-General
+All Fences:
 
-* Introduce the possibility to see logs and change its level from INFO to DEBUG at least. For now, it can be in the trayicon context menu.
-
-
-
-EditWindow
-
-* Because of the theme used, the usability is not good. It's hard to find where things are due to the bright blue color. Please make it more accessible.
+* BUG: The help icon is still visible after fence fades out
 
 
 
 ClockFence:
 
-* Add options in edit window to show more weather information such as feels\_like, sunset and sunrise, clouds, wind speed in km/h and direction. Use nice icons for the weather, temperature and wind direction, not only symbols.
+* Add options on edit windwo to show what the user wants only (feels like, sunrise/sundown, wind, date, time)
+* Customize fonts or layout maybe? Like the clock on block screen for pixel smartphones (vertical date; hour, minute, second in different lines; big icon with weather, big number for temp; show location)
 
 
 
 FilesFence:
 
-* Allow the user select the files it wants to see inside the fence (dropping the files is better - but works selecting as well)
+* BUG: need to get information collected from GetAllInstalled() that returns useful metadata. Currently, we are only getting the path of the shortcut and extracting info from there, but the icon names are weird, point to the .exe file. Should get the name resolved by the detectors.
 * Rework datalayer:
 
  	- We can have just one table with games and software, identifying them with better categorization. We can categorize what's installed based on the source of it. Let's discuss this point
@@ -29,38 +24,85 @@ FilesFence:
 
  	- In the Filter Type, we can introduce the "game" type that will work the same way as the software type, however, the subfilter "category" will list only game categories, as well as the software will show only software categories.
 
-* BUG: Position the content a little bit down, it's being drawn under the title.
 * This is a question: UniGetUI - a visual client for winget - can list all software and games installed in the computer, showing the sources from "other stores" like Steam, UbiConnect, etc. Can we have the same feature here? I've tried to identify what they do and it seems they use winget to list the installed software, but they also identify the source somehow. That would help collect information about the software
-* BUG: the icons drawn somethings have long names making it look weird. Introduce string pipe ellipsis ("when the string is to long, add ...")
 
 
 
-PicturesFence
-
-* Is there any possibility to actually play the animated gifs? They are static today
 
 
+AmazonGamesDetector
 
-VideoFence?
+* I might have found a better way to list the amazon games - in the installation folder, there is a Data/Sql folder with some valuable information. It uses SQLite (we already have the driver and infrastructure to use the database in readonly mode). 
+  CommonData.sqlite has the information about the libraries;
+  GameInstallDetails has the games installation folder, last updated date, title
+  ProductDetails has lots of information, like the json below:
+* {
+* &nbsp;   "Background": "https://m.media-amazon.com/images/I/71c+TMbLTmL.jpg",
+* &nbsp;   "Background2": "https://m.media-amazon.com/images/I/71c+TMbLTmL.jpg",
+* &nbsp;   "Developers": \[
+* &nbsp;       "Broken Arms Games"
+* &nbsp;   ],
+* &nbsp;   "EsrbRating": "EVERYONE\_TEN\_PLUS",
+* &nbsp;   "ExternalWebsites": {},
+* &nbsp;   "GameModes": \[
+* &nbsp;       "Single Player"
+* &nbsp;   ],
+* &nbsp;   "Genres": \[
+* &nbsp;       "Simulator",
+* &nbsp;       "Strategy",
+* &nbsp;       "Indie"
+* &nbsp;   ],
+* &nbsp;   "Id": "amzn1.adg.product.c1cd3750-55cc-47d5-b137-db9a8dde1617",
+* &nbsp;   "IsDescriptionRightToLeft": false,
+* &nbsp;   "Keywords": \[
+* &nbsp;       "farming",
+* &nbsp;       "time management"
+* &nbsp;   ],
+* &nbsp;   "LastModifiedDateTime": "2025-11-11T18:48:12.2985633+01:00",
+* &nbsp;   "LocalCacheExpirationTime": "11/11/2025 19:03:12",
+* &nbsp;   "Locale": "en-US",
+* &nbsp;   "OfficialWebsite": "http://www.hundreddaysgame.com",
+* &nbsp;   "PGCrownImageUrl": null,
+* &nbsp;   "PegiRating": "THREE",
+* &nbsp;   "ProductAsin": null,
+* &nbsp;   "ProductAsinVersion": null,
+* &nbsp;   "ProductDescription": "It takes a hundred days for a vine leaf to complete its life cycle: from spring to autumn, the leaves thrive and provide the fundamental energy to grow the grapes. Hundred Days will put you in charge of managing a small and abandoned winery: from selecting the types of vine you want to grow, to naming your final product, every decision of the challenging business of winemaking will be in your hands.  \\n\\nTake care of your vineyard, learn to follow the rhythm of the seasons, harvest, label your bottles and sell them on the market: every choice you make will have an impact on the quality and quantity of the wine you produce and sell. Increase the reputation of your company worldwide, expand your business and manage the tight schedule of your daily tasks.",
+* &nbsp;   "ProductDomain": null,
+* &nbsp;   "ProductIconUrl": "https://m.media-amazon.com/images/I/81qM0C1t4+L.jpg",
+* &nbsp;   "ProductId": {
+* &nbsp;       "Id": "amzn1.adg.product.c1cd3750-55cc-47d5-b137-db9a8dde1617"
+* &nbsp;   },
+* &nbsp;   "ProductLine": "Sonic:Game",
+* &nbsp;   "ProductLogoUrl": "https://m.media-amazon.com/images/I/41Rrb+pCRIL.png",
+* &nbsp;   "ProductPublisher": "Broken Arms Games",
+* &nbsp;   "ProductSku": "amzn1.resource.a2c4fd7d-8602-f67a-c291-93296c247074",
+* &nbsp;   "ProductTitle": "Hundred Days",
+* &nbsp;   "ProductVendor": "e9039554-7a9a-4ebf-8985-29aa059411bc",
+* &nbsp;   "ReleaseDate": "2021-05-13T02:00:00",
+* &nbsp;   "Screenshots": \[
+* &nbsp;       "https://m.media-amazon.com/images/I/A1h+c02GV2L.jpg",
+* &nbsp;       "https://m.media-amazon.com/images/I/91reyxfcauL.jpg",
+* &nbsp;       "https://m.media-amazon.com/images/I/A1TNs9EYQ5L.jpg",
+* &nbsp;       "https://m.media-amazon.com/images/I/91QjXYypfNL.jpg",
+* &nbsp;       "https://m.media-amazon.com/images/I/91fWJn-PjEL.jpg"
+* &nbsp;   ],
+* &nbsp;   "TrailerImageUrl": null,
+* &nbsp;   "UskRating": "ZERO",
+* &nbsp;   "Version": null,
+* &nbsp;   "Videos": \[]
+* }
 
-* Can we have a videoFence? That plays a video or playlist in loop?s
 
 
 
-All fences
-
-* I really need to introduce drag'n drop and a better way to switch between fences types using the files we have in it.
-* BUG: Work on the size title - we have the options to change the title size, but when displaying it, it doesn't change the height.
-* If the mouse is over a fence, always show the resizing corner (all directions). Currently it only shows if starts resizing.
-* We need to introduce usuability tips. It's not clear the user has options for the fences. Maybe the first fence, or when creating a new fence, add a panel with information about it, like a manual? Would be nice to have a "?" icon where the user can review what he can do.
-* Customization - let's allow the user to decide wheather they want the fade effect.
-* BUG: The fences can be hidden outside the window if they fade out, it shouldn't happen. We must limit the fences to be within the desktop area.
 
 
 
 Installer
 
-* Let's introduce a service that checks for new versions of the software and automatically downloads (optional - only if the user accepts) and starts the process of update. I believe the installer must be changed in order to have this feature, like introducing a valid uid for the software, links and urls that are relevant for the process. We might need to rewrite the LICENSE.rtf as well, as eventually we will be collecting data from the user machine (anonymously - like the software installed and it's categories).
+* ✅ DONE: Finish auto download and silent install (Session 11 - LaunchInstaller now supports /SILENT flag)
+* ✅ DONE: Fix UpdateManager package selection - now prefers bootstrapper over MSI (Session 11 - smart asset selection with priority order)
+* Review installer so new version installation is successful. Seems after reinstalling or installing a new version, the installer fails due to the service not being removed or can't be replace. Maybe add validations to it and force service remove/re-install?
 
 
 
@@ -87,6 +129,4 @@ Services
  		- The user must be able to see the same Virtual Drive on windows explorer, and the folders listed there might have different permissions for actions, like some of them might not allow create sub folders. Or won't be able to upload files, only donwload. The service that provides the storage information might give everything we need - just let me know the requirements for this (as far as I can tell, it's an API that returns the data needed - I can easily implement it).
 
  
-
-
 

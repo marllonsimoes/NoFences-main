@@ -1,12 +1,13 @@
+using log4net;
 using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 
-namespace NoFences.Core.Util
+using NoFences.Core.Util;
+namespace NoFencesDataLayer.Services
 {
     /// <summary>
     /// Detects installed GOG Galaxy games
@@ -14,6 +15,8 @@ namespace NoFences.Core.Util
     /// </summary>
     public class GOGGalaxyDetector : IGameStoreDetector
     {
+
+        private static readonly ILog log = LogManager.GetLogger(typeof(GOGGalaxyDetector));
         public string PlatformName => "GOG Galaxy";
 
         private const string RegistryPath = @"SOFTWARE\WOW6432Node\GOG.com\Games";
@@ -36,12 +39,12 @@ namespace NoFences.Core.Util
                     .Select(g => g.First())
                     .ToList();
 
-                Debug.WriteLine($"GOGGalaxyDetector: Total {uniqueGames.Count} GOG games found");
+                log.Debug($"Total {uniqueGames.Count} GOG games found");
                 return uniqueGames;
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"GOGGalaxyDetector: Error detecting GOG games: {ex.Message}");
+                log.Error($"Error detecting GOG games: {ex.Message}", ex);
                 return games;
             }
         }
@@ -93,13 +96,13 @@ namespace NoFences.Core.Util
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"GOGGalaxyDetector: Error finding GOG install path: {ex.Message}");
+                log.Error($"Error finding GOG install path: {ex.Message}", ex);
             }
 
             return null;
         }
 
-        public string CreateGameShortcut(string gameId, string gameName, string outputDirectory, string iconPath = null)
+        public string FindOrCreateGameShortcut(string gameId, string gameName, string outputDirectory, string iconPath = null)
         {
             try
             {
@@ -107,8 +110,14 @@ namespace NoFences.Core.Util
                     Directory.CreateDirectory(outputDirectory);
 
                 // Sanitize filename
-                string safeGameName = string.Join("_", gameName.Split(Path.GetInvalidFileNameChars()));
+                string safeGameName = string.Join("", gameName.Split(Path.GetInvalidFileNameChars()));
                 string shortcutPath = Path.Combine(outputDirectory, $"{safeGameName}.url");
+
+                if (File.Exists(shortcutPath))
+                {
+                    log.Debug($"Shortcut already exists at {shortcutPath}");
+                    return shortcutPath;
+                }
 
                 // Determine icon file
                 string iconFile = iconPath;
@@ -131,12 +140,12 @@ IconFile={iconFile ?? ""}
 ";
 
                 File.WriteAllText(shortcutPath, urlContent);
-                Debug.WriteLine($"GOGGalaxyDetector: Created shortcut at {shortcutPath}");
+                log.Debug($"Created shortcut at {shortcutPath}");
                 return shortcutPath;
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"GOGGalaxyDetector: Error creating shortcut for {gameName}: {ex.Message}");
+                log.Error($"Error creating shortcut for {gameName}: {ex.Message}", ex);
                 return null;
             }
         }
@@ -171,14 +180,14 @@ IconFile={iconFile ?? ""}
                         }
                         catch (Exception ex)
                         {
-                            Debug.WriteLine($"GOGGalaxyDetector: Error reading game key {gameKeyName}: {ex.Message}");
+                            log.Error($"Error reading game key {gameKeyName}: {ex.Message}", ex);
                         }
                     }
                 }
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"GOGGalaxyDetector: Error scanning registry {path}: {ex.Message}");
+                log.Error($"Error scanning registry {path}: {ex.Message}", ex);
             }
 
             return games;
@@ -202,7 +211,7 @@ IconFile={iconFile ?? ""}
                 // Verify installation exists
                 if (string.IsNullOrEmpty(path) || !Directory.Exists(path))
                 {
-                    Debug.WriteLine($"GOGGalaxyDetector: Install path not found for {gameName}");
+                    log.Debug($"Install path not found for {gameName}");
                     return null;
                 }
 
@@ -232,7 +241,7 @@ IconFile={iconFile ?? ""}
                     }
                     else
                     {
-                        Debug.WriteLine($"GOGGalaxyDetector: Executable not found: {executablePath}");
+                        log.Debug($"Executable not found: {executablePath}");
                         executablePath = null;
                     }
                 }
@@ -263,10 +272,9 @@ IconFile={iconFile ?? ""}
 
                 // Create shortcut
                 string shortcutDir = Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                    "NoFences", "GOGShortcuts");
+                    Environment.GetFolderPath(Environment.SpecialFolder.Desktop));
 
-                string shortcutPath = CreateGameShortcut(gameId, gameName, shortcutDir, iconPath);
+                string shortcutPath = FindOrCreateGameShortcut(gameId, gameName, shortcutDir, iconPath);
 
                 return new GameInfo
                 {
@@ -289,7 +297,7 @@ IconFile={iconFile ?? ""}
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"GOGGalaxyDetector: Error parsing registry entry for {gameId}: {ex.Message}");
+                log.Error($"Error parsing registry entry for {gameId}: {ex.Message}", ex);
                 return null;
             }
         }
@@ -334,7 +342,7 @@ IconFile={iconFile ?? ""}
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"GOGGalaxyDetector: Error finding executable for {gameName}: {ex.Message}");
+                log.Error($"Error finding executable for {gameName}: {ex.Message}", ex);
                 return null;
             }
         }

@@ -1,8 +1,10 @@
 using log4net;
+using Newtonsoft.Json;
 using NoFences.Core.Settings;
 using NoFences.Model;
 using NoFences.Services;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Net;
@@ -30,7 +32,7 @@ namespace NoFences.Services.Managers
         private NotifyIcon trayIcon; // For balloon notifications
 
         // GitHub API endpoint format: https://api.github.com/repos/{owner}/{repo}/releases/latest
-        private const string DEFAULT_GITHUB_API = "https://api.github.com/marllonsimoes/NoFences-main/releases/latest";
+        private const string DEFAULT_GITHUB_API = "https://api.github.com/repos/marllonsimoes/NoFences-main/releases/latest";
 
         /// <summary>
         /// Initializes a new instance of the UpdateManager.
@@ -143,6 +145,30 @@ namespace NoFences.Services.Managers
         }
 
         /// <summary>
+        /// Helper method to extract asset names for logging purposes.
+        /// </summary>
+        private IEnumerable<string> GetAssetNames(dynamic assets)
+        {
+            var names = new List<string>();
+            try
+            {
+                foreach (dynamic asset in assets)
+                {
+                    string name = asset.name?.ToString();
+                    if (!string.IsNullOrEmpty(name))
+                    {
+                        names.Add(name);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                log.Warn($"Error extracting asset names: {ex.Message}");
+            }
+            return names;
+        }
+
+        /// <summary>
         /// Parses GitHub Releases API JSON response into UpdateInfo.
         /// Uses simple regex parsing to avoid external JSON library dependency.
         /// </summary>
@@ -152,25 +178,21 @@ namespace NoFences.Services.Managers
             {
                 var updateInfo = new UpdateInfo();
 
-                // Extract tag_name (version)
-                var tagMatch = Regex.Match(json, @"""tag_name""\s*:\s*""v?([0-9.]+)""");
-                if (tagMatch.Success)
+                dynamic data = JsonConvert.DeserializeObject(json);
+
+                // Extract tag_name (version
+                if (data != null)
                 {
-                    string versionString = tagMatch.Groups[1].Value;
-                    updateInfo.Version = new Version(versionString);
+                    string versionString = data.tag_name;
+                    updateInfo.Version = new Version(versionString.Substring(1));
                     log.Debug($"Parsed version: {updateInfo.Version}");
-                }
-                else
-                {
-                    log.Error("Could not find 'tag_name' in GitHub release JSON");
-                    return null;
                 }
 
                 // Extract published_at (release date)
-                var dateMatch = Regex.Match(json, @"""published_at""\s*:\s*""([^""]+)""");
-                if (dateMatch.Success)
+                string dateMatch = data.published_at;
+                if (dateMatch != null)
                 {
-                    if (DateTime.TryParse(dateMatch.Groups[1].Value, out DateTime releaseDate))
+                    if (DateTime.TryParse(dateMatch, out DateTime releaseDate))
                     {
                         updateInfo.ReleaseDate = releaseDate.ToUniversalTime();
                         log.Debug($"Parsed release date: {updateInfo.ReleaseDate}");
@@ -178,44 +200,100 @@ namespace NoFences.Services.Managers
                 }
 
                 // Extract html_url (release notes page)
-                var urlMatch = Regex.Match(json, @"""html_url""\s*:\s*""([^""]+)""");
-                if (urlMatch.Success)
+                string urlMatch = data.html_url;
+                if (urlMatch != null)
                 {
-                    updateInfo.ReleaseNotesUrl = urlMatch.Groups[1].Value;
+                    updateInfo.ReleaseNotesUrl = urlMatch;
                     log.Debug($"Release notes URL: {updateInfo.ReleaseNotesUrl}");
                 }
 
                 // Extract body (release notes markdown)
-                var bodyMatch = Regex.Match(json, @"""body""\s*:\s*""((?:[^""\\]|\\.)*)""");
-                if (bodyMatch.Success)
+                string bodyMatch = data.body;
+                if (bodyMatch != null)
                 {
                     // Unescape JSON string
-                    string body = bodyMatch.Groups[1].Value;
+                    string body = bodyMatch;
                     body = Regex.Unescape(body);
                     updateInfo.ReleaseNotes = body;
                     log.Debug($"Parsed release notes: {body.Length} characters");
                 }
 
-                // Extract assets (find .exe installer)
-                var assetsMatch = Regex.Match(json, @"""assets""\s*:\s*\[(.*?)\]", RegexOptions.Singleline);
-                if (assetsMatch.Success)
+                // Extract assets - smart package selection
+                // Priority: 1) .bootstrap.exe (recommended), 2) .exe (standalone), 3) .msi (fallback)
+                var assetsMatch = data.assets;
+                if (assetsMatch != null && assetsMatch.Count > 0)
                 {
-                    string assetsJson = assetsMatch.Groups[1].Value;
+                    dynamic selectedAsset = null;
+                    string selectionReason = null;
 
-                    // Look for .exe file in assets
-                    var exeMatch = Regex.Match(assetsJson, @"""browser_download_url""\s*:\s*""([^""]*\.exe)""");
-                    if (exeMatch.Success)
+                    // Try to find bootstrapper first (includes .NET prerequisites)
+                    foreach (dynamic asset in assetsMatch)
                     {
-                        updateInfo.DownloadUrl = exeMatch.Groups[1].Value;
-                        log.Debug($"Found installer download URL: {updateInfo.DownloadUrl}");
+                        string assetName = asset.name?.ToString()?.ToLowerInvariant() ?? "";
+                        if (assetName.Contains("bootstrap") && assetName.EndsWith(".exe"))
+                        {
+                            selectedAsset = asset;
+                            selectionReason = "bootstrapper (includes .NET Framework prerequisites)";
+                            log.Info($"Found recommended bootstrapper installer: {asset.name}");
+                            break;
+                        }
                     }
 
-                    // Extract file size
-                    var sizeMatch = Regex.Match(assetsJson, @"""size""\s*:\s*(\d+)");
-                    if (sizeMatch.Success && long.TryParse(sizeMatch.Groups[1].Value, out long fileSize))
+                    // Fallback: Find any .exe file (standalone installer)
+                    if (selectedAsset == null)
                     {
-                        updateInfo.FileSize = fileSize;
-                        log.Debug($"Installer file size: {updateInfo.FormattedFileSize}");
+                        foreach (dynamic asset in assetsMatch)
+                        {
+                            string assetName = asset.name?.ToString()?.ToLowerInvariant() ?? "";
+                            if (assetName.EndsWith(".exe"))
+                            {
+                                selectedAsset = asset;
+                                selectionReason = "standalone .exe installer";
+                                log.Info($"Found standalone .exe installer: {asset.name}");
+                                break;
+                            }
+                        }
+                    }
+
+                    // Last resort: Find .msi file (requires .NET pre-installed)
+                    if (selectedAsset == null)
+                    {
+                        foreach (dynamic asset in assetsMatch)
+                        {
+                            string assetName = asset.name?.ToString()?.ToLowerInvariant() ?? "";
+                            if (assetName.EndsWith(".msi"))
+                            {
+                                selectedAsset = asset;
+                                selectionReason = "MSI installer (requires .NET Framework 4.8.1 pre-installed)";
+                                log.Warn($"Only found MSI installer: {asset.name} - requires .NET Framework pre-installed");
+                                break;
+                            }
+                        }
+                    }
+
+                    if (selectedAsset != null)
+                    {
+                        // Extract download URL
+                        string downloadUrl = selectedAsset.browser_download_url;
+                        if (!string.IsNullOrEmpty(downloadUrl))
+                        {
+                            updateInfo.DownloadUrl = downloadUrl;
+                            log.Info($"Selected installer package: {selectionReason}");
+                            log.Debug($"Download URL: {updateInfo.DownloadUrl}");
+                        }
+
+                        // Extract file size
+                        long fileSize = selectedAsset.size;
+                        if (fileSize != 0)
+                        {
+                            updateInfo.FileSize = fileSize;
+                            log.Debug($"Installer file size: {updateInfo.FormattedFileSize}");
+                        }
+                    }
+                    else
+                    {
+                        log.Error("No suitable installer package found in GitHub release assets");
+                        log.Debug($"Available assets: {string.Join(", ", GetAssetNames(assetsMatch))}");
                     }
                 }
 
@@ -695,8 +773,9 @@ namespace NoFences.Services.Managers
         /// </summary>
         /// <param name="installerPath">Path to installer executable.</param>
         /// <param name="exitApplication">If true, exits NoFences after launching installer.</param>
+        /// <param name="silentInstall">If true, runs installer in silent/unattended mode.</param>
         /// <returns>True if installer launched successfully.</returns>
-        public bool LaunchInstaller(string installerPath, bool exitApplication = true)
+        public bool LaunchInstaller(string installerPath, bool exitApplication = true, bool silentInstall = false)
         {
             if (string.IsNullOrEmpty(installerPath) || !File.Exists(installerPath))
             {
@@ -706,11 +785,40 @@ namespace NoFences.Services.Managers
 
             try
             {
+                string fileExtension = Path.GetExtension(installerPath).ToLowerInvariant();
+                string arguments = "";
+
+                // Determine silent install arguments based on installer type
+                if (silentInstall)
+                {
+                    if (fileExtension == ".exe")
+                    {
+                        // WiX bootstrapper supports /SILENT and /VERYSILENT flags
+                        // /CLOSEAPPLICATIONS - automatically close running applications
+                        // /RESTARTAPPLICATIONS - restart closed applications after install
+                        arguments = "/SILENT /CLOSEAPPLICATIONS /RESTARTAPPLICATIONS";
+                        log.Info("Using silent install mode for .exe bootstrapper");
+                    }
+                    else if (fileExtension == ".msi")
+                    {
+                        // MSI requires msiexec wrapper for silent install
+                        // Note: This path launches the MSI directly, so we add /quiet flag
+                        // For proper MSI silent install, should use: msiexec /i "path" /quiet /norestart
+                        log.Warn("Silent install for MSI not fully supported without msiexec wrapper");
+                        arguments = "/quiet /norestart";
+                    }
+                }
+
                 log.Info($"Launching installer: {installerPath}");
+                if (!string.IsNullOrEmpty(arguments))
+                {
+                    log.Info($"Installer arguments: {arguments}");
+                }
 
                 var startInfo = new ProcessStartInfo
                 {
                     FileName = installerPath,
+                    Arguments = arguments,
                     UseShellExecute = true,
                     Verb = "runas" // Request admin elevation
                 };

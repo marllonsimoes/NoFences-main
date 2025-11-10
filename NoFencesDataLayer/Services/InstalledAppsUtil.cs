@@ -1,11 +1,12 @@
 ﻿using log4net;
 using Microsoft.Win32;
 using NoFences.Core.Model;
+using NoFences.Core.Util;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace NoFences.Core.Util
+namespace NoFencesDataLayer.Services
 {
     /// <summary>
     /// Utility for detecting and categorizing installed software on Windows
@@ -52,22 +53,38 @@ namespace NoFences.Core.Util
             
             log.Info($"Found {software.Count} software entries from registry");
             foreach (var soft in software) {
-                log.Info($"\t - {soft}");
+                log.Debug($"\t - {soft}");
             }
             // Add games from all supported game stores
             var games = GetAllGames();
             log.Info($"Found {games.Count} games entries from registry");
             foreach (var game in games)
             {
-                log.Info($"\t - {game}");
+                log.Debug($"\t - {game}");
             }
 
             software.AddRange(games);
+            software.Sort((a, b) => a.Name.CompareTo(b.Name));
 
             // Remove duplicates (same software might appear multiple times)
             var uniqueSoftware = software
                 .GroupBy(s => s.Name?.ToLower())
-                .Select(g => g.First())
+                .Select(g => {
+                    if (g.Count() > 1)
+                    {
+                        InstalledSoftware refinedCategory = g.First();
+                        foreach (var item in g)
+                        {
+                            if (item.Category != SoftwareCategory.Other)
+                            {
+                                refinedCategory = item;
+                                break;
+                            }
+                        }
+                        return refinedCategory;
+                    }
+                    return g.First();
+                })
                 .Where(s => !string.IsNullOrWhiteSpace(s.Name))
                 .OrderBy(s => s.Name)
                 .ToList();
@@ -179,7 +196,6 @@ namespace NoFences.Core.Util
                     app.ExecutablePath = FindExecutableInDirectory(app.InstallLocation, app.Name);
                 }
 
-                // Auto-categorize
                 app.Category = SoftwareCategorizer.Categorize(app.Name, app.Publisher, app.InstallLocation);
 
                 return app;
@@ -308,7 +324,7 @@ namespace NoFences.Core.Util
                     var software = new InstalledSoftware
                     {
                         Name = game.Name,
-                        Publisher = GetPublisherForPlatform(detector.PlatformName),
+                        Publisher = detector.PlatformName,
                         InstallLocation = game.InstallDir,
                         ExecutablePath = game.ExecutablePath ?? game.ShortcutPath,
                         IconPath = game.IconPath,
@@ -328,30 +344,6 @@ namespace NoFences.Core.Util
             }
 
             return softwareList;
-        }
-
-        /// <summary>
-        /// Gets the publisher name for a game platform
-        /// </summary>
-        private static string GetPublisherForPlatform(string platformName)
-        {
-            switch (platformName)
-            {
-                case "Steam":
-                    return "Valve Corporation";
-                case "Epic Games Store":
-                    return "Epic Games";
-                case "GOG Galaxy":
-                    return "GOG.com";
-                case "Ubisoft Connect":
-                    return "Ubisoft";
-                case "EA App":
-                    return "Electronic Arts";
-                case "Amazon Games":
-                    return "Amazon";
-                default:
-                    return platformName;
-            }
         }
     }
 }
