@@ -218,82 +218,26 @@ namespace NoFences.Services.Managers
                     log.Debug($"Parsed release notes: {body.Length} characters");
                 }
 
-                // Extract assets - smart package selection
-                // Priority: 1) .bootstrap.exe (recommended), 2) .exe (standalone), 3) .msi (fallback)
+                // Extract assets (find .exe installer)
                 var assetsMatch = data.assets;
-                if (assetsMatch != null && assetsMatch.Count > 0)
+                if (assetsMatch != null)
                 {
-                    dynamic selectedAsset = null;
-                    string selectionReason = null;
+                    dynamic assetsJson = assetsMatch[0];
 
-                    // Try to find bootstrapper first (includes .NET prerequisites)
-                    foreach (dynamic asset in assetsMatch)
+                    // Look for .exe file in assets
+                    string exeMatch = assetsJson.browser_download_url;
+                    if (exeMatch != null)
                     {
-                        string assetName = asset.name?.ToString()?.ToLowerInvariant() ?? "";
-                        if (assetName.Contains("bootstrap") && assetName.EndsWith(".exe"))
-                        {
-                            selectedAsset = asset;
-                            selectionReason = "bootstrapper (includes .NET Framework prerequisites)";
-                            log.Info($"Found recommended bootstrapper installer: {asset.name}");
-                            break;
-                        }
+                        updateInfo.DownloadUrl = exeMatch;
+                        log.Debug($"Found installer download URL: {updateInfo.DownloadUrl}");
                     }
 
-                    // Fallback: Find any .exe file (standalone installer)
-                    if (selectedAsset == null)
+                    // Extract file size
+                    long sizeMatch = assetsJson.size;
+                    if (sizeMatch != 0)
                     {
-                        foreach (dynamic asset in assetsMatch)
-                        {
-                            string assetName = asset.name?.ToString()?.ToLowerInvariant() ?? "";
-                            if (assetName.EndsWith(".exe"))
-                            {
-                                selectedAsset = asset;
-                                selectionReason = "standalone .exe installer";
-                                log.Info($"Found standalone .exe installer: {asset.name}");
-                                break;
-                            }
-                        }
-                    }
-
-                    // Last resort: Find .msi file (requires .NET pre-installed)
-                    if (selectedAsset == null)
-                    {
-                        foreach (dynamic asset in assetsMatch)
-                        {
-                            string assetName = asset.name?.ToString()?.ToLowerInvariant() ?? "";
-                            if (assetName.EndsWith(".msi"))
-                            {
-                                selectedAsset = asset;
-                                selectionReason = "MSI installer (requires .NET Framework 4.8.1 pre-installed)";
-                                log.Warn($"Only found MSI installer: {asset.name} - requires .NET Framework pre-installed");
-                                break;
-                            }
-                        }
-                    }
-
-                    if (selectedAsset != null)
-                    {
-                        // Extract download URL
-                        string downloadUrl = selectedAsset.browser_download_url;
-                        if (!string.IsNullOrEmpty(downloadUrl))
-                        {
-                            updateInfo.DownloadUrl = downloadUrl;
-                            log.Info($"Selected installer package: {selectionReason}");
-                            log.Debug($"Download URL: {updateInfo.DownloadUrl}");
-                        }
-
-                        // Extract file size
-                        long fileSize = selectedAsset.size;
-                        if (fileSize != 0)
-                        {
-                            updateInfo.FileSize = fileSize;
-                            log.Debug($"Installer file size: {updateInfo.FormattedFileSize}");
-                        }
-                    }
-                    else
-                    {
-                        log.Error("No suitable installer package found in GitHub release assets");
-                        log.Debug($"Available assets: {string.Join(", ", GetAssetNames(assetsMatch))}");
+                        updateInfo.FileSize = sizeMatch;
+                        log.Debug($"Installer file size: {updateInfo.FormattedFileSize}");
                     }
                 }
 
