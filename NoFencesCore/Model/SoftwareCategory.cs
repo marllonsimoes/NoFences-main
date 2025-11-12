@@ -1,3 +1,5 @@
+using log4net;
+using NoFences.Core.Util;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -27,21 +29,18 @@ namespace NoFences.Core.Model
     /// </summary>
     public static class SoftwareCategorizer
     {
+
+        private static readonly ILog log = LogManager.GetLogger(typeof(SoftwareCategorizer));
+
         // Keywords for categorization (lowercase for case-insensitive matching)
         private static readonly Dictionary<SoftwareCategory, List<string>> CategoryKeywords = new Dictionary<SoftwareCategory, List<string>>
         {
             {
-                SoftwareCategory.Games, new List<string>
-                {
-                    "game", "gaming"
-                }
-            },
-            {
                 SoftwareCategory.GamingPlatforms, new List<string>
                 {
                     "steam", "epic games", "gog galaxy", "origin", "uplay", "ubisoft connect",
-                    "battle.net", "blizzard", "xbox", "game pass", "ea app", "itch.io",
-                    "playnite", "lutris", "legendary"
+                    "battle.net", "blizzard", "xbox", "game pass", "ea app", "eletronic arts", "itch.io",
+                    "playnite", "lutris", "legendary", "amazon games", "humble app", "legacy games"
                 }
             },
             {
@@ -49,7 +48,7 @@ namespace NoFences.Core.Model
                 {
                     "microsoft office", "word", "excel", "powerpoint", "outlook", "onenote",
                     "libreoffice", "openoffice", "wps office", "google workspace",
-                    "notion", "evernote", "adobe acrobat", "pdf"
+                    "notion", "evernote", "adobe acrobat", "pdf", "onlyoffice", "workflowy"
                 }
             },
             {
@@ -57,7 +56,7 @@ namespace NoFences.Core.Model
                 {
                     "adobe", "photoshop", "illustrator", "indesign", "premiere", "after effects",
                     "affinity", "gimp", "inkscape", "blender", "3ds max", "maya", "cinema 4d",
-                    "sketch", "figma", "canva", "corel", "paint.net"
+                    "sketch", "figma", "canva", "corel", "paint.net", "painter", "autodesk", "da vinci"
                 }
             },
             {
@@ -74,8 +73,8 @@ namespace NoFences.Core.Model
                 SoftwareCategory.Media, new List<string>
                 {
                     "vlc", "media player", "spotify", "itunes", "audacity", "obs studio",
-                    "handbrake", "ffmpeg", "plex", "kodi", "winamp", "foobar",
-                    "davinci resolve", "kdenlive", "shotcut"
+                    "handbrake", "ffmpeg", "plex", "kodi", "winamp",
+                    "kdenlive", "shotcut", "jellyfin"
                 }
             },
             {
@@ -109,13 +108,14 @@ namespace NoFences.Core.Model
         private static readonly Dictionary<string, SoftwareCategory> PublisherMap = new Dictionary<string, SoftwareCategory>(StringComparer.OrdinalIgnoreCase)
         {
             // Gaming platforms
-            { "Valve Corporation", SoftwareCategory.GamingPlatforms },
-            { "Epic Games", SoftwareCategory.GamingPlatforms },
-            { "GOG.com", SoftwareCategory.GamingPlatforms },
-            { "CD Projekt RED", SoftwareCategory.GamingPlatforms },
-            { "Electronic Arts", SoftwareCategory.GamingPlatforms },
-            { "Ubisoft", SoftwareCategory.GamingPlatforms },
-            { "Blizzard Entertainment", SoftwareCategory.GamingPlatforms },
+            //{ "Valve Corporation", SoftwareCategory.GamingPlatforms },
+            //{ "Epic Games", SoftwareCategory.GamingPlatforms },
+            //{ "GOG.com", SoftwareCategory.GamingPlatforms },
+            //{ "CD Projekt RED", SoftwareCategory.GamingPlatforms },
+            //{ "Electronic Arts", SoftwareCategory.GamingPlatforms },
+            //{ "Ubisoft", SoftwareCategory.GamingPlatforms },
+            //{ "Blizzard Entertainment", SoftwareCategory.GamingPlatforms },
+            //{ "Amazon Games", SoftwareCategory.GamingPlatforms },
 
             // Office
             { "Microsoft Corporation", SoftwareCategory.OfficeProductivity },
@@ -148,16 +148,39 @@ namespace NoFences.Core.Model
         /// </summary>
         public static SoftwareCategory Categorize(string name, string publisher = null, string installLocation = null)
         {
+            log.Debug($"Categorizing software: Name='{name}', Publisher='{publisher}', InstallLocation='{installLocation}'");
             if (string.IsNullOrEmpty(name))
                 return SoftwareCategory.Other;
 
+            // Keyword-based categorization
+            string lowerName = name.ToLower();
+            string lowerPublisher = publisher?.ToLower() ?? string.Empty;
+
+            log.Debug($"Trying to get category by keywork: Lowercase Name='{lowerName}', Lowercase Publisher='{lowerPublisher}'");
+            foreach (var kvp in CategoryKeywords)
+            {
+                foreach (var keyword in kvp.Value)
+                {
+                    if (lowerName.Contains(keyword) || lowerPublisher.Contains(keyword))
+                    {
+                        log.Debug($"Found category: {kvp}");
+                        return kvp.Key;
+                    }
+                }
+            }
+
+            log.Debug($"Trying to find by publisher: {publisher}");
             // Check publisher first (most reliable)
             if (!string.IsNullOrEmpty(publisher))
             {
                 if (PublisherMap.TryGetValue(publisher, out var publisherCategory))
+                {
+                    log.Debug($"Foung category by publisher: {publisherCategory}");
                     return publisherCategory;
+                }
             }
 
+            log.Debug($"Trying to find by installLocation: {installLocation}");
             // Check install location for gaming platform hints
             if (!string.IsNullOrEmpty(installLocation))
             {
@@ -168,19 +191,6 @@ namespace NoFences.Core.Model
                     return SoftwareCategory.GamingPlatforms;
                 if (lowerLocation.Contains("gog galaxy"))
                     return SoftwareCategory.GamingPlatforms;
-            }
-
-            // Keyword-based categorization
-            string lowerName = name.ToLower();
-            string lowerPublisher = publisher?.ToLower() ?? string.Empty;
-
-            foreach (var kvp in CategoryKeywords)
-            {
-                foreach (var keyword in kvp.Value)
-                {
-                    if (lowerName.Contains(keyword) || lowerPublisher.Contains(keyword))
-                        return kvp.Key;
-                }
             }
 
             return SoftwareCategory.Other;

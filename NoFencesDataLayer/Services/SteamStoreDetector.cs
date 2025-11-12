@@ -1,78 +1,68 @@
+using log4net;
 using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 
-namespace NoFences.Core.Util
+using NoFences.Core.Util;
+namespace NoFencesDataLayer.Services
 {
     /// <summary>
-    /// Represents an installed Steam game
+    /// Steam game store detector implementing IGameStoreDetector
+    /// Wraps SteamGameDetector for the new abstraction
     /// </summary>
-    public class SteamGameInfo
+    public class SteamStoreDetector : IGameStoreDetector
     {
-        public int AppID { get; set; }
-        public string Name { get; set; }
-        public string InstallDir { get; set; }
-        public string LibraryPath { get; set; }
-        public long SizeOnDisk { get; set; }
-        public DateTime? LastUpdated { get; set; }
-        public string ShortcutPath { get; set; }
-        public string ExecutablePath { get; set; }
-        public string IconPath { get; set; }
-    }
+        private static readonly ILog log = LogManager.GetLogger(typeof(SteamStoreDetector));
 
-    /// <summary>
-    /// Detects installed Steam games by reading Steam's VDF configuration files
-    /// </summary>
-    public static class SteamGameDetector
-    {
-        /// <summary>
-        /// Gets all installed Steam games on this machine
-        /// </summary>
-        public static List<SteamGameInfo> GetInstalledGames()
+        public string PlatformName => "Steam";
+
+        public List<GameInfo> GetInstalledGames()
         {
-            var games = new List<SteamGameInfo>();
+            var games = new List<GameInfo>();
 
             try
             {
-                string steamPath = GetSteamInstallPath();
+                string steamPath = GetInstallPath();
                 if (string.IsNullOrEmpty(steamPath))
                 {
-                    Debug.WriteLine("SteamGameDetector: Steam installation not found");
+                    log.Info("Steam installation not found");
                     return games;
                 }
 
-                Debug.WriteLine($"SteamGameDetector: Found Steam at {steamPath}");
+                log.Info($"Found Steam at {steamPath}");
 
                 // Get all Steam library folders
                 var libraryFolders = GetLibraryFolders(steamPath);
-                Debug.WriteLine($"SteamGameDetector: Found {libraryFolders.Count} library folders");
+                log.Info($"Found {libraryFolders.Count} library folders");
 
                 // Scan each library for installed games
                 foreach (var libraryPath in libraryFolders)
                 {
                     var libraryGames = ScanLibraryFolder(libraryPath);
                     games.AddRange(libraryGames);
-                    Debug.WriteLine($"SteamGameDetector: Found {libraryGames.Count} games in {libraryPath}");
+                    log.Debug($"Found {libraryGames.Count} games in {libraryPath}");
                 }
 
-                Debug.WriteLine($"SteamGameDetector: Total {games.Count} Steam games found");
+                log.Info($"Total {games.Count} Steam games found");
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"SteamGameDetector: Error detecting Steam games: {ex.Message}");
+                log.Error($"Error detecting Steam games: {ex.Message}", ex);
             }
 
             return games;
         }
 
-        /// <summary>
-        /// Gets Steam installation path from registry
-        /// </summary>
-        public static string GetSteamInstallPath()
+        public bool IsInstalled()
+        {
+            var installPath = GetInstallPath();
+            return !string.IsNullOrEmpty(installPath);
+        }
+
+        public string GetInstallPath()
         {
             try
             {
@@ -125,16 +115,60 @@ namespace NoFences.Core.Util
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"SteamGameDetector: Error finding Steam path: {ex.Message}");
+                log.Error($"Error finding Steam path: {ex.Message}", ex);
             }
 
             return null;
         }
 
+        public string FindOrCreateGameShortcut(string gameId, string gameName, string outputDirectory, string iconPath = null)
+        {
+            if (!int.TryParse(gameId, out int appId))
+                return null;
+
+            try
+            {
+                if (!Directory.Exists(outputDirectory))
+                    Directory.CreateDirectory(outputDirectory);
+
+                // Sanitize filename
+                string safeGameName = string.Join("", gameName.Split(Path.GetInvalidFileNameChars()));
+                string shortcutPath = Path.Combine(outputDirectory, $"{safeGameName}.url");
+
+                if (File.Exists(shortcutPath))
+                {
+                    log.Debug($"Shortcut already exists at {shortcutPath}");
+                    return shortcutPath;
+                }
+
+                // Determine icon file
+                string iconFile = iconPath;
+                if (string.IsNullOrEmpty(iconFile))
+                {
+                    iconFile = Path.Combine(GetInstallPath() ?? Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "Steam", "steam.exe");
+                }
+
+                // Create .url file with Steam protocol
+                string urlContent = $@"[InternetShortcut]
+URL=steam://rungameid/{appId}
+IconIndex=0
+IconFile={iconFile}
+";
+
+                File.WriteAllText(shortcutPath, urlContent);
+                return shortcutPath;
+            }
+            catch (Exception ex)
+            {
+                log.Error($"Error creating shortcut for {gameName}: {ex.Message}", ex);
+                return null;
+            }
+        }
+
         /// <summary>
         /// Parses libraryfolders.vdf to get all Steam library locations
         /// </summary>
-        private static List<string> GetLibraryFolders(string steamPath)
+        private List<string> GetLibraryFolders(string steamPath)
         {
             var libraries = new List<string>();
 
@@ -188,7 +222,7 @@ namespace NoFences.Core.Util
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"SteamGameDetector: Error parsing library folders: {ex.Message}");
+                log.Error($"Error parsing library folders: {ex.Message}", ex);
             }
 
             return libraries;
@@ -198,9 +232,9 @@ namespace NoFences.Core.Util
         /// Scans a Steam library folder for installed games
         /// Reads appmanifest_*.acf files
         /// </summary>
-        private static List<SteamGameInfo> ScanLibraryFolder(string libraryPath)
+        private List<GameInfo> ScanLibraryFolder(string libraryPath)
         {
-            var games = new List<SteamGameInfo>();
+            var games = new List<GameInfo>();
 
             try
             {
@@ -217,13 +251,13 @@ namespace NoFences.Core.Util
                     }
                     catch (Exception ex)
                     {
-                        Debug.WriteLine($"SteamGameDetector: Error parsing {manifestFile}: {ex.Message}");
+                        log.Debug($"Error parsing {manifestFile}: {ex.Message}", ex);
                     }
                 }
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"SteamGameDetector: Error scanning library {libraryPath}: {ex.Message}");
+                log.Error($"Error scanning library {libraryPath}: {ex.Message}", ex);
             }
 
             return games;
@@ -232,21 +266,25 @@ namespace NoFences.Core.Util
         /// <summary>
         /// Parses an appmanifest_*.acf file to extract game information
         /// </summary>
-        private static SteamGameInfo ParseAppManifest(string manifestPath, string libraryPath)
+        private GameInfo ParseAppManifest(string manifestPath, string libraryPath)
         {
             try
             {
                 string content = File.ReadAllText(manifestPath);
+                log.Debug($"Parsing manifest: {manifestPath}");
+                log.Debug($"Manifest content: {content}");
 
                 // Extract AppID from filename: appmanifest_<appid>.acf
                 string filename = Path.GetFileNameWithoutExtension(manifestPath);
                 int appId = int.Parse(filename.Replace("appmanifest_", ""));
 
+                dynamic manifestData = AcfParser.Parse(content);
+
                 // Parse VDF format
-                string name = ExtractVdfValue(content, "name");
-                string installDir = ExtractVdfValue(content, "installdir");
-                string sizeOnDiskStr = ExtractVdfValue(content, "SizeOnDisk");
-                string lastUpdatedStr = ExtractVdfValue(content, "LastUpdated");
+                string name = manifestData.AppState.name;
+                string installDir = manifestData.AppState.installdir;
+                string sizeOnDiskStr = manifestData.AppState.SizeOnDisk;
+                string lastUpdatedStr = manifestData.AppState.LastUpdated;
 
                 if (string.IsNullOrEmpty(name))
                     return null;
@@ -284,21 +322,30 @@ namespace NoFences.Core.Util
                     iconPath = GetSteamIconFromCache(appId);
                 }
 
-                return new SteamGameInfo
+                var shortcutDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop));
+                string shortcutPath = FindOrCreateGameShortcut(appId.ToString(), name, shortcutDir, iconPath);
+
+                return new GameInfo
                 {
-                    AppID = appId,
+                    GameId = appId.ToString(),
                     Name = name,
-                    InstallDir = fullInstallDir,
-                    LibraryPath = libraryPath,
+                    InstallDir = installDir,
+                    ExecutablePath = exePath,
+                    IconPath = iconPath,
                     SizeOnDisk = sizeOnDisk,
                     LastUpdated = lastUpdated,
-                    ExecutablePath = exePath,
-                    IconPath = iconPath
+                    ShortcutPath = shortcutPath,
+                    Platform = PlatformName,
+                    Metadata = new Dictionary<string, string>
+                    {
+                        ["AppID"] = appId.ToString(),
+                        ["LibraryPath"] = libraryPath ?? ""
+                    }
                 };
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"SteamGameDetector: Error parsing manifest {manifestPath}: {ex.Message}");
+                log.Error($"Error parsing manifest {manifestPath}: {ex.Message}", ex);
                 return null;
             }
         }
@@ -306,7 +353,7 @@ namespace NoFences.Core.Util
         /// <summary>
         /// Extracts a value from VDF format: "key"		"value"
         /// </summary>
-        private static string ExtractVdfValue(string content, string key)
+        private string ExtractVdfValue(string content, string key)
         {
             try
             {
@@ -319,7 +366,7 @@ namespace NoFences.Core.Util
             }
             catch
             {
-                // Ignore parsing errors
+                log.Error($"Error extracting VDF value for key {key} - ignoring");
             }
 
             return null;
@@ -328,7 +375,7 @@ namespace NoFences.Core.Util
         /// <summary>
         /// Finds the main executable for a Steam game in its install directory
         /// </summary>
-        private static string FindGameExecutable(string installDir, string gameName, int appId)
+        private string FindGameExecutable(string installDir, string gameName, int appId)
         {
             try
             {
@@ -374,7 +421,7 @@ namespace NoFences.Core.Util
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"SteamGameDetector: Error finding executable for {gameName}: {ex.Message}");
+                log.Error($"Error finding executable for {gameName}: {ex.Message}", ex);
                 return null;
             }
         }
@@ -382,11 +429,11 @@ namespace NoFences.Core.Util
         /// <summary>
         /// Gets the icon from Steam's icon cache
         /// </summary>
-        private static string GetSteamIconFromCache(int appId)
+        private string GetSteamIconFromCache(int appId)
         {
             try
             {
-                string steamPath = GetSteamInstallPath();
+                string steamPath = GetInstallPath();
                 if (string.IsNullOrEmpty(steamPath))
                     return null;
 
@@ -412,7 +459,7 @@ namespace NoFences.Core.Util
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"SteamGameDetector: Error getting icon from cache for AppID {appId}: {ex.Message}");
+                log.Error($"Error getting icon from cache for AppID {appId}: {ex.Message}", ex);
             }
 
             return null;
@@ -421,52 +468,13 @@ namespace NoFences.Core.Util
         /// <summary>
         /// Sanitizes a string for comparison (removes special chars, spaces, etc.)
         /// </summary>
-        private static string SanitizeForComparison(string input)
+        private string SanitizeForComparison(string input)
         {
             if (string.IsNullOrEmpty(input))
                 return string.Empty;
 
             // Remove special characters and spaces, convert to lowercase
             return Regex.Replace(input, @"[^\w]", "").ToLower();
-        }
-
-        /// <summary>
-        /// Creates a Steam URL shortcut (.url file) for a game
-        /// Returns the path to the created shortcut
-        /// </summary>
-        public static string CreateSteamShortcut(int appId, string gameName, string outputDirectory, string iconPath = null)
-        {
-            try
-            {
-                if (!Directory.Exists(outputDirectory))
-                    Directory.CreateDirectory(outputDirectory);
-
-                // Sanitize filename
-                string safeGameName = string.Join("_", gameName.Split(Path.GetInvalidFileNameChars()));
-                string shortcutPath = Path.Combine(outputDirectory, $"{safeGameName}.url");
-
-                // Determine icon file
-                string iconFile = iconPath;
-                if (string.IsNullOrEmpty(iconFile))
-                {
-                    iconFile = Path.Combine(GetSteamInstallPath() ?? "C:\\Program Files (x86)\\Steam", "steam.exe");
-                }
-
-                // Create .url file with Steam protocol
-                string urlContent = $@"[InternetShortcut]
-URL=steam://rungameid/{appId}
-IconIndex=0
-IconFile={iconFile}
-";
-
-                File.WriteAllText(shortcutPath, urlContent);
-                return shortcutPath;
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"SteamGameDetector: Error creating shortcut for {gameName}: {ex.Message}");
-                return null;
-            }
         }
     }
 }

@@ -46,10 +46,16 @@ namespace NoFences.Util
             containerFactory.SetValue(Border.CornerRadiusProperty, new CornerRadius(4));
             containerFactory.SetValue(Border.CursorProperty, Cursors.Hand);
 
+            // Session 11: Add rich tooltip with metadata
+            containerFactory.SetBinding(Border.ToolTipProperty, new Binding("Tooltip"));
+
+            // Grid to hold stack + badges
+            var gridFactory = new FrameworkElementFactory(typeof(Grid));
+
             // Stack for icon + text
             var stackFactory = new FrameworkElementFactory(typeof(StackPanel));
             stackFactory.SetValue(StackPanel.HorizontalAlignmentProperty, HorizontalAlignment.Center);
-            stackFactory.SetValue(StackPanel.VerticalAlignmentProperty, VerticalAlignment.Center);
+            stackFactory.SetValue(StackPanel.VerticalAlignmentProperty, VerticalAlignment.Top);
 
             // Icon
             var imageFactory = new FrameworkElementFactory(typeof(Image));
@@ -67,15 +73,39 @@ namespace NoFences.Util
             textFactory.SetValue(TextBlock.TextWrappingProperty, TextWrapping.Wrap);
             textFactory.SetValue(TextBlock.TextTrimmingProperty, TextTrimming.CharacterEllipsis); // Add ellipsis for long text
             textFactory.SetValue(TextBlock.MaxWidthProperty, (double)(ItemWidth - 10));
-            textFactory.SetValue(TextBlock.MaxHeightProperty, 30.0); // Limit to 2 lines (11pt font * 1.2 line-height * 2 lines ≈ 26.4px + margin)
+            textFactory.SetValue(TextBlock.MaxHeightProperty, 30.0); // Limit to 2 lines
             textFactory.SetValue(TextBlock.MarginProperty, new Thickness(0, 5, 0, 0));
             textFactory.SetValue(TextBlock.FontSizeProperty, 11.0);
             textFactory.SetValue(TextBlock.FontWeightProperty, FontWeights.SemiBold);
-            textFactory.SetValue(TextBlock.LineHeightProperty, 13.0); // Tighter line height to fit 2 lines in 30px
+            textFactory.SetValue(TextBlock.LineHeightProperty, 13.0);
 
             stackFactory.AppendChild(imageFactory);
             stackFactory.AppendChild(textFactory);
-            containerFactory.AppendChild(stackFactory);
+            gridFactory.AppendChild(stackFactory);
+
+            // Session 11: Add "NEW" badge for recently installed items (top-right corner)
+            var newBadgeFactory = new FrameworkElementFactory(typeof(Border));
+            newBadgeFactory.SetValue(Border.BackgroundProperty, new SolidColorBrush(Color.FromArgb(200, 0, 200, 0))); // Green
+            newBadgeFactory.SetValue(Border.CornerRadiusProperty, new CornerRadius(3));
+            newBadgeFactory.SetValue(Border.PaddingProperty, new Thickness(4, 2, 4, 2));
+            newBadgeFactory.SetValue(Border.HorizontalAlignmentProperty, HorizontalAlignment.Right);
+            newBadgeFactory.SetValue(Border.VerticalAlignmentProperty, VerticalAlignment.Top);
+            newBadgeFactory.SetValue(Border.MarginProperty, new Thickness(0, 2, 2, 0));
+            newBadgeFactory.SetBinding(Border.VisibilityProperty, new Binding("IsRecentlyInstalled")
+            {
+                Converter = new System.Windows.Controls.BooleanToVisibilityConverter()
+            });
+
+            var newBadgeTextFactory = new FrameworkElementFactory(typeof(TextBlock));
+            newBadgeTextFactory.SetValue(TextBlock.TextProperty, "NEW");
+            newBadgeTextFactory.SetValue(TextBlock.ForegroundProperty, Brushes.White);
+            newBadgeTextFactory.SetValue(TextBlock.FontSizeProperty, 8.0);
+            newBadgeTextFactory.SetValue(TextBlock.FontWeightProperty, FontWeights.Bold);
+            newBadgeFactory.AppendChild(newBadgeTextFactory);
+
+            gridFactory.AppendChild(newBadgeFactory);
+
+            containerFactory.AppendChild(gridFactory);
 
             // Add event handlers
             containerFactory.AddHandler(UIElement.MouseEnterEvent, new MouseEventHandler((sender, e) =>

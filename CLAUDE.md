@@ -402,3 +402,6 @@ Each session file includes:
 - **Summary** - Achievements and outcomes
 - remember to incluse log4net where needed instead of writting logs to the console or Debut.Write...
 - code must be compatible with .net 4.8.1. Don't use features from .net 8.
+- Session changes.html is for the current session; session index contains the a list to acces the other sessions, with a summary for each. and there are the session's files. keep the same pattern
+- check the nuget packages we have so we don't have many different ways to do the same thing. Newtonsoft.JSON is one of the libraries that should be use, as well as log4net when loggin/debugging.
+- let's estabilish some boundareis: any data collection should be added to the datalayer. If it provides data of some kind, it must become a repository. If there are business logic, should go to the services. Common classes, utils, helpers should go to the Core module. UI will be in the main module.

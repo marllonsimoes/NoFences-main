@@ -1,14 +1,9 @@
 using log4net;
 using NoFences.Core.Model;
-using NoFences.Model;
-using NoFences.Util;
-using NoFences.Win32.Desktop;
 using NoFences.Win32.Window;
-using NoFences.Win32.Shell;
 using System;
 using System.Drawing;
 using System.Windows.Forms;
-using WpfControls = System.Windows.Controls;
 
 namespace NoFences.Behaviors
 {

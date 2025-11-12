@@ -1,9 +1,12 @@
 using System;
+using System.Drawing;
+using System.IO;
 
 namespace NoFences.Core.Model
 {
     /// <summary>
-    /// Represents an installed software application
+    /// Represents an installed software application or local file/folder.
+    /// Enhanced in Session 11 to support both database software and local filesystem items.
     /// </summary>
     public class InstalledSoftware
     {
@@ -62,9 +65,90 @@ namespace NoFences.Core.Model
         /// </summary>
         public bool IsWow64 { get; set; }
 
+        /// <summary>
+        /// Source/origin of this item (Local, Steam, Epic, GOG, etc.)
+        /// Added in Session 11 to track where the software came from.
+        /// </summary>
+        public string Source { get; set; }
+
+        /// <summary>
+        /// Cached icon (non-serialized) to avoid repeated extraction.
+        /// Added in Session 11 for performance optimization.
+        /// </summary>
+        [NonSerialized]
+        private Icon cachedIcon;
+
+        /// <summary>
+        /// Gets or sets the cached icon. Not serialized to database.
+        /// </summary>
+        public Icon CachedIcon
+        {
+            get => cachedIcon;
+            set => cachedIcon = value;
+        }
+
         public InstalledSoftware()
         {
             Category = SoftwareCategory.Other;
+            Source = "WindowsRegistry"; // Default source
+        }
+
+        /// <summary>
+        /// Creates an InstalledSoftware instance from a local file or folder path.
+        /// Added in Session 11 to unify local files with database software.
+        /// </summary>
+        /// <param name="path">Full path to file or folder</param>
+        /// <returns>InstalledSoftware instance representing the local item</returns>
+        public static InstalledSoftware FromPath(string path)
+        {
+            if (string.IsNullOrEmpty(path))
+                throw new ArgumentNullException(nameof(path));
+
+            var item = new InstalledSoftware
+            {
+                Source = "Local"
+            };
+
+            // Determine if it's a file or folder
+            if (Directory.Exists(path))
+            {
+                item.InstallLocation = path;
+                item.Name = Path.GetFileName(path);
+                item.Category = SoftwareCategory.Other;
+            }
+            else if (File.Exists(path))
+            {
+                var extension = Path.GetExtension(path).ToLowerInvariant();
+
+                if (extension == ".exe" || extension == ".msi")
+                {
+                    item.ExecutablePath = path;
+                    item.Name = Path.GetFileNameWithoutExtension(path);
+                    item.Category = SoftwareCategory.Other;
+                }
+                else if (extension == ".lnk" || extension == ".url")
+                {
+                    item.ExecutablePath = path;
+                    item.Name = Path.GetFileNameWithoutExtension(path);
+                    item.Category = SoftwareCategory.Other;
+                }
+                else
+                {
+                    // Regular file
+                    item.ExecutablePath = path;
+                    item.Name = Path.GetFileNameWithoutExtension(path);
+                    item.Category = SoftwareCategory.Other;
+                }
+            }
+            else
+            {
+                // Path doesn't exist - still create item but mark appropriately
+                item.ExecutablePath = path;
+                item.Name = Path.GetFileName(path) ?? path;
+                item.Category = SoftwareCategory.Other;
+            }
+
+            return item;
         }
 
         public override string ToString()

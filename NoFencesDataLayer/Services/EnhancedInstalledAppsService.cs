@@ -109,12 +109,7 @@ namespace NoFencesDataLayer.Services
         /// </summary>
         public List<InstalledSoftware> GetByCategory(SoftwareCategory category)
         {
-            var allSoftware = GetAllInstalled();
-
-            if (category == SoftwareCategory.All)
-                return allSoftware;
-
-            return allSoftware.FindAll(s => s.Category == category);
+            return InstalledAppsUtil.GetByCategory(category);
         }
 
         /// <summary>

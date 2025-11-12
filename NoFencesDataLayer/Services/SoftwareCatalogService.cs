@@ -25,18 +25,40 @@ namespace NoFencesDataLayer.Services
         private bool _catalogAvailable = false;
 
         /// <summary>
-        /// Constructor with master catalog path
+        /// Constructor with master catalog path.
+        /// Session 11: Enhanced with graceful fallback when master_catalog.db doesn't exist.
         /// </summary>
         /// <param name="masterCatalogPath">Path to master catalog database</param>
         /// <param name="localContext">Local context for installed games tracking (optional)</param>
         public SoftwareCatalogService()
         {
-            this.catalogContext = new MasterCatalogContext();
-            this.localContext = new LocalDBContext();
+            try
+            {
+                // Session 11: Check if master catalog file exists before creating context
+                string catalogPath = GetDefaultCatalogPath();
+                if (File.Exists(catalogPath))
+                {
+                    this.catalogContext = new MasterCatalogContext();
+                    log.Debug($"Initialized with master catalog at {catalogPath}");
+                }
+                else
+                {
+                    log.Info($"Master catalog not found at {catalogPath} - will use fallback methods");
+                    this.catalogContext = null; // No catalog available
+                }
+
+                this.localContext = new LocalDBContext();
+            }
+            catch (Exception ex)
+            {
+                log.Error($"Error initializing catalog service: {ex.Message}", ex);
+                this.catalogContext = null; // Graceful fallback
+            }
         }
 
         /// <summary>
         /// Checks if the software catalog has been imported and is available.
+        /// Session 11: Enhanced with null check for when catalog file doesn't exist.
         /// </summary>
         public bool IsCatalogAvailable()
         {
@@ -45,6 +67,15 @@ namespace NoFencesDataLayer.Services
 
             try
             {
+                // Session 11: Check if catalog context is null (file doesn't exist)
+                if (catalogContext == null)
+                {
+                    log.Debug("Catalog context is null - master_catalog.db not found");
+                    _catalogAvailable = false;
+                    _catalogChecked = true;
+                    return false;
+                }
+
                 // Check if any catalog entries exist
                 _catalogAvailable = catalogContext.Software.Any(s => !s.IsDeleted);
                 _catalogChecked = true;
@@ -134,9 +165,13 @@ namespace NoFencesDataLayer.Services
         /// <summary>
         /// Looks up a game by Steam AppID.
         /// Searches through platform-agnostic game entries.
+        /// Session 11: Enhanced with null check for catalog availability.
         /// </summary>
         public MasterGameEntry LookupGameBySteamAppId(int appId)
         {
+            if (!IsCatalogAvailable())
+                return null;
+
             try
             {
                 var games = catalogContext.Games
@@ -161,10 +196,14 @@ namespace NoFencesDataLayer.Services
 
         /// <summary>
         /// Looks up a game by name.
+        /// Session 11: Enhanced with null check for catalog availability.
         /// </summary>
         public MasterGameEntry LookupGameByName(string gameName)
         {
             if (string.IsNullOrWhiteSpace(gameName))
+                return null;
+
+            if (!IsCatalogAvailable())
                 return null;
 
             try
@@ -240,6 +279,7 @@ namespace NoFencesDataLayer.Services
 
         /// <summary>
         /// Gets statistics about the catalog.
+        /// Session 11: Enhanced with null check for catalog availability.
         /// </summary>
         public CatalogStatistics GetStatistics()
         {
@@ -247,6 +287,13 @@ namespace NoFencesDataLayer.Services
 
             try
             {
+                // Session 11: Return empty stats if catalog not available
+                if (!IsCatalogAvailable())
+                {
+                    log.Debug("Catalog not available - returning empty statistics");
+                    return stats;
+                }
+
                 stats.TotalSoftware = catalogContext.Software.Count(s => !s.IsDeleted);
                 stats.TotalGames = catalogContext.Games.Count(g => !g.IsDeleted);
 
@@ -274,6 +321,7 @@ namespace NoFencesDataLayer.Services
         /// <summary>
         /// Gets list of available software categories from the catalog database.
         /// Only returns categories that have at least one entry.
+        /// Session 11: Enhanced with fallback to return all categories if catalog unavailable.
         /// </summary>
         /// <returns>List of SoftwareCategory values that have entries in the catalog</returns>
         public System.Collections.Generic.List<SoftwareCategory> GetAvailableCategories()
@@ -282,6 +330,13 @@ namespace NoFencesDataLayer.Services
 
             try
             {
+                // Session 11: Fallback to all categories if catalog not available
+                if (!IsCatalogAvailable())
+                {
+                    log.Debug("Catalog not available - returning all categories");
+                    return Enum.GetValues(typeof(SoftwareCategory)).Cast<SoftwareCategory>().ToList();
+                }
+
                 // Get distinct categories from database
                 var categoryNames = catalogContext.Software
                     .Where(s => !s.IsDeleted && !string.IsNullOrEmpty(s.Category))
@@ -303,6 +358,8 @@ namespace NoFencesDataLayer.Services
             catch (Exception ex)
             {
                 log.Error($"Error getting available categories: {ex.Message}", ex);
+                // Fallback on error
+                return Enum.GetValues(typeof(SoftwareCategory)).Cast<SoftwareCategory>().ToList();
             }
 
             return availableCategories;

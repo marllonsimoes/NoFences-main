@@ -1,6 +1,8 @@
 using CommunityToolkit.Mvvm.DependencyInjection;
 using log4net;
 using log4net.Config;
+using log4net.Core;
+using log4net.Repository.Hierarchy;
 using NoFences.Model;
 using NoFences.Model.Canvas;
 using NoFences.Services;
@@ -34,6 +36,16 @@ namespace NoFences
         {
             XmlConfigurator.Configure();
             log = LogManager.GetLogger(typeof(Program));
+
+#if DEBUG
+            var repository = log4net.LogManager.GetRepository();
+            var hierarchy = (log4net.Repository.Hierarchy.Hierarchy)repository;
+
+            log4net.Core.Level log4netLevel = log4net.Core.Level.Debug;
+            ((Logger)hierarchy.GetLogger("NoFencesDataLayer.Repositories")).Level = log4netLevel;
+            ((Logger)hierarchy.GetLogger("NoFencesDataLayer.Services")).Level = log4netLevel;            
+            hierarchy.RaiseConfigurationChanged(EventArgs.Empty);
+#endif
 
             // Check for command-line arguments to run catalog importer
             if (args.Length > 0 && args[0] == "--import-catalog")

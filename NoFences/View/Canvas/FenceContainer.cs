@@ -12,7 +12,6 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Windows.Forms;
 using System.Windows.Forms.Integration;
 using WpfControls = System.Windows.Controls;
@@ -1447,13 +1446,23 @@ namespace NoFences.View.Canvas
                         titlePanel.Invalidate(); // Force repaint for custom Paint event
                     }
 
-                    // Help button - fade the text color, background, and mouse-over effect
+                    // Help button - hide when faded out (alpha below threshold)
                     if (helpButton != null)
                     {
-                        helpButton.ForeColor = Color.FromArgb(alpha, currentTheme.TitleTextColor);
-                        helpButton.BackColor = Color.FromArgb(alpha, Color.Transparent);
-                        int mouseOverAlpha = Math.Min(50, alpha);
-                        helpButton.FlatAppearance.MouseOverBackColor = Color.FromArgb(mouseOverAlpha, currentTheme.TitleTextColor);
+                        // Hide button completely when opacity is very low
+                        // This ensures the "?" text disappears with the fence
+                        if (alpha < 10)
+                        {
+                            helpButton.Visible = false;
+                        }
+                        else
+                        {
+                            helpButton.Visible = true;
+                            helpButton.ForeColor = Color.FromArgb(alpha, currentTheme.TitleTextColor);
+                            helpButton.BackColor = Color.FromArgb(alpha, Color.Transparent);
+                            int mouseOverAlpha = Math.Min(50, alpha);
+                            helpButton.FlatAppearance.MouseOverBackColor = Color.FromArgb(mouseOverAlpha, currentTheme.TitleTextColor);
+                        }
                     }
 
                     // Borders - apply fade to base border colors (respecting hover state)
@@ -1509,13 +1518,22 @@ namespace NoFences.View.Canvas
                         titlePanel.Invalidate(); // Force repaint for custom Paint event
                     }
 
-                    // Help button - fade the text color, background, and mouse-over effect
+                    // Help button - show and restore opacity during fade in
                     if (helpButton != null)
                     {
-                        helpButton.ForeColor = Color.FromArgb(alpha, currentTheme.TitleTextColor);
-                        helpButton.BackColor = Color.FromArgb(alpha, Color.Transparent);
-                        int mouseOverAlpha = Math.Min(50, alpha);
-                        helpButton.FlatAppearance.MouseOverBackColor = Color.FromArgb(mouseOverAlpha, currentTheme.TitleTextColor);
+                        // Show button as opacity increases
+                        if (alpha < 10)
+                        {
+                            helpButton.Visible = false;
+                        }
+                        else
+                        {
+                            helpButton.Visible = true;
+                            helpButton.ForeColor = Color.FromArgb(alpha, currentTheme.TitleTextColor);
+                            helpButton.BackColor = Color.FromArgb(alpha, Color.Transparent);
+                            int mouseOverAlpha = Math.Min(50, alpha);
+                            helpButton.FlatAppearance.MouseOverBackColor = Color.FromArgb(mouseOverAlpha, currentTheme.TitleTextColor);
+                        }
                     }
 
                     // Borders - apply fade to base border colors (respecting hover state)

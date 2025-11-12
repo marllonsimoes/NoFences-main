@@ -98,6 +98,6 @@ namespace NoFences.Core.Util
         /// <param name="outputDirectory">Directory to create the shortcut in</param>
         /// <param name="iconPath">Optional path to icon file</param>
         /// <returns>Path to the created shortcut</returns>
-        string CreateGameShortcut(string gameId, string gameName, string outputDirectory, string iconPath = null);
+        string FindOrCreateGameShortcut(string gameId, string gameName, string outputDirectory, string iconPath = null);
     }
 }

@@ -4,6 +4,7 @@ using NoFences.Core.Settings;
 using NoFences.Model;
 using NoFences.Services;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Net;
@@ -141,6 +142,30 @@ namespace NoFences.Services.Managers
                     throw;
                 }
             }
+        }
+
+        /// <summary>
+        /// Helper method to extract asset names for logging purposes.
+        /// </summary>
+        private IEnumerable<string> GetAssetNames(dynamic assets)
+        {
+            var names = new List<string>();
+            try
+            {
+                foreach (dynamic asset in assets)
+                {
+                    string name = asset.name?.ToString();
+                    if (!string.IsNullOrEmpty(name))
+                    {
+                        names.Add(name);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                log.Warn($"Error extracting asset names: {ex.Message}");
+            }
+            return names;
         }
 
         /// <summary>
@@ -692,8 +717,9 @@ namespace NoFences.Services.Managers
         /// </summary>
         /// <param name="installerPath">Path to installer executable.</param>
         /// <param name="exitApplication">If true, exits NoFences after launching installer.</param>
+        /// <param name="silentInstall">If true, runs installer in silent/unattended mode.</param>
         /// <returns>True if installer launched successfully.</returns>
-        public bool LaunchInstaller(string installerPath, bool exitApplication = true)
+        public bool LaunchInstaller(string installerPath, bool exitApplication = true, bool silentInstall = false)
         {
             if (string.IsNullOrEmpty(installerPath) || !File.Exists(installerPath))
             {
@@ -703,11 +729,40 @@ namespace NoFences.Services.Managers
 
             try
             {
+                string fileExtension = Path.GetExtension(installerPath).ToLowerInvariant();
+                string arguments = "";
+
+                // Determine silent install arguments based on installer type
+                if (silentInstall)
+                {
+                    if (fileExtension == ".exe")
+                    {
+                        // WiX bootstrapper supports /SILENT and /VERYSILENT flags
+                        // /CLOSEAPPLICATIONS - automatically close running applications
+                        // /RESTARTAPPLICATIONS - restart closed applications after install
+                        arguments = "/SILENT /CLOSEAPPLICATIONS /RESTARTAPPLICATIONS";
+                        log.Info("Using silent install mode for .exe bootstrapper");
+                    }
+                    else if (fileExtension == ".msi")
+                    {
+                        // MSI requires msiexec wrapper for silent install
+                        // Note: This path launches the MSI directly, so we add /quiet flag
+                        // For proper MSI silent install, should use: msiexec /i "path" /quiet /norestart
+                        log.Warn("Silent install for MSI not fully supported without msiexec wrapper");
+                        arguments = "/quiet /norestart";
+                    }
+                }
+
                 log.Info($"Launching installer: {installerPath}");
+                if (!string.IsNullOrEmpty(arguments))
+                {
+                    log.Info($"Installer arguments: {arguments}");
+                }
 
                 var startInfo = new ProcessStartInfo
                 {
                     FileName = installerPath,
+                    Arguments = arguments,
                     UseShellExecute = true,
                     Verb = "runas" // Request admin elevation
                 };

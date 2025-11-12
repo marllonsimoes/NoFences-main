@@ -1,25 +1,26 @@
+using log4net;
 using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 
-namespace NoFences.Core.Util
+using NoFences.Core.Util;
+namespace NoFencesDataLayer.Services
 {
     /// <summary>
-    /// Detects installed EA App (formerly Origin) games
+    /// Detects installed Ubisoft Connect (formerly Uplay) games
     /// </summary>
-    public class EAAppDetector : IGameStoreDetector
+    public class UbisoftConnectDetector : IGameStoreDetector
     {
-        public string PlatformName => "EA App";
+        private static readonly ILog log = LogManager.GetLogger(typeof(UbisoftConnectDetector));
 
-        private const string LocalContentPath = @"Electronic Arts\EA Desktop\";
-        private const string RegistryPath = @"SOFTWARE\WOW6432Node\EA Games";
-        private const string RegistryPathNoWow = @"SOFTWARE\EA Games";
-        private const string LauncherProtocol = "origin2://game/launch?offerIds={0}";
-        private const string LegacyProtocol = "origin://launchgame/{0}";
+        public string PlatformName => "Ubisoft Connect";
+
+        private const string RegistryPath = @"SOFTWARE\WOW6432Node\Ubisoft\Launcher\Installs";
+        private const string RegistryPathNoWow = @"SOFTWARE\Ubisoft\Launcher\Installs";
+        private const string LauncherProtocol = "uplay://launch/{0}";
 
         public List<GameInfo> GetInstalledGames()
         {
@@ -27,9 +28,9 @@ namespace NoFences.Core.Util
 
             try
             {
-                // Scan registry for EA games
-                games.AddRange(ScanEARegistry(Registry.LocalMachine, RegistryPath));
-                games.AddRange(ScanEARegistry(Registry.LocalMachine, RegistryPathNoWow));
+                // Scan registry for installed games
+                games.AddRange(ScanUbisoftRegistry(Registry.LocalMachine, RegistryPath));
+                games.AddRange(ScanUbisoftRegistry(Registry.LocalMachine, RegistryPathNoWow));
 
                 // Remove duplicates
                 var uniqueGames = games
@@ -37,12 +38,12 @@ namespace NoFences.Core.Util
                     .Select(g => g.First())
                     .ToList();
 
-                Debug.WriteLine($"EAAppDetector: Total {uniqueGames.Count} EA games found");
+                log.Debug($"Total {uniqueGames.Count} Ubisoft games found");
                 return uniqueGames;
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"EAAppDetector: Error detecting EA games: {ex.Message}");
+                log.Error($"Error detecting Ubisoft games: {ex.Message}", ex);
                 return games;
             }
         }
@@ -57,49 +58,50 @@ namespace NoFences.Core.Util
         {
             try
             {
-                // Check for EA Desktop (new app)
-                string eaDesktopPath = Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                    "Electronic Arts", "EA Desktop", "EA Desktop.exe");
-
-                if (File.Exists(eaDesktopPath))
-                    return Path.GetDirectoryName(eaDesktopPath);
-
-                // Check for Origin (legacy)
-                using (var key = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\WOW6432Node\Origin"))
+                // Check registry for Ubisoft Connect
+                using (var key = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\WOW6432Node\Ubisoft\Launcher"))
                 {
                     if (key != null)
                     {
-                        var clientPath = key.GetValue("ClientPath") as string;
-                        if (!string.IsNullOrEmpty(clientPath) && File.Exists(clientPath))
-                            return Path.GetDirectoryName(clientPath);
+                        var installDir = key.GetValue("InstallDir") as string;
+                        if (!string.IsNullOrEmpty(installDir) && Directory.Exists(installDir))
+                            return installDir;
                     }
                 }
 
-                // Check default Origin paths
+                // Check 32-bit registry
+                using (var key = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Ubisoft\Launcher"))
+                {
+                    if (key != null)
+                    {
+                        var installDir = key.GetValue("InstallDir") as string;
+                        if (!string.IsNullOrEmpty(installDir) && Directory.Exists(installDir))
+                            return installDir;
+                    }
+                }
+
+                // Check default paths
                 string[] defaultPaths = new[]
                 {
-                    @"C:\Program Files (x86)\Origin",
-                    @"C:\Program Files\Origin",
-                    Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "Origin")
+                    @"C:\Program Files (x86)\Ubisoft\Ubisoft Game Launcher",
+                    Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "Ubisoft", "Ubisoft Game Launcher")
                 };
 
                 foreach (var path in defaultPaths)
                 {
-                    string originExe = Path.Combine(path, "Origin.exe");
-                    if (File.Exists(originExe))
+                    if (Directory.Exists(path))
                         return path;
                 }
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"EAAppDetector: Error finding EA install path: {ex.Message}");
+                log.Error($"Error finding Ubisoft install path: {ex.Message}", ex);
             }
 
             return null;
         }
 
-        public string CreateGameShortcut(string gameId, string gameName, string outputDirectory, string iconPath = null)
+        public string FindOrCreateGameShortcut(string gameId, string gameName, string outputDirectory, string iconPath = null)
         {
             try
             {
@@ -107,24 +109,30 @@ namespace NoFences.Core.Util
                     Directory.CreateDirectory(outputDirectory);
 
                 // Sanitize filename
-                string safeGameName = string.Join("_", gameName.Split(Path.GetInvalidFileNameChars()));
+                string safeGameName = string.Join("", gameName.Split(Path.GetInvalidFileNameChars()));
                 string shortcutPath = Path.Combine(outputDirectory, $"{safeGameName}.url");
+
+                if (File.Exists(shortcutPath))
+                {
+                    log.Debug($"Shortcut already exists at {shortcutPath}");
+                    return shortcutPath;
+                }
 
                 // Determine icon file
                 string iconFile = iconPath;
                 if (string.IsNullOrEmpty(iconFile))
                 {
-                    // Use EA Desktop or Origin icon as fallback
+                    // Use Ubisoft Connect icon as fallback
                     var launcherPath = GetInstallPath();
                     if (!string.IsNullOrEmpty(launcherPath))
                     {
-                        iconFile = Path.Combine(launcherPath, "EA Desktop.exe");
+                        iconFile = Path.Combine(launcherPath, "UbisoftConnect.exe");
                         if (!File.Exists(iconFile))
-                            iconFile = Path.Combine(launcherPath, "Origin.exe");
+                            iconFile = Path.Combine(launcherPath, "Uplay.exe"); // Legacy name
                     }
                 }
 
-                // Create .url file with EA protocol (use new protocol)
+                // Create .url file with Ubisoft protocol
                 string launchUrl = string.Format(LauncherProtocol, gameId);
                 string urlContent = $@"[InternetShortcut]
 URL={launchUrl}
@@ -133,94 +141,92 @@ IconFile={iconFile ?? ""}
 ";
 
                 File.WriteAllText(shortcutPath, urlContent);
-                Debug.WriteLine($"EAAppDetector: Created shortcut at {shortcutPath}");
+                log.Debug($"Created shortcut at {shortcutPath}");
                 return shortcutPath;
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"EAAppDetector: Error creating shortcut for {gameName}: {ex.Message}");
+                log.Error($"Error creating shortcut for {gameName}: {ex.Message}", ex);
                 return null;
             }
         }
 
         /// <summary>
-        /// Scans EA Games registry for installed games
+        /// Scans Ubisoft registry for installed games
         /// </summary>
-        private List<GameInfo> ScanEARegistry(RegistryKey root, string path)
+        private List<GameInfo> ScanUbisoftRegistry(RegistryKey root, string path)
         {
             var games = new List<GameInfo>();
 
             try
             {
-                using (var eaGamesKey = root.OpenSubKey(path))
+                using (var installsKey = root.OpenSubKey(path))
                 {
-                    if (eaGamesKey == null)
+                    if (installsKey == null)
                         return games;
 
-                    foreach (var gameKeyName in eaGamesKey.GetSubKeyNames())
+                    foreach (var gameId in installsKey.GetSubKeyNames())
                     {
                         try
                         {
-                            using (var gameKey = eaGamesKey.OpenSubKey(gameKeyName))
+                            using (var gameKey = installsKey.OpenSubKey(gameId))
                             {
                                 if (gameKey == null)
                                     continue;
 
-                                var gameInfo = ParseEARegistryEntry(gameKey, gameKeyName);
+                                var gameInfo = ParseUbisoftRegistryEntry(gameKey, gameId);
                                 if (gameInfo != null)
                                     games.Add(gameInfo);
                             }
                         }
                         catch (Exception ex)
                         {
-                            Debug.WriteLine($"EAAppDetector: Error reading game {gameKeyName}: {ex.Message}");
+                            log.Debug($"Error reading game {gameId}: {ex.Message}");
                         }
                     }
                 }
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"EAAppDetector: Error scanning registry {path}: {ex.Message}");
+                log.Error($"Error scanning registry {path}: {ex.Message}", ex);
             }
 
             return games;
         }
 
         /// <summary>
-        /// Parses an EA Games registry entry to extract game information
+        /// Parses a Ubisoft registry entry to extract game information
         /// </summary>
-        private GameInfo ParseEARegistryEntry(RegistryKey gameKey, string gameId)
+        private GameInfo ParseUbisoftRegistryEntry(RegistryKey gameKey, string gameId)
         {
             try
             {
-                var displayName = gameKey.GetValue("DisplayName") as string;
-                var installDir = gameKey.GetValue("Install Dir") as string;
-                var installLocation = gameKey.GetValue("InstallLocation") as string;
-
-                // Use either Install Dir or InstallLocation
-                string gamePath = installDir ?? installLocation;
-
-                // Game name
-                string gameName = displayName ?? gameId;
-                if (string.IsNullOrEmpty(gameName))
-                    return null;
+                var installDir = gameKey.GetValue("InstallDir") as string;
 
                 // Verify installation exists
-                if (string.IsNullOrEmpty(gamePath) || !Directory.Exists(gamePath))
+                if (string.IsNullOrEmpty(installDir) || !Directory.Exists(installDir))
                 {
-                    Debug.WriteLine($"EAAppDetector: Install path not found for {gameName}");
+                    log.Debug($"Install dir not found for game {gameId}");
                     return null;
                 }
 
+                // Extract game name from install directory or use game ID
+                string gameName = Path.GetFileName(installDir.TrimEnd('\\', '/'));
+                if (string.IsNullOrEmpty(gameName))
+                    gameName = $"Ubisoft Game {gameId}";
+
+                // Try to clean up the name (remove version numbers, etc.)
+                gameName = CleanGameName(gameName);
+
                 // Find executable
-                string executablePath = FindGameExecutable(gamePath, gameName);
+                string executablePath = FindGameExecutable(installDir, gameName);
                 string iconPath = executablePath;
 
                 // Calculate install size
                 long installSize = 0;
                 try
                 {
-                    var dirInfo = new DirectoryInfo(gamePath);
+                    var dirInfo = new DirectoryInfo(installDir);
                     installSize = dirInfo.EnumerateFiles("*", SearchOption.AllDirectories)
                         .Sum(f => f.Length);
                 }
@@ -230,17 +236,14 @@ IconFile={iconFile ?? ""}
                 }
 
                 // Create shortcut
-                string shortcutDir = Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                    "NoFences", "EAShortcuts");
-
-                string shortcutPath = CreateGameShortcut(gameId, gameName, shortcutDir, iconPath);
+                string shortcutDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop));
+                string shortcutPath = FindOrCreateGameShortcut(gameId, gameName, shortcutDir, iconPath);
 
                 return new GameInfo
                 {
                     GameId = gameId,
                     Name = gameName,
-                    InstallDir = gamePath,
+                    InstallDir = installDir,
                     ExecutablePath = shortcutPath,
                     IconPath = iconPath,
                     SizeOnDisk = installSize,
@@ -249,14 +252,13 @@ IconFile={iconFile ?? ""}
                     Platform = PlatformName,
                     Metadata = new Dictionary<string, string>
                     {
-                        ["GameId"] = gameId,
-                        ["DisplayName"] = displayName ?? ""
+                        ["GameId"] = gameId
                     }
                 };
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"EAAppDetector: Error parsing entry for {gameId}: {ex.Message}");
+                log.Error($"Error parsing entry for {gameId}: {ex.Message}", ex);
                 return null;
             }
         }
@@ -271,7 +273,7 @@ IconFile={iconFile ?? ""}
                 if (string.IsNullOrEmpty(installDir) || !Directory.Exists(installDir))
                     return null;
 
-                // Check common subdirectories
+                // Check common subdirectories first
                 string[] searchPaths = new[]
                 {
                     installDir,
@@ -290,8 +292,8 @@ IconFile={iconFile ?? ""}
                     if (exeFiles.Length == 0)
                         continue;
 
-                    // Filter out launchers, EA overlay, etc.
-                    var launcherNames = new[] { "unins", "crash", "report", "launcher", "setup", "install", "updater", "uninstall", "eadesktop", "origin", "ealink", "activation" };
+                    // Filter out launchers, installers, Ubisoft overlay
+                    var launcherNames = new[] { "unins", "crash", "report", "launcher", "setup", "install", "updater", "uninstall", "ubisoft", "uplay", "overlay" };
                     var gameExes = exeFiles.Where(exe =>
                     {
                         string fileName = Path.GetFileNameWithoutExtension(exe).ToLower();
@@ -316,10 +318,26 @@ IconFile={iconFile ?? ""}
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"EAAppDetector: Error finding executable for {gameName}: {ex.Message}");
+                log.Error($"Error finding executable for {gameName}: {ex.Message}", ex);
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Cleans up game name (removes version numbers, extra info)
+        /// </summary>
+        private string CleanGameName(string name)
+        {
+            if (string.IsNullOrEmpty(name))
+                return name;
+
+            // Remove common suffixes
+            name = Regex.Replace(name, @"\s*\(.*?\)\s*", " "); // Remove parentheses content
+            name = Regex.Replace(name, @"\s*\[.*?\]\s*", " "); // Remove brackets content
+            name = Regex.Replace(name, @"\s+v?\d+(\.\d+)*\s*$", ""); // Remove version numbers at end
+
+            return name.Trim();
         }
 
         /// <summary>

@@ -1,22 +1,115 @@
+using log4net;
+using Newtonsoft.Json;
+using NoFences.Core.Util;
+using NoFencesDataLayer.Repositories;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 
-namespace NoFences.Core.Util
+namespace NoFencesDataLayer.Services
 {
     /// <summary>
-    /// Detects installed Amazon Games (Prime Gaming) games
+    /// Detects installed Amazon Games (Prime Gaming) games.
+    /// Session 11: Refactored to use repository pattern for data access.
+    /// Business logic only - data access delegated to AmazonGamesRepository.
     /// </summary>
     public class AmazonGamesDetector : IGameStoreDetector
     {
-        public string PlatformName => "Amazon Games";
+        private static readonly ILog log = LogManager.GetLogger(typeof(AmazonGamesDetector));
+        private readonly IAmazonGamesRepository repository;
 
+        public string PlatformName => "Amazon Games";
         private const string LauncherProtocol = "amazon-games://play/{0}";
 
+        /// <summary>
+        /// Default constructor - creates own repository instance.
+        /// </summary>
+        public AmazonGamesDetector() : this(new AmazonGamesRepository())
+        {
+        }
+
+        /// <summary>
+        /// Constructor with dependency injection for testing.
+        /// </summary>
+        public AmazonGamesDetector(IAmazonGamesRepository repository)
+        {
+            this.repository = repository ?? throw new ArgumentNullException(nameof(repository));
+        }
+
         public List<GameInfo> GetInstalledGames()
+        {
+            var games = new List<GameInfo>();
+
+            try
+            {
+                // Session 11: Use repository for data access
+                // Try repository (SQLite database) first - more reliable
+                if (repository.IsAvailable())
+                {
+                    log.Debug("Using Amazon Games repository (SQLite database)");
+                    games = repository.GetInstalledGames();
+
+                    // Enhance games with executable paths, icons, and shortcuts
+                    foreach (var game in games)
+                    {
+                        EnhanceGameInfo(game);
+                    }
+
+                    log.Info($"Found {games.Count} Amazon games from repository");
+                    return games;
+                }
+
+                // Fallback to legacy Fuel.json method
+                log.Info("Repository not available, falling back to Fuel.json parsing");
+                games = GetInstalledGamesFromFuelJson();
+            }
+            catch (Exception ex)
+            {
+                log.Error($"Error detecting Amazon games: {ex.Message}", ex);
+            }
+
+            return games;
+        }
+
+        /// <summary>
+        /// Enhances a GameInfo object with executable path, icon, and shortcut.
+        /// Session 11: Separated enhancement logic from data access.
+        /// </summary>
+        private void EnhanceGameInfo(GameInfo game)
+        {
+            try
+            {
+                // Find executable in install directory
+                if (!string.IsNullOrEmpty(game.InstallDir) && Directory.Exists(game.InstallDir))
+                {
+                    string executablePath = FindGameExecutable(game.InstallDir, game.Name);
+                    if (!string.IsNullOrEmpty(executablePath))
+                    {
+                        game.IconPath = executablePath;
+                    }
+                }
+
+                // Create shortcut for launching via Amazon Games protocol
+                string shortcutDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop));
+                string shortcutPath = FindOrCreateGameShortcut(game.GameId, game.Name, shortcutDir, game.IconPath);
+
+                game.ExecutablePath = shortcutPath;
+                game.ShortcutPath = shortcutPath;
+            }
+            catch (Exception ex)
+            {
+                log.Error($"Error enhancing game info for {game.Name}: {ex.Message}", ex);
+            }
+        }
+
+
+        /// <summary>
+        /// Legacy method: Reads games from individual Fuel.json files.
+        /// Used as fallback when SQLite database is not available.
+        /// </summary>
+        private List<GameInfo> GetInstalledGamesFromFuelJson()
         {
             var games = new List<GameInfo>();
 
@@ -29,19 +122,19 @@ namespace NoFences.Core.Util
 
                 if (!Directory.Exists(amazonGamesDataPath))
                 {
-                    Debug.WriteLine($"AmazonGamesDetector: Amazon Games data folder not found at {amazonGamesDataPath}");
+                    log.Debug($"Amazon Games data folder not found at {amazonGamesDataPath}");
                     return games;
                 }
 
                 // Each game has its own folder with a Fuel.json file
                 var gameFolders = Directory.GetDirectories(amazonGamesDataPath);
-                Debug.WriteLine($"AmazonGamesDetector: Found {gameFolders.Length} game folders");
+                log.Debug($"Found {gameFolders.Length} game folders");
 
                 foreach (var gameFolder in gameFolders)
                 {
                     try
                     {
-                        string fuelJsonPath = Path.Combine(gameFolder, "Fuel.json");
+                        string fuelJsonPath = Path.Combine(gameFolder, "fuel.json");
                         if (File.Exists(fuelJsonPath))
                         {
                             var gameInfo = ParseFuelJson(fuelJsonPath, gameFolder);
@@ -51,15 +144,15 @@ namespace NoFences.Core.Util
                     }
                     catch (Exception ex)
                     {
-                        Debug.WriteLine($"AmazonGamesDetector: Error parsing {gameFolder}: {ex.Message}");
+                        log.Error($"Error parsing {gameFolder}: {ex.Message}", ex);
                     }
                 }
 
-                Debug.WriteLine($"AmazonGamesDetector: Total {games.Count} Amazon games found");
+                log.Debug($"Total {games.Count} Amazon games found from Fuel.json files");
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"AmazonGamesDetector: Error detecting Amazon games: {ex.Message}");
+                log.Error($"Error reading Fuel.json files: {ex.Message}", ex);
             }
 
             return games;
@@ -99,13 +192,13 @@ namespace NoFences.Core.Util
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"AmazonGamesDetector: Error finding Amazon install path: {ex.Message}");
+                log.Error($"Error finding Amazon install path: {ex.Message}", ex);
             }
 
             return null;
         }
 
-        public string CreateGameShortcut(string gameId, string gameName, string outputDirectory, string iconPath = null)
+        public string FindOrCreateGameShortcut(string gameId, string gameName, string outputDirectory, string iconPath = null)
         {
             try
             {
@@ -113,8 +206,14 @@ namespace NoFences.Core.Util
                     Directory.CreateDirectory(outputDirectory);
 
                 // Sanitize filename
-                string safeGameName = string.Join("_", gameName.Split(Path.GetInvalidFileNameChars()));
+                string safeGameName = string.Join("", gameName.Split(Path.GetInvalidFileNameChars()));
                 string shortcutPath = Path.Combine(outputDirectory, $"{safeGameName}.url");
+
+                if (File.Exists(shortcutPath))
+                {
+                    log.Debug($"Shortcut already exists at {shortcutPath}");
+                    return shortcutPath;
+                }
 
                 // Determine icon file
                 string iconFile = iconPath;
@@ -137,12 +236,12 @@ IconFile={iconFile ?? ""}
 ";
 
                 File.WriteAllText(shortcutPath, urlContent);
-                Debug.WriteLine($"AmazonGamesDetector: Created shortcut at {shortcutPath}");
+                log.Debug($"Created shortcut at {shortcutPath}");
                 return shortcutPath;
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"AmazonGamesDetector: Error creating shortcut for {gameName}: {ex.Message}");
+                log.Error($"Error creating shortcut for {gameName}: {ex.Message}", ex);
                 return null;
             }
         }
@@ -156,22 +255,25 @@ IconFile={iconFile ?? ""}
             try
             {
                 string content = File.ReadAllText(fuelJsonPath);
+                log.Debug($"Parsing manifest: {fuelJsonPath}");
+                log.Debug($"Manifest content: {content}");
 
+                dynamic manifestJson = JsonConvert.DeserializeObject(content);
                 // Extract key fields using regex
-                string productId = ExtractJsonValue(content, "Id");
-                string productTitle = ExtractJsonValue(content, "ProductTitle");
-                string installDirectory = ExtractJsonValue(content, "InstallDirectory");
+                string productId = manifestJson.Id;
+                string productTitle = manifestJson.ProductTitle;
+                string installDirectory = manifestJson.InstallDirectory;
 
                 if (string.IsNullOrEmpty(productId) || string.IsNullOrEmpty(productTitle))
                 {
-                    Debug.WriteLine($"AmazonGamesDetector: Missing required fields in {fuelJsonPath}");
+                    log.Debug($"Missing required fields in {fuelJsonPath}");
                     return null;
                 }
 
                 // Verify install directory exists
                 if (string.IsNullOrEmpty(installDirectory) || !Directory.Exists(installDirectory))
                 {
-                    Debug.WriteLine($"AmazonGamesDetector: Install directory not found for {productTitle}");
+                    log.Debug($"Install directory not found for {productTitle}");
                     return null;
                 }
 
@@ -202,10 +304,9 @@ IconFile={iconFile ?? ""}
 
                 // Create shortcut
                 string shortcutDir = Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                    "NoFences", "AmazonShortcuts");
+                    Environment.GetFolderPath(Environment.SpecialFolder.Desktop));
 
-                string shortcutPath = CreateGameShortcut(productId, productTitle, shortcutDir, iconPath);
+                string shortcutPath = FindOrCreateGameShortcut(productId, productTitle, shortcutDir, iconPath);
 
                 return new GameInfo
                 {
@@ -227,37 +328,9 @@ IconFile={iconFile ?? ""}
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"AmazonGamesDetector: Error parsing Fuel.json {fuelJsonPath}: {ex.Message}");
+                log.Error($"Error parsing Fuel.json {fuelJsonPath}: {ex.Message}", ex);
                 return null;
             }
-        }
-
-        /// <summary>
-        /// Extracts a value from JSON content using regex
-        /// </summary>
-        private string ExtractJsonValue(string json, string key)
-        {
-            try
-            {
-                // Pattern: "key": "value" or "key":"value"
-                var pattern = $@"""{key}""\s*:\s*""([^""]*)""";
-                var match = Regex.Match(json, pattern, RegexOptions.IgnoreCase);
-
-                if (match.Success && match.Groups.Count > 1)
-                {
-                    // Unescape JSON strings
-                    return match.Groups[1].Value
-                        .Replace("\\\\", "\\")
-                        .Replace("\\/", "/")
-                        .Replace("\\\"", "\"");
-                }
-            }
-            catch
-            {
-                // Ignore parsing errors
-            }
-
-            return null;
         }
 
         /// <summary>
@@ -315,7 +388,7 @@ IconFile={iconFile ?? ""}
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"AmazonGamesDetector: Error finding executable for {gameName}: {ex.Message}");
+                log.Error($"Error finding executable for {gameName}: {ex.Message}", ex);
             }
 
             return null;
