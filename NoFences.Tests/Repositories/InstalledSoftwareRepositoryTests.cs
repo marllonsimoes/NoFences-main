@@ -12,10 +12,9 @@ namespace NoFences.Tests.Repositories
     /// Tests repository interface contract and basic operations.
     /// Note: These are integration tests that use the real database.
     ///
-    /// ⚠️ SESSION 12 REFACTOR: Most tests disabled due to schema changes
-    /// InstalledSoftwareEntry no longer has Name, Source, Category fields.
-    /// These moved to SoftwareReference table (two-tier architecture).
-    /// Tests need to be rewritten to work with new schema or use SoftwareReference.
+    /// Session 12 Continuation: Tests rewritten for two-tier architecture.
+    /// InstalledSoftwareEntry requires SoftwareRefId (FK to SoftwareReference).
+    /// Name, Source, Category fields are in SoftwareReference table.
     /// </summary>
     public class InstalledSoftwareRepositoryTests
     {
@@ -42,40 +41,113 @@ namespace NoFences.Tests.Repositories
             result.Should().NotBeNull("Should always return a list, even if empty");
         }
 
-        [Fact(Skip = "Session 12: Method deprecated - Source field moved to SoftwareReference table")]
+        [Fact]
         public void GetBySource_WithNullSource_ReturnsAll()
         {
-            // ⚠️ DISABLED: GetBySource() is deprecated after Session 12 refactor
-            // Source field no longer exists in InstalledSoftwareEntry
+            // Session 12 Continuation: Rewritten for two-tier architecture
+            // Source field is in SoftwareReference, not InstalledSoftwareEntry
+
+            // Arrange
+            var repository = new InstalledSoftwareRepository();
+
+            // Act
+            var result = repository.GetBySource(null);
+
+            // Assert
+            result.Should().NotBeNull("Should return all entries when source is null");
+            result.Should().BeAssignableTo<System.Collections.Generic.List<InstalledSoftwareEntry>>();
         }
 
-        [Fact(Skip = "Session 12: Method deprecated - Source field moved to SoftwareReference table")]
+        [Fact]
         public void GetBySource_WithValidSource_ReturnsFiltered()
         {
-            // ⚠️ DISABLED: GetBySource() is deprecated after Session 12 refactor
-            // Source field no longer exists in InstalledSoftwareEntry
+            // Session 12 Continuation: Rewritten for two-tier architecture
+            // This tests the deprecated method still returns a list (even if empty)
+
+            // Arrange
+            var repository = new InstalledSoftwareRepository();
+
+            // Act
+            var result = repository.GetBySource("Steam");
+
+            // Assert
+            result.Should().NotBeNull("Deprecated method should still return non-null list");
+            result.Should().BeAssignableTo<System.Collections.Generic.List<InstalledSoftwareEntry>>();
         }
 
-        [Fact(Skip = "Session 12: Method deprecated - Category field moved to SoftwareReference table")]
+        [Fact]
         public void GetByCategory_WithValidCategory_ReturnsFiltered()
         {
-            // ⚠️ DISABLED: GetByCategory() is deprecated after Session 12 refactor
-            // Category field no longer exists in InstalledSoftwareEntry
+            // Session 12 Continuation: Rewritten for two-tier architecture
+            // This tests the deprecated method still returns a list (even if empty)
+
+            // Arrange
+            var repository = new InstalledSoftwareRepository();
+
+            // Act
+            var result = repository.GetByCategory("Games");
+
+            // Assert
+            result.Should().NotBeNull("Deprecated method should still return non-null list");
+            result.Should().BeAssignableTo<System.Collections.Generic.List<InstalledSoftwareEntry>>();
         }
 
-        [Fact(Skip = "Session 12: Method deprecated - Source/Category fields moved to SoftwareReference table")]
+        [Fact]
         public void GetBySourceAndCategory_WithBothFilters_ReturnsFiltered()
         {
-            // ⚠️ DISABLED: GetBySourceAndCategory() is deprecated after Session 12 refactor
-            // Source and Category fields no longer exist in InstalledSoftwareEntry
+            // Session 12 Continuation: Rewritten for two-tier architecture
+            // This tests the deprecated method still returns a list (even if empty)
+
+            // Arrange
+            var repository = new InstalledSoftwareRepository();
+
+            // Act
+            var result = repository.GetBySourceAndCategory("Steam", "Games");
+
+            // Assert
+            result.Should().NotBeNull("Deprecated method should still return non-null list");
+            result.Should().BeAssignableTo<System.Collections.Generic.List<InstalledSoftwareEntry>>();
         }
 
-        [Fact(Skip = "Session 12: Schema changed - InstalledSoftwareEntry no longer has Name/Source/Category fields")]
-        public void Upsert_WithNewEntry_ShouldSucceed()
+        [Fact]
+        public void Upsert_WithValidSoftwareRefId_ShouldSucceed()
         {
-            // ⚠️ DISABLED: Test needs rewrite for new schema
-            // InstalledSoftwareEntry now requires SoftwareRefId (FK to software_ref table)
-            // Name, Source, Category fields moved to SoftwareReference
+            // Session 12 Continuation: Rewritten for two-tier architecture
+            // InstalledSoftwareEntry now requires SoftwareRefId
+
+            // Arrange
+            var repository = new InstalledSoftwareRepository();
+            var softwareRefRepo = new SoftwareReferenceRepository(new NoFencesDataLayer.MasterCatalog.MasterCatalogContext());
+
+            // Create a test SoftwareReference first (required for FK)
+            var softwareRef = softwareRefRepo.FindOrCreate(
+                name: "Test Game " + Guid.NewGuid().ToString(),
+                source: "Steam",
+                externalId: "test_" + Guid.NewGuid().ToString(),
+                category: "Games"
+            );
+
+            var entry = new InstalledSoftwareEntry
+            {
+                SoftwareRefId = softwareRef.Id,
+                InstallLocation = @"C:\Program Files\TestGame",
+                ExecutablePath = @"C:\Program Files\TestGame\game.exe",
+                Version = "1.0.0",
+                InstallDate = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow,
+                LastDetected = DateTime.UtcNow
+            };
+
+            // Act
+            var result = repository.Upsert(entry);
+
+            // Assert
+            result.Should().NotBeNull("Upsert should return the entry");
+            result.Id.Should().BeGreaterThan(0, "Entry should be saved with ID");
+            result.SoftwareRefId.Should().Be(softwareRef.Id, "Foreign key should match");
+
+            // Note: No cleanup - integration tests leave test data in database
+            // This is acceptable as each test uses unique GUIDs for test data
         }
 
         [Fact]

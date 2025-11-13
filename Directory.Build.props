@@ -1,27 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project>
   <PropertyGroup>
-    <!-- Session 12 Continuation: Only sign assemblies if certificate is available -->
-    <SignAssembly Condition="'$(SignAssembly)' == ''">true</SignAssembly>
+    <!-- Session 12 Continuation: Strong-name signing disabled, Authenticode signing handled by installer -->
 
-    <!-- CI/CD environment will set this environment variable -->
-    <UseKeyContainer Condition="'$(CI)' == 'true'">true</UseKeyContainer>
-
-    <!-- Use key container in CI/CD -->
-    <KeyContainerName Condition="'$(UseKeyContainer)' == 'true'">VS_KEY_09166331D2880256</KeyContainerName>
-
-    <!-- Use certificate file in local development -->
-    <ProjectCertPath Condition="'$(UseKeyContainer)' != 'true'">$(MSBuildProjectDirectory)\NoFences_cert.pfx</ProjectCertPath>
-
-    <!-- Session 12 Continuation: Only set SharedCertPath if signing folder exists (not in CI) -->
-    <SharedCertPath Condition="'$(UseKeyContainer)' != 'true' AND Exists('$(MSBuildThisFileDirectory)signing')">$(MSBuildThisFileDirectory)signing\NoFences_cert.pfx</SharedCertPath>
-
-    <AssemblyOriginatorKeyFile Condition="'$(UseKeyContainer)' != 'true' AND Exists('$(ProjectCertPath)')">$(ProjectCertPath)</AssemblyOriginatorKeyFile>
-    <AssemblyOriginatorKeyFile Condition="'$(UseKeyContainer)' != 'true' AND !Exists('$(ProjectCertPath)') AND '$(SharedCertPath)' != '' AND Exists('$(SharedCertPath)')">$(SharedCertPath)</AssemblyOriginatorKeyFile>
-
-    <!-- Session 12 Continuation: If no certificate is available, disable signing -->
-    <SignAssembly Condition="'$(UseKeyContainer)' != 'true' AND !Exists('$(ProjectCertPath)') AND ('$(SharedCertPath)' == '' OR !Exists('$(SharedCertPath)'))">false</SignAssembly>
-
+    <!-- Strong-name assembly signing is disabled because:
+         1. PFX files (used for Authenticode) don't work with AssemblyOriginatorKeyFile
+         2. Strong-name signing requires SNK files or unprotected keys
+         3. Authenticode signing (in installer) is what users/Windows actually verify
+         4. No InternalsVisibleTo or other features requiring strong-names are used
+    -->
+    <SignAssembly>false</SignAssembly>
     <DelaySign>false</DelaySign>
   </PropertyGroup>
 </Project>
