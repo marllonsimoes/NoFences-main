@@ -11,7 +11,6 @@ namespace NoFencesDataLayer.Services.Metadata
     /// Wikipedia API client for fallback software/game metadata.
     /// Uses MediaWiki API to search and extract information.
     /// API Documentation: https://www.mediawiki.org/wiki/API:Main_page
-    /// Session 11: Fallback metadata provider.
     /// </summary>
     public class WikipediaApiClient : ISoftwareMetadataProvider
     {

@@ -12,7 +12,7 @@ namespace NoFences.Tests.Repositories
     /// Tests repository interface contract and basic operations.
     /// Note: These are integration tests that use the real database.
     ///
-    /// Session 12 Continuation: Tests rewritten for two-tier architecture.
+    /// Tests use two-tier architecture.
     /// InstalledSoftwareEntry requires SoftwareRefId (FK to SoftwareReference).
     /// Name, Source, Category fields are in SoftwareReference table.
     /// </summary>
@@ -42,78 +42,9 @@ namespace NoFences.Tests.Repositories
         }
 
         [Fact]
-        public void GetBySource_WithNullSource_ReturnsAll()
-        {
-            // Session 12 Continuation: Rewritten for two-tier architecture
-            // Source field is in SoftwareReference, not InstalledSoftwareEntry
-
-            // Arrange
-            var repository = new InstalledSoftwareRepository();
-
-            // Act
-            var result = repository.GetBySource(null);
-
-            // Assert
-            result.Should().NotBeNull("Should return all entries when source is null");
-            result.Should().BeAssignableTo<System.Collections.Generic.List<InstalledSoftwareEntry>>();
-        }
-
-        [Fact]
-        public void GetBySource_WithValidSource_ReturnsFiltered()
-        {
-            // Session 12 Continuation: Rewritten for two-tier architecture
-            // This tests the deprecated method still returns a list (even if empty)
-
-            // Arrange
-            var repository = new InstalledSoftwareRepository();
-
-            // Act
-            var result = repository.GetBySource("Steam");
-
-            // Assert
-            result.Should().NotBeNull("Deprecated method should still return non-null list");
-            result.Should().BeAssignableTo<System.Collections.Generic.List<InstalledSoftwareEntry>>();
-        }
-
-        [Fact]
-        public void GetByCategory_WithValidCategory_ReturnsFiltered()
-        {
-            // Session 12 Continuation: Rewritten for two-tier architecture
-            // This tests the deprecated method still returns a list (even if empty)
-
-            // Arrange
-            var repository = new InstalledSoftwareRepository();
-
-            // Act
-            var result = repository.GetByCategory("Games");
-
-            // Assert
-            result.Should().NotBeNull("Deprecated method should still return non-null list");
-            result.Should().BeAssignableTo<System.Collections.Generic.List<InstalledSoftwareEntry>>();
-        }
-
-        [Fact]
-        public void GetBySourceAndCategory_WithBothFilters_ReturnsFiltered()
-        {
-            // Session 12 Continuation: Rewritten for two-tier architecture
-            // This tests the deprecated method still returns a list (even if empty)
-
-            // Arrange
-            var repository = new InstalledSoftwareRepository();
-
-            // Act
-            var result = repository.GetBySourceAndCategory("Steam", "Games");
-
-            // Assert
-            result.Should().NotBeNull("Deprecated method should still return non-null list");
-            result.Should().BeAssignableTo<System.Collections.Generic.List<InstalledSoftwareEntry>>();
-        }
-
-        [Fact]
         public void Upsert_WithValidSoftwareRefId_ShouldSucceed()
         {
-            // Session 12 Continuation: Rewritten for two-tier architecture
-            // InstalledSoftwareEntry now requires SoftwareRefId
+            // InstalledSoftwareEntry requires SoftwareRefId (FK to SoftwareReference)
 
             // Arrange
             var repository = new InstalledSoftwareRepository();
@@ -164,32 +95,6 @@ namespace NoFences.Tests.Repositories
         }
 
         [Fact]
-        public void GetCountByCategory_ReturnsDictionary()
-        {
-            // Arrange
-            var repository = new InstalledSoftwareRepository();
-
-            // Act
-            var counts = repository.GetCountByCategory();
-
-            // Assert
-            counts.Should().NotBeNull("Should return dictionary even if empty");
-        }
-
-        [Fact]
-        public void GetCountBySource_ReturnsDictionary()
-        {
-            // Arrange
-            var repository = new InstalledSoftwareRepository();
-
-            // Act
-            var counts = repository.GetCountBySource();
-
-            // Assert
-            counts.Should().NotBeNull("Should return dictionary even if empty");
-        }
-
-        [Fact]
         public void RemoveStaleEntries_WithFutureDate_RemovesNone()
         {
             // Arrange
@@ -216,29 +121,10 @@ namespace NoFences.Tests.Repositories
             {
                 repository.GetAll();
                 repository.GetCount();
-                repository.GetCountByCategory();
-                repository.GetCountBySource();
-                repository.GetBySource("Steam");
-                repository.GetByCategory("Games");
+                repository.RemoveStaleEntries(DateTime.UtcNow.AddDays(-365));
             };
 
             act.Should().NotThrow("Multiple sequential operations should succeed");
-        }
-
-        [Fact]
-        public void GetBySource_ConsistentResults()
-        {
-            // Test that calling the same query twice returns consistent results
-
-            // Arrange
-            var repository = new InstalledSoftwareRepository();
-
-            // Act
-            var result1 = repository.GetBySource("Steam");
-            var result2 = repository.GetBySource("Steam");
-
-            // Assert
-            result1.Count.Should().Be(result2.Count, "Same query should return consistent results");
         }
     }
 }

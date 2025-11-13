@@ -6,7 +6,7 @@ namespace NoFences.Core.Model
 {
     /// <summary>
     /// Represents an installed software application or local file/folder.
-    /// Enhanced in Session 11 to support both database software and local filesystem items.
+    /// Supports both database software and local filesystem items.
     /// </summary>
     public class InstalledSoftware
     {
@@ -67,60 +67,59 @@ namespace NoFences.Core.Model
 
         /// <summary>
         /// Source/origin of this item (Local, Steam, Epic, GOG, etc.)
-        /// Added in Session 11 to track where the software came from.
+        /// Tracks where the software came from.
         /// </summary>
         public string Source { get; set; }
 
         /// <summary>
         /// Foreign key to SoftwareReference.Id in master_catalog.db.
         /// Links this installation to enriched metadata.
-        /// Session 12: Database architecture refactor.
         /// </summary>
         public long SoftwareRefId { get; set; }
 
-        // Session 12: Enriched metadata from external sources (RAWG, Winget, Wikipedia, CNET)
+        // Enriched metadata from external sources (RAWG, Winget, Wikipedia, CNET)
 
         /// <summary>
         /// Software/game description from metadata enrichment.
-        /// Session 12: Populated by MetadataEnrichmentService.
+        /// Populated by MetadataEnrichmentService.
         /// </summary>
         public string Description { get; set; }
 
         /// <summary>
         /// Genres (for games) as comma-separated string.
         /// Example: "Action, RPG, Adventure"
-        /// Session 12: Populated by game metadata providers (RAWG).
+        /// Populated by game metadata providers (RAWG).
         /// </summary>
         public string Genres { get; set; }
 
         /// <summary>
         /// Developers (for games) as comma-separated string.
         /// Example: "FromSoftware, Bandai Namco"
-        /// Session 12: Populated by game metadata providers (RAWG).
+        /// Populated by game metadata providers (RAWG).
         /// </summary>
         public string Developers { get; set; }
 
         /// <summary>
         /// Release date (for games/software).
-        /// Session 12: Populated by metadata providers.
+        /// Populated by metadata providers.
         /// </summary>
         public DateTime? ReleaseDate { get; set; }
 
         /// <summary>
         /// URL to cover art/icon image from external source.
-        /// Session 12: Populated by metadata providers.
+        /// Populated by metadata providers.
         /// </summary>
         public string CoverImageUrl { get; set; }
 
         /// <summary>
         /// Average rating (0.0 to 5.0 scale).
-        /// Session 12: Populated by metadata providers (RAWG, CNET).
+        /// Populated by metadata providers (RAWG, CNET).
         /// </summary>
         public double? Rating { get; set; }
 
         /// <summary>
         /// Cached icon (non-serialized) to avoid repeated extraction.
-        /// Added in Session 11 for performance optimization.
+        /// Performance optimization.
         /// </summary>
         [NonSerialized]
         private Icon cachedIcon;
@@ -142,7 +141,7 @@ namespace NoFences.Core.Model
 
         /// <summary>
         /// Creates an InstalledSoftware instance from a local file or folder path.
-        /// Added in Session 11 to unify local files with database software.
+        /// Unifies local files with database software.
         /// </summary>
         /// <param name="path">Full path to file or folder</param>
         /// <returns>InstalledSoftware instance representing the local item</returns>

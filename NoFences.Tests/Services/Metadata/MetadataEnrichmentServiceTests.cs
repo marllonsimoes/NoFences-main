@@ -13,7 +13,7 @@ namespace NoFences.Tests.Services.Metadata
     /// <summary>
     /// Unit tests for MetadataEnrichmentService.
     /// Uses mocks to test orchestration logic without real API calls.
-    /// Session 12: Updated to use ISoftwareReferenceRepository (two-tier architecture).
+    /// Uses ISoftwareReferenceRepository (two-tier architecture).
     /// </summary>
     public class MetadataEnrichmentServiceTests
     {
@@ -26,7 +26,7 @@ namespace NoFences.Tests.Services.Metadata
         {
             mockRepository = new Mock<ISoftwareReferenceRepository>();
 
-            // Session 12: Create mock providers for testing
+            // Create mock providers for testing
             gameProviders = new List<IGameMetadataProvider> { new RawgApiClient() };
             softwareProviders = new List<ISoftwareMetadataProvider>
             {

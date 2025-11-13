@@ -6,7 +6,6 @@ namespace NoFencesDataLayer.Services.Metadata
 {
     /// <summary>
     /// Base interface for all metadata providers (games and software).
-    /// Session 11: Metadata enrichment architecture.
     /// </summary>
     public interface IMetadataProvider
     {

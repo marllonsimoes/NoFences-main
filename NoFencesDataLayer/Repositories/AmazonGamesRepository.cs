@@ -11,7 +11,7 @@ namespace NoFencesDataLayer.Repositories
     /// <summary>
     /// Repository for Amazon Games data access.
     /// Reads from Amazon Games SQLite database (CommonData.sqlite).
-    /// Session 11: Separates data access from business logic (detector pattern).
+    /// Separates data access from business logic (detector pattern).
     /// </summary>
     public class AmazonGamesRepository : IAmazonGamesRepository
     {

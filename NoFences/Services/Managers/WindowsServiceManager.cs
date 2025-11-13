@@ -24,9 +24,9 @@ namespace NoFences.Services.Managers
                     sc.Start();
                     sc.WaitForStatus(ServiceControllerStatus.Running);
                 }
-                catch
+                catch (System.Exception ex)
                 {
-                    log.Error($"Error while checking status");// TODO add error handler and logging
+                    log.Error($"Error starting NoFencesService: {ex.Message}", ex);
                 }
             }
         }

@@ -12,7 +12,7 @@ namespace NoFencesDataLayer.Services
 {
     /// <summary>
     /// Detects installed Amazon Games (Prime Gaming) games.
-    /// Session 11: Refactored to use repository pattern for data access.
+    /// Refactored to use repository pattern for data access.
     /// Business logic only - data access delegated to AmazonGamesRepository.
     /// </summary>
     public class AmazonGamesDetector : IGameStoreDetector
@@ -44,7 +44,7 @@ namespace NoFencesDataLayer.Services
 
             try
             {
-                // Session 11: Use repository for data access
+                // Use repository for data access
                 // Try repository (SQLite database) first - more reliable
                 if (repository.IsAvailable())
                 {
@@ -75,7 +75,7 @@ namespace NoFencesDataLayer.Services
 
         /// <summary>
         /// Enhances a GameInfo object with executable path, icon, and shortcut.
-        /// Session 11: Separated enhancement logic from data access.
+        /// Enhancement logic separated from data access.
         /// </summary>
         private void EnhanceGameInfo(GameInfo game)
         {

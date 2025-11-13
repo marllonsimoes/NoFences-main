@@ -25,7 +25,7 @@ namespace NoFences.View.Canvas.TypeEditors
         // Smart filter controls
         private ComboBox cmbFileCategory;
         private ComboBox cmbSoftwareCategory;
-        private ComboBox cmbSoftwareSource; // Session 11: Priority 2 - Source filter
+        private ComboBox cmbSoftwareSource;
         private TextBox txtExtension;
         private ListBox lstExtensions;
         private Button btnAddExtension;
@@ -203,7 +203,7 @@ namespace NoFences.View.Canvas.TypeEditors
 
                 filterOptionsPanel.Children.Add(cmbSoftwareCategory);
 
-                // Session 11: Priority 2 - Software Source Filter
+                // Software Source Filter
                 filterOptionsPanel.Children.Add(new TextBlock { Text = "Software Source (Optional):", Margin = new Thickness(0, 8, 0, 4) });
                 cmbSoftwareSource = new ComboBox();
 
@@ -228,7 +228,7 @@ namespace NoFences.View.Canvas.TypeEditors
                     Margin = new Thickness(0, 4, 0, 0)
                 });
 
-                // Session 12: Manual metadata enrichment button
+                // Manual metadata enrichment button
                 var btnEnrichMetadata = new Button
                 {
                     Content = "Enrich Metadata (Force Sync)",
@@ -246,7 +246,7 @@ namespace NoFences.View.Canvas.TypeEditors
                     Margin = new Thickness(0, 4, 0, 0)
                 });
 
-                // Session 12: Enriched Metadata Info Panel
+                // Enriched Metadata Info Panel
                 var metadataInfoPanel = new Border
                 {
                     Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb(30, 0, 120, 215)),
@@ -389,7 +389,7 @@ namespace NoFences.View.Canvas.TypeEditors
         }
 
         /// <summary>
-        /// Session 12: Manual metadata enrichment button handler.
+        /// Manual metadata enrichment button handler.
         /// Enriches all un-enriched installed software with metadata from online sources.
         /// Uses IoC container to get service instance.
         /// </summary>
@@ -411,7 +411,7 @@ namespace NoFences.View.Canvas.TypeEditors
                     MessageBoxButton.OK,
                     MessageBoxImage.Information);
 
-                // Session 12: Get service from IoC container
+                // Get service from IoC container
                 var service = Ioc.Default.GetService<InstalledSoftwareService>();
                 if (service == null)
                 {
@@ -494,7 +494,7 @@ namespace NoFences.View.Canvas.TypeEditors
                             cmbSoftwareCategory.SelectedItem = displayName;
                         }
 
-                        // Session 11: Priority 2 - Load source filter
+                        // Load source filter
                         if (cmbSoftwareSource != null)
                         {
                             if (string.IsNullOrEmpty(fenceInfo.Filter.Source))
@@ -606,7 +606,7 @@ namespace NoFences.View.Canvas.TypeEditors
                         }
                     }
 
-                    // Session 11: Priority 2 - Save source filter
+                    // Save source filter
                     if (cmbSoftwareSource?.SelectedItem != null)
                     {
                         var selectedSource = cmbSoftwareSource.SelectedItem.ToString();

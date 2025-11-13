@@ -244,7 +244,7 @@ namespace NoFences.Services.Managers
             refreshDatabaseItem.Click += async (s, e) => await RefreshSoftwareDatabase();
             contextMenu.Items.Add(refreshDatabaseItem);
 
-            // Enrich Software Metadata (Session 11: Metadata enrichment integration)
+            // Enrich Software Metadata
             var enrichMetadataItem = new ToolStripMenuItem
             {
                 Text = "Enrich Software Metadata..."
@@ -364,7 +364,6 @@ namespace NoFences.Services.Managers
             }
         }
 
-        // TODO: Review how to call the ServiceStatusWindow from here
         private void OpenServiceStatusWindow()
         {
             try
@@ -373,7 +372,7 @@ namespace NoFences.Services.Managers
             }
             catch (Exception ex)
             {
-                log.Error($"Failed to open local storage: {ex.Message}", ex);
+                log.Error($"Failed to open service status window: {ex.Message}", ex);
             }
         }
 
@@ -588,7 +587,6 @@ namespace NoFences.Services.Managers
 
         /// <summary>
         /// Refreshes the software database by scanning the system for installed software.
-        /// Session 11: Priority 1 - Database Population Mechanism
         /// </summary>
         private async System.Threading.Tasks.Task RefreshSoftwareDatabase()
         {
@@ -668,7 +666,6 @@ namespace NoFences.Services.Managers
 
         /// <summary>
         /// Enriches software metadata from external sources (RAWG, Winget, Wikipedia, CNET).
-        /// Session 11: Metadata enrichment integration.
         /// </summary>
         private async System.Threading.Tasks.Task EnrichSoftwareMetadata()
         {
@@ -688,26 +685,30 @@ namespace NoFences.Services.Managers
                 {
                     try
                     {
+                        // Use two-tier architecture for metadata enrichment
                         var enrichmentService = new NoFencesDataLayer.Services.Metadata.MetadataEnrichmentService();
-                        var softwareService = new NoFencesDataLayer.Services.InstalledSoftwareService();
 
-                        // Get all software from database
-                        var allSoftware = softwareService.QueryInstalledSoftware(category: null, source: null);
-
-                        if (allSoftware.Count == 0)
+                        // Get all software references from master catalog
+                        using (var context = new NoFencesDataLayer.MasterCatalog.MasterCatalogContext())
                         {
-                            log.Warn("No software found in database for enrichment");
-                            return new { Success = false, Message = "Database is empty", EnrichedCount = 0, TotalCount = 0 };
+                            var softwareRefRepo = new NoFencesDataLayer.Repositories.SoftwareReferenceRepository(context);
+                            var allSoftwareRefs = softwareRefRepo.GetAllEntries();
+
+                            if (allSoftwareRefs.Count == 0)
+                            {
+                                log.Warn("No software references found in master catalog for enrichment");
+                                return new { Success = false, Message = "Master catalog is empty", EnrichedCount = 0, TotalCount = 0 };
+                            }
+
+                            log.Info($"Starting metadata enrichment for {allSoftwareRefs.Count} software reference entries");
+
+                            // Enrich metadata in batch using two-tier architecture
+                            int enrichedCount = await enrichmentService.EnrichSoftwareReferenceBatchAsync(allSoftwareRefs);
+
+                            log.Info($"Metadata enrichment complete: {enrichedCount}/{allSoftwareRefs.Count} entries enriched");
+
+                            return new { Success = true, Message = "Success", EnrichedCount = enrichedCount, TotalCount = allSoftwareRefs.Count };
                         }
-
-                        log.Info($"Starting metadata enrichment for {allSoftware.Count} software entries");
-
-                        // Enrich metadata in batch (with database updates)
-                        int enrichedCount = await enrichmentService.EnrichBatchAsync(allSoftware, updateDatabase: true);
-
-                        log.Info($"Metadata enrichment complete: {enrichedCount}/{allSoftware.Count} entries enriched");
-
-                        return new { Success = true, Message = "Success", EnrichedCount = enrichedCount, TotalCount = allSoftware.Count };
                     }
                     catch (Exception ex)
                     {

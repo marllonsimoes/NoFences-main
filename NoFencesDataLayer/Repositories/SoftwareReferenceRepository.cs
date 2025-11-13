@@ -10,7 +10,6 @@ namespace NoFencesDataLayer.Repositories
     /// <summary>
     /// Repository for SoftwareReference table in master_catalog.db.
     /// Manages shareable software/game reference data with enriched metadata.
-    /// Session 12: Database architecture refactor.
     /// </summary>
     public class SoftwareReferenceRepository : ISoftwareReferenceRepository
     {
@@ -24,7 +23,7 @@ namespace NoFencesDataLayer.Repositories
 
         /// <summary>
         /// Gets a software reference by its database ID.
-        /// Session 12: Used for JOIN operations when converting to Core model.
+        /// Used for JOIN operations when converting to Core model.
         /// </summary>
         public SoftwareReference GetById(long id)
         {
@@ -163,7 +162,7 @@ namespace NoFencesDataLayer.Repositories
                 existing.MetadataJson = reference.MetadataJson;
                 existing.LastEnrichedDate = reference.LastEnrichedDate;
                 existing.MetadataSource = reference.MetadataSource;
-                existing.LastEnrichmentAttempt = reference.LastEnrichmentAttempt; // Session 12: Rate limiting
+                existing.LastEnrichmentAttempt = reference.LastEnrichmentAttempt;
                 existing.UpdatedAt = reference.UpdatedAt;
 
                 context.SaveChanges();
@@ -232,15 +231,15 @@ namespace NoFencesDataLayer.Repositories
 
         /// <summary>
         /// Gets all software references that haven't been enriched or need re-enrichment.
-        /// Session 12: Enhanced with detailed DEBUG logging to track selection criteria.
-        /// Session 12 Continuation: Rate limiting - only returns entries that haven't been attempted today.
+        /// Enhanced with detailed DEBUG logging to track selection criteria.
+        /// Rate limiting - only returns entries that haven't been attempted today.
         /// </summary>
         public List<SoftwareReference> GetUnenrichedEntries(int maxAge = 30, int maxResults = 100)
         {
             try
             {
                 var cutoffDate = DateTime.UtcNow.AddDays(-maxAge);
-                // Session 12 Continuation: Rate limiting - calculate start of today (midnight UTC)
+                // Rate limiting - calculate start of today (midnight UTC)
                 var todayStart = DateTime.UtcNow.Date;
                 var tomorrowStart = todayStart.AddDays(1);
 
@@ -264,7 +263,7 @@ namespace NoFencesDataLayer.Repositories
                     .Count(s => s.LastEnrichedDate != null && s.LastEnrichedDate < cutoffDate);
                 log.Debug($"  Stale entries (LastEnrichedDate < {cutoffDate:yyyy-MM-dd}): {staleCount}");
 
-                // Session 12 Continuation: Rate limiting - only attempt enrichment once per day
+                // Rate limiting - only attempt enrichment once per day
                 // Include entries where:
                 // 1. Never been enriched (LastEnrichedDate IS NULL) OR needs re-enrichment (LastEnrichedDate < cutoffDate)
                 // 2. AND (Never attempted OR last attempt was before today)
@@ -321,6 +320,137 @@ namespace NoFencesDataLayer.Repositories
             {
                 log.Error($"Error getting all software references: {ex.Message}", ex);
                 return new List<SoftwareReference>();
+            }
+        }
+
+        /// <summary>
+        /// Gets software references filtered by source.
+        /// Replacement for InstalledSoftwareRepository.GetBySource().
+        /// </summary>
+        public List<SoftwareReference> GetBySource(string source)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(source))
+                {
+                    return GetAllEntries();
+                }
+
+                var filtered = context.SoftwareReferences
+                    .Where(s => s.Source == source)
+                    .ToList();
+
+                log.Debug($"Retrieved {filtered.Count} software references with source '{source}'");
+                return filtered;
+            }
+            catch (Exception ex)
+            {
+                log.Error($"Error getting software references by source '{source}': {ex.Message}", ex);
+                return new List<SoftwareReference>();
+            }
+        }
+
+        /// <summary>
+        /// Gets software references filtered by category.
+        /// Replacement for InstalledSoftwareRepository.GetByCategory().
+        /// </summary>
+        public List<SoftwareReference> GetByCategory(string category)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(category))
+                {
+                    return GetAllEntries();
+                }
+
+                var filtered = context.SoftwareReferences
+                    .Where(s => s.Category == category)
+                    .ToList();
+
+                log.Debug($"Retrieved {filtered.Count} software references with category '{category}'");
+                return filtered;
+            }
+            catch (Exception ex)
+            {
+                log.Error($"Error getting software references by category '{category}': {ex.Message}", ex);
+                return new List<SoftwareReference>();
+            }
+        }
+
+        /// <summary>
+        /// Gets software references filtered by both source and category.
+        /// Replacement for InstalledSoftwareRepository.GetBySourceAndCategory().
+        /// </summary>
+        public List<SoftwareReference> GetBySourceAndCategory(string source, string category)
+        {
+            try
+            {
+                var query = context.SoftwareReferences.AsQueryable();
+
+                if (!string.IsNullOrEmpty(source))
+                {
+                    query = query.Where(s => s.Source == source);
+                }
+
+                if (!string.IsNullOrEmpty(category))
+                {
+                    query = query.Where(s => s.Category == category);
+                }
+
+                var filtered = query.ToList();
+                log.Debug($"Retrieved {filtered.Count} software references with source '{source}' and category '{category}'");
+                return filtered;
+            }
+            catch (Exception ex)
+            {
+                log.Error($"Error getting software references by source/category: {ex.Message}", ex);
+                return new List<SoftwareReference>();
+            }
+        }
+
+        /// <summary>
+        /// Gets count of software references grouped by category.
+        /// Replacement for InstalledSoftwareRepository.GetCountByCategory().
+        /// </summary>
+        public Dictionary<string, int> GetCountByCategory()
+        {
+            try
+            {
+                var counts = context.SoftwareReferences
+                    .GroupBy(s => s.Category)
+                    .Select(g => new { Category = g.Key, Count = g.Count() })
+                    .ToDictionary(x => x.Category ?? "Unknown", x => x.Count);
+
+                log.Debug($"Retrieved category counts: {counts.Count} categories");
+                return counts;
+            }
+            catch (Exception ex)
+            {
+                log.Error($"Error getting count by category: {ex.Message}", ex);
+                return new Dictionary<string, int>();
+            }
+        }
+
+        /// <summary>
+        /// Gets count of software references grouped by source.
+        /// Replacement for InstalledSoftwareRepository.GetCountBySource().
+        /// </summary>
+        public Dictionary<string, int> GetCountBySource()
+        {
+            try
+            {
+                var counts = context.SoftwareReferences
+                    .GroupBy(s => s.Source)
+                    .Select(g => new { Source = g.Key, Count = g.Count() })
+                    .ToDictionary(x => x.Source ?? "Unknown", x => x.Count);
+
+                log.Debug($"Retrieved source counts: {counts.Count} sources");
+                return counts;
+            }
+            catch (Exception ex)
+            {
+                log.Error($"Error getting count by source: {ex.Message}", ex);
+                return new Dictionary<string, int>();
             }
         }
     }

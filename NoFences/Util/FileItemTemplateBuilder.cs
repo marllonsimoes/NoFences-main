@@ -46,7 +46,7 @@ namespace NoFences.Util
             containerFactory.SetValue(Border.CornerRadiusProperty, new CornerRadius(4));
             containerFactory.SetValue(Border.CursorProperty, Cursors.Hand);
 
-            // Session 11: Add rich tooltip with metadata
+            // Add rich tooltip with metadata
             containerFactory.SetBinding(Border.ToolTipProperty, new Binding("Tooltip"));
 
             // Grid to hold stack + badges
@@ -83,7 +83,7 @@ namespace NoFences.Util
             stackFactory.AppendChild(textFactory);
             gridFactory.AppendChild(stackFactory);
 
-            // Session 11: Add "NEW" badge for recently installed items (top-right corner)
+            // Add "NEW" badge for recently installed items (top-right corner)
             var newBadgeFactory = new FrameworkElementFactory(typeof(Border));
             newBadgeFactory.SetValue(Border.BackgroundProperty, new SolidColorBrush(Color.FromArgb(200, 0, 200, 0))); // Green
             newBadgeFactory.SetValue(Border.CornerRadiusProperty, new CornerRadius(3));

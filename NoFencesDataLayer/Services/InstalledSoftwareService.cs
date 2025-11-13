@@ -14,7 +14,7 @@ namespace NoFencesDataLayer.Services
 {
     /// <summary>
     /// Service for managing installed software detection and database synchronization.
-    /// Session 12: Database architecture refactor - two-tier system with normalized references.
+    /// Database architecture: two-tier system with normalized references.
     /// Part of hybrid architecture: Detectors → Service → Repository → Database.
     /// </summary>
     public class InstalledSoftwareService
@@ -26,7 +26,7 @@ namespace NoFencesDataLayer.Services
 
         /// <summary>
         /// Constructor with dependency injection.
-        /// Session 12: Now injects both repositories for two-tier architecture.
+        /// Injects both repositories for two-tier architecture.
         /// </summary>
         public InstalledSoftwareService(
             IInstalledSoftwareRepository installedRepository,
@@ -40,7 +40,7 @@ namespace NoFencesDataLayer.Services
 
         /// <summary>
         /// Default constructor creates dependencies internally (for legacy code).
-        /// Session 12: Updated to create both repositories.
+        /// Creates both repositories.
         /// </summary>
         public InstalledSoftwareService()
             : this(
@@ -52,7 +52,7 @@ namespace NoFencesDataLayer.Services
 
         /// <summary>
         /// Scans system for all installed software and updates databases (two-tier architecture).
-        /// Session 12: NEW two-phase approach:
+        /// Two-phase approach:
         /// Phase 1: Find/create software_ref entries (master_catalog.db)
         /// Phase 2: Save local installation data (ref.db)
         /// Phase 3: Trigger enrichment for new software
@@ -139,7 +139,7 @@ namespace NoFencesDataLayer.Services
                 log.Info($"Database refresh complete: {localEntries.Count} installations, {newSoftwareRefIds.Count} new software references");
 
                 // Phase 5: Automatic metadata enrichment (background) for ALL unenriched software
-                // Session 12 Continuation: Process ALL entries in batches until complete
+                // Process ALL entries in batches until complete
                 if (newSoftwareRefIds.Count > 0)
                 {
                     log.Info($"Triggering background enrichment for all unenriched software ({newSoftwareRefIds.Count} new entries detected)");
@@ -167,7 +167,6 @@ namespace NoFencesDataLayer.Services
 
         /// <summary>
         /// Extracts ExternalId from RegistryKey based on source.
-        /// Session 12: Helper method for two-phase detection.
         /// Examples:
         /// - "Steam:440" → "440"
         /// - "Epic:ue4-mandalore" → "ue4-mandalore"
@@ -221,34 +220,10 @@ namespace NoFencesDataLayer.Services
         }
 
         /// <summary>
-        /// Gets installed software by source.
-        /// </summary>
-        public List<InstalledSoftwareEntry> GetBySource(string source)
-        {
-            return installedRepository.GetBySource(source);
-        }
-
-        /// <summary>
-        /// Gets installed software by category.
-        /// </summary>
-        public List<InstalledSoftwareEntry> GetByCategory(string category)
-        {
-            return installedRepository.GetByCategory(category);
-        }
-
-        /// <summary>
-        /// Gets installed software by combined filter (for FileFenceFilter integration).
-        /// </summary>
-        public List<InstalledSoftwareEntry> GetBySourceAndCategory(string source, string category)
-        {
-            return installedRepository.GetBySourceAndCategory(source, category);
-        }
-
-        /// <summary>
         /// Gets installed software as Core model (InstalledSoftware) for UI consumption.
         /// Converts database entities → Core model objects.
         /// This is the main query method for FileFenceFilter integration.
-        /// Session 12: Updated for two-tier architecture - queries software_ref first, then joins with InstalledSoftware.
+        /// Updated for two-tier architecture - queries software_ref first, then joins with InstalledSoftware.
         /// </summary>
         /// <param name="category">Category filter (Games, Productivity, etc.) - can be null for all</param>
         /// <param name="source">Source filter (Steam, GOG, etc.) - can be null for all</param>
@@ -259,7 +234,7 @@ namespace NoFencesDataLayer.Services
             {
                 log.Debug($"=== QueryInstalledSoftware START === category='{category}', source='{source}'");
 
-                // Session 12: Two-tier architecture approach
+                // Two-tier architecture approach
                 // Step 1: Query software_ref for matching entries
                 List<SoftwareReference> softwareRefs;
 
@@ -346,7 +321,7 @@ namespace NoFencesDataLayer.Services
 
         /// <summary>
         /// Converts InstalledSoftwareEntry (database entity) → InstalledSoftware (Core model).
-        /// Session 12: Now JOINs with SoftwareReference to get enriched metadata.
+        /// JOINs with SoftwareReference to get enriched metadata.
         /// </summary>
         private InstalledSoftware ConvertToCoreModel(InstalledSoftwareEntry entry)
         {
@@ -355,7 +330,7 @@ namespace NoFencesDataLayer.Services
 
             try
             {
-                // Session 12: Lookup software_ref for enriched metadata
+                // Lookup software_ref for enriched metadata
                 var softwareRef = softwareRefRepository.GetById(entry.SoftwareRefId);
                 if (softwareRef == null)
                 {
@@ -406,35 +381,10 @@ namespace NoFencesDataLayer.Services
 
 
 
-        /// <summary>
-        /// Gets statistics about installed software.
-        /// </summary>
-        public InstalledSoftwareStatistics GetStatistics()
-        {
-            try
-            {
-                return new InstalledSoftwareStatistics
-                {
-                    TotalCount = installedRepository.GetCount(),
-                    CountByCategory = installedRepository.GetCountByCategory(),
-                    CountBySource = installedRepository.GetCountBySource()
-                };
-            }
-            catch (Exception ex)
-            {
-                log.Error($"Error getting statistics: {ex.Message}", ex);
-                return new InstalledSoftwareStatistics
-                {
-                    TotalCount = 0,
-                    CountByCategory = new Dictionary<string, int>(),
-                    CountBySource = new Dictionary<string, int>()
-                };
-            }
-        }
 
         /// <summary>
         /// Gets a list of all unique source values from the database.
-        /// Session 12: Updated to query software_ref table (Source is no longer in InstalledSoftware).
+        /// Queries software_ref table (Source is no longer in InstalledSoftware).
         /// Used to populate the source dropdown in FilesPropertiesPanel.
         /// </summary>
         /// <returns>List of unique source names (e.g., "Steam", "GOG", "Epic Games")</returns>
@@ -442,7 +392,7 @@ namespace NoFencesDataLayer.Services
         {
             try
             {
-                // Session 12: Source is now in software_ref table, not InstalledSoftware
+                // Source is now in software_ref table, not InstalledSoftware
                 var softwareRefRepository = new SoftwareReferenceRepository(new MasterCatalog.MasterCatalogContext());
                 var allEntries = softwareRefRepository.GetAllEntries();
 
@@ -467,7 +417,7 @@ namespace NoFencesDataLayer.Services
 
         /// <summary>
         /// Enriches ALL un-enriched software entries in the database by processing in batches.
-        /// Session 12 Continuation: Processes all entries until none remain.
+        /// Processes all entries until none remain.
         /// Runs in background to avoid blocking UI.
         /// </summary>
         /// <returns>Task that completes when all entries are enriched</returns>
@@ -525,7 +475,7 @@ namespace NoFencesDataLayer.Services
 
         /// <summary>
         /// Automatically enriches un-enriched software entries in the database (single batch).
-        /// Session 12: Automatic metadata enrichment after database population.
+        /// Automatic metadata enrichment after database population.
         /// Runs in background to avoid blocking UI.
         /// </summary>
         /// <param name="maxBatchSize">Maximum number of entries to enrich in one batch (default: 50)</param>
@@ -536,7 +486,7 @@ namespace NoFencesDataLayer.Services
             {
                 log.Info($"=== EnrichUnenrichedEntriesAsync START === maxBatchSize={maxBatchSize}");
 
-                // Session 12: Query software_ref for unenriched entries (not InstalledSoftware)
+                // Query software_ref for unenriched entries (not InstalledSoftware)
                 var unenrichedEntries = softwareRefRepository.GetUnenrichedEntries(maxResults: maxBatchSize);
 
                 if (unenrichedEntries.Count == 0)
@@ -558,8 +508,7 @@ namespace NoFencesDataLayer.Services
                     log.Debug($"  ... and {unenrichedEntries.Count - 10} more entries");
                 }
 
-                // Session 12: Enrich SoftwareReference objects directly (no conversion needed)
-                // Note: enrichmentService.EnrichBatchAsync() will be updated to accept SoftwareReference[]
+                // Enrich SoftwareReference objects directly (no conversion needed)
                 int enrichedCount = await enrichmentService.EnrichSoftwareReferenceBatchAsync(unenrichedEntries);
 
                 log.Info($"=== EnrichUnenrichedEntriesAsync END === {enrichedCount}/{unenrichedEntries.Count} entries enriched successfully");

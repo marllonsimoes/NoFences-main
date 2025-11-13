@@ -40,7 +40,6 @@ namespace NoFencesDataLayer.MasterCatalog
         /// <summary>
         /// Reference table for software/games with enriched metadata.
         /// Shareable reference data that can be crowdsourced.
-        /// Session 12: Database architecture refactor - normalized reference system.
         /// </summary>
         public DbSet<SoftwareReference> SoftwareReferences { get; set; }
 
@@ -113,7 +112,7 @@ namespace NoFencesDataLayer.MasterCatalog
                 .HasIndex(e => new { e.EntityType, e.EntityId })
                 .HasName("IX_ChangeLog_Entity");
 
-            // Session 12: SoftwareReference indexes
+            // SoftwareReference indexes
             // Unique constraint on Source + ExternalId (one entry per platform software)
             modelBuilder.Entity<SoftwareReference>()
                 .HasIndex(e => new { e.Source, e.ExternalId })

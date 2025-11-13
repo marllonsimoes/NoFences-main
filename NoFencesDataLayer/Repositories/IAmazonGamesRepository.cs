@@ -6,7 +6,7 @@ namespace NoFencesDataLayer.Repositories
     /// <summary>
     /// Repository interface for Amazon Games data access.
     /// Provides abstraction over Amazon Games SQLite database.
-    /// Session 11: Created to separate data access from business logic.
+    /// Separates data access from business logic.
     /// </summary>
     public interface IAmazonGamesRepository
     {

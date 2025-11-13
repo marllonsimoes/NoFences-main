@@ -7,7 +7,6 @@ namespace NoFencesDataLayer.MasterCatalog.Entities
     /// <summary>
     /// Tracks local installation data for software/games on the user's machine.
     /// Part of ref.db - machine-specific data only.
-    /// Session 12: Database architecture refactor - moved from master_catalog.db to ref.db.
     /// References SoftwareReference table in master_catalog.db for enriched metadata.
     /// </summary>
     [Table("InstalledSoftware")]
@@ -23,7 +22,6 @@ namespace NoFencesDataLayer.MasterCatalog.Entities
         /// <summary>
         /// Foreign key to SoftwareReference.Id in master_catalog.db.
         /// Links local installation to global software metadata.
-        /// Session 12: New field for normalized architecture.
         /// </summary>
         [Required]
         public long SoftwareRefId { get; set; }
@@ -49,7 +47,6 @@ namespace NoFencesDataLayer.MasterCatalog.Entities
         /// <summary>
         /// Full registry key path where software was found (machine-specific)
         /// Examples: "HKLM\SOFTWARE\...", "Steam:440", "Epic:ue4-mandalore"
-        /// Session 12: Now stored in local database
         /// </summary>
         [MaxLength(1000)]
         public string RegistryKey { get; set; }

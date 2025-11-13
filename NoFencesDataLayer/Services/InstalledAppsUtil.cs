@@ -66,7 +66,7 @@ namespace NoFencesDataLayer.Services
             software.AddRange(games);
             software.Sort((a, b) => a.Name.CompareTo(b.Name));
 
-            // Session 12: Remove duplicates with priority-based deduplication
+            // Remove duplicates with priority-based deduplication
             // Priority: Specialized detectors (Steam, GOG, etc.) > Registry
             // This ensures game metadata from specialized detectors isn't overwritten by generic registry data
             var uniqueSoftware = software
@@ -191,7 +191,7 @@ namespace NoFencesDataLayer.Services
                     IconPath = key.GetValue("DisplayIcon") as string,
                     RegistryKey = keyName,
                     IsWow64 = isWow64,
-                    Source = "Registry" // Session 11: Source-based categorization
+                    Source = "Registry"
                 };
 
                 // Try to parse install date
@@ -247,7 +247,7 @@ namespace NoFencesDataLayer.Services
             if (lowerName.Contains("microsoft .net") && lowerName.Contains("update"))
                 return false;
 
-            // Session 12 Note: No need to filter game store paths here
+            // No need to filter game store paths here
             // Priority-based deduplication in GetAllInstalled() handles this elegantly:
             // Specialized detectors (Steam, GOG, etc.) take precedence over Registry entries
             // This scales better - no hardcoded paths needed when adding new detectors
@@ -354,7 +354,7 @@ namespace NoFencesDataLayer.Services
                         InstallDate = game.LastUpdated,
                         RegistryKey = $"{detector.PlatformName}:{game.GameId}",
                         IsWow64 = false,
-                        Source = detector.PlatformName // Session 11: Source-based categorization (Steam, GOG, Epic, etc.)
+                        Source = detector.PlatformName
                     };
 
                     softwareList.Add(software);

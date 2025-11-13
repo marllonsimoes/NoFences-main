@@ -437,15 +437,6 @@ namespace NoFencesService
 
             return null;
         }
-
-        private void ListAllDevices()
-        {
-            foreach (var drive in DriveInfo.GetDrives())
-            {
-                Console.WriteLine($"{drive.Name} - {drive.VolumeLabel} - {drive.DriveType} - {drive.IsReady}");
-                Debug.WriteLine($"{drive.Name} - {drive.VolumeLabel} - {drive.DriveType} - {drive.IsReady}");
-            }
-        }
     }
 
     #region ServiceState enumeration and struct

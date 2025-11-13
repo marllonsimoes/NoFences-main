@@ -7,7 +7,6 @@ namespace NoFencesDataLayer.Repositories
     /// <summary>
     /// Repository interface for tracking installed software on the user's machine.
     /// Part of hybrid architecture: Detectors populate DB, fences query DB.
-    /// Session 11: FilesFence data layer rework.
     /// </summary>
     public interface IInstalledSoftwareRepository
     {
@@ -16,28 +15,6 @@ namespace NoFencesDataLayer.Repositories
         /// </summary>
         /// <returns>List of all installed software</returns>
         List<InstalledSoftwareEntry> GetAll();
-
-        /// <summary>
-        /// Gets installed software by detection source.
-        /// </summary>
-        /// <param name="source">Source identifier (Steam, GOG, Epic, Registry, etc.)</param>
-        /// <returns>List of software from specified source</returns>
-        List<InstalledSoftwareEntry> GetBySource(string source);
-
-        /// <summary>
-        /// Gets installed software by category.
-        /// </summary>
-        /// <param name="category">Category (Games, Productivity, Development, etc.)</param>
-        /// <returns>List of software in specified category</returns>
-        List<InstalledSoftwareEntry> GetByCategory(string category);
-
-        /// <summary>
-        /// Gets installed software by combined source and category filter.
-        /// </summary>
-        /// <param name="source">Source identifier (can be null to skip filter)</param>
-        /// <param name="category">Category (can be null to skip filter)</param>
-        /// <returns>List of matching software</returns>
-        List<InstalledSoftwareEntry> GetBySourceAndCategory(string source, string category);
 
         /// <summary>
         /// Inserts or updates an installed software entry.
@@ -67,17 +44,5 @@ namespace NoFencesDataLayer.Repositories
         /// </summary>
         /// <returns>Total count</returns>
         int GetCount();
-
-        /// <summary>
-        /// Gets count by category for statistics.
-        /// </summary>
-        /// <returns>Dictionary of category name to count</returns>
-        Dictionary<string, int> GetCountByCategory();
-
-        /// <summary>
-        /// Gets count by source for statistics.
-        /// </summary>
-        /// <returns>Dictionary of source name to count</returns>
-        Dictionary<string, int> GetCountBySource();
     }
 }
