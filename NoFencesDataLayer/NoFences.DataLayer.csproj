@@ -79,7 +79,7 @@
     <Compile Include="MasterCatalog\Entities\MasterGameEntry.cs" />
     <Compile Include="MasterCatalog\Entities\CatalogVersion.cs" />
     <Compile Include="MasterCatalog\Entities\ChangeLog.cs" />
-    <Compile Include="MasterCatalog\Entities\InstalledSoftwareEntry.cs" />
+    <Compile Include="MasterCatalog\Entities\LocalInstallation.cs" />
     <Compile Include="MasterCatalog\Entities\SoftwareReference.cs" />
     <Compile Include="MasterCatalog\MasterCatalogContext.cs" />
     <Compile Include="MasterCatalog\Services\MasterCatalogImporter.cs" />

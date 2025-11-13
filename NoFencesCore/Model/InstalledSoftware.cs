@@ -197,6 +197,171 @@ namespace NoFences.Core.Model
             return item;
         }
 
+        /// <summary>
+        /// Creates InstalledSoftware from joined database entities (LocalInstallation + SoftwareReference).
+        /// This is the primary way to construct complete software objects with enriched metadata.
+        /// Session 14: Factory method pattern for unified model.
+        /// </summary>
+        /// <param name="local">Local installation data from ref.db</param>
+        /// <param name="reference">Enriched metadata from master_catalog.db</param>
+        /// <returns>Complete InstalledSoftware object</returns>
+        public static InstalledSoftware FromJoin(object local, object reference)
+        {
+            // Using object parameters to avoid circular reference between Core and DataLayer
+            // Caller must pass LocalInstallation and SoftwareReference
+            // Properties are accessed via reflection-like dynamic access
+
+            dynamic localDyn = local;
+            dynamic refDyn = reference;
+
+            var software = new InstalledSoftware
+            {
+                // Local data (from ref.db via LocalInstallation)
+                SoftwareRefId = localDyn.SoftwareRefId,
+                InstallLocation = localDyn.InstallLocation,
+                ExecutablePath = localDyn.ExecutablePath,
+                IconPath = localDyn.IconPath,
+                RegistryKey = localDyn.RegistryKey,
+                Version = localDyn.Version,
+                InstallDate = localDyn.InstallDate,
+
+                // Reference data (from master_catalog.db via SoftwareReference)
+                Name = refDyn.Name,
+                Publisher = refDyn.Publisher,
+                Source = refDyn.Source,
+                Description = refDyn.Description,
+                Genres = refDyn.Genres,
+                Developers = refDyn.Developers,
+                ReleaseDate = refDyn.ReleaseDate,
+                CoverImageUrl = refDyn.CoverImageUrl
+            };
+
+            // Parse category from string
+            if (!string.IsNullOrEmpty(refDyn.Category))
+            {
+                SoftwareCategory category;
+                if (Enum.TryParse<SoftwareCategory>(refDyn.Category, out category))
+                {
+                    software.Category = category;
+                }
+            }
+
+            // Extract rating from MetadataJson
+            software.Rating = ExtractRating(refDyn.MetadataJson);
+
+            return software;
+        }
+
+        /// <summary>
+        /// Creates InstalledSoftware from local installation only (no enriched metadata).
+        /// Used when SoftwareReference is not available yet or when metadata is not needed.
+        /// Session 14: Factory method for partial data scenarios.
+        /// </summary>
+        /// <param name="local">Local installation data from ref.db</param>
+        /// <returns>InstalledSoftware with local data only</returns>
+        public static InstalledSoftware FromLocal(object local)
+        {
+            dynamic localDyn = local;
+
+            return new InstalledSoftware
+            {
+                SoftwareRefId = localDyn.SoftwareRefId,
+                InstallLocation = localDyn.InstallLocation,
+                ExecutablePath = localDyn.ExecutablePath,
+                IconPath = localDyn.IconPath,
+                RegistryKey = localDyn.RegistryKey,
+                Version = localDyn.Version,
+                InstallDate = localDyn.InstallDate,
+                Name = "[Loading...]", // Placeholder - metadata not loaded
+                Source = "Local"
+            };
+        }
+
+        /// <summary>
+        /// Creates InstalledSoftware from SoftwareReference only (enriched metadata, no local paths).
+        /// Used for catalog browsing scenarios where local installation data is not relevant.
+        /// Session 14: Factory method for metadata-only scenarios.
+        /// </summary>
+        /// <param name="reference">Enriched metadata from master_catalog.db</param>
+        /// <returns>InstalledSoftware with metadata only</returns>
+        public static InstalledSoftware FromReference(object reference)
+        {
+            dynamic refDyn = reference;
+
+            var software = new InstalledSoftware
+            {
+                Name = refDyn.Name,
+                Publisher = refDyn.Publisher,
+                Source = refDyn.Source,
+                Description = refDyn.Description,
+                Genres = refDyn.Genres,
+                Developers = refDyn.Developers,
+                ReleaseDate = refDyn.ReleaseDate,
+                CoverImageUrl = refDyn.CoverImageUrl
+            };
+
+            // Parse category from string
+            if (!string.IsNullOrEmpty(refDyn.Category))
+            {
+                SoftwareCategory category;
+                if (Enum.TryParse<SoftwareCategory>(refDyn.Category, out category))
+                {
+                    software.Category = category;
+                }
+            }
+
+            // Extract rating from MetadataJson
+            software.Rating = ExtractRating(refDyn.MetadataJson);
+
+            return software;
+        }
+
+        /// <summary>
+        /// Extracts rating value from MetadataJson string.
+        /// Rating is stored in JSON format: {"rating": 4.5, ...}
+        /// Session 14: Helper for factory methods.
+        /// </summary>
+        private static double? ExtractRating(string metadataJson)
+        {
+            if (string.IsNullOrEmpty(metadataJson))
+                return null;
+
+            try
+            {
+                // Simple JSON parsing for rating field
+                // Format: {"rating":4.5,...}
+                int ratingIndex = metadataJson.IndexOf("\"rating\"");
+                if (ratingIndex >= 0)
+                {
+                    int colonIndex = metadataJson.IndexOf(":", ratingIndex);
+                    if (colonIndex >= 0)
+                    {
+                        int commaIndex = metadataJson.IndexOf(",", colonIndex);
+                        int braceIndex = metadataJson.IndexOf("}", colonIndex);
+
+                        int endIndex = commaIndex >= 0 ?
+                            (braceIndex >= 0 ? Math.Min(commaIndex, braceIndex) : commaIndex) :
+                            (braceIndex >= 0 ? braceIndex : metadataJson.Length);
+
+                        if (endIndex > colonIndex)
+                        {
+                            string ratingStr = metadataJson.Substring(colonIndex + 1, endIndex - colonIndex - 1).Trim();
+                            if (double.TryParse(ratingStr, out double rating))
+                            {
+                                return rating;
+                            }
+                        }
+                    }
+                }
+            }
+            catch
+            {
+                // Silent fail - rating is optional
+            }
+
+            return null;
+        }
+
         public override string ToString()
         {
             return $"{Name} ({Publisher}) - {Category}";

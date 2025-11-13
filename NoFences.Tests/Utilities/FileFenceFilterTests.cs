@@ -17,7 +17,7 @@ namespace NoFences.Tests.Utilities
     /// Tests core filtering logic including Session 11 source filtering.
     ///
     /// Session 12 Continuation: Tests rewritten for two-tier architecture.
-    /// InstalledSoftwareEntry requires SoftwareRefId (FK to SoftwareReference).
+    /// LocalInstallation requires SoftwareRefId (FK to SoftwareReference).
     /// Name, Source, Category fields are in SoftwareReference table.
     /// </summary>
     public class FileFenceFilterTests

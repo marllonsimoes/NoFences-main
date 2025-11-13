@@ -8,9 +8,10 @@ namespace NoFencesDataLayer.MasterCatalog.Entities
     /// Tracks local installation data for software/games on the user's machine.
     /// Part of ref.db - machine-specific data only.
     /// References SoftwareReference table in master_catalog.db for enriched metadata.
+    /// Renamed from InstalledSoftwareEntry in Session 14 to eliminate name collision with Core model.
     /// </summary>
     [Table("InstalledSoftware")]
-    public class InstalledSoftwareEntry
+    public class LocalInstallation
     {
         /// <summary>
         /// Auto-increment primary key (local installation ID)

@@ -14,7 +14,7 @@ namespace NoFencesDataLayer.Repositories
         /// Gets all installed software entries.
         /// </summary>
         /// <returns>List of all installed software</returns>
-        List<InstalledSoftwareEntry> GetAll();
+        List<LocalInstallation> GetAll();
 
         /// <summary>
         /// Inserts or updates an installed software entry.
@@ -23,13 +23,13 @@ namespace NoFencesDataLayer.Repositories
         /// </summary>
         /// <param name="entry">Software entry to upsert</param>
         /// <returns>Updated or inserted entry with ID</returns>
-        InstalledSoftwareEntry Upsert(InstalledSoftwareEntry entry);
+        LocalInstallation Upsert(LocalInstallation entry);
 
         /// <summary>
         /// Batch upsert for multiple entries (more efficient than individual upserts).
         /// </summary>
         /// <param name="entries">List of entries to upsert</param>
-        void UpsertBatch(List<InstalledSoftwareEntry> entries);
+        void UpsertBatch(List<LocalInstallation> entries);
 
         /// <summary>
         /// Removes entries that haven't been detected since the specified date.
@@ -44,5 +44,27 @@ namespace NoFencesDataLayer.Repositories
         /// </summary>
         /// <returns>Total count</returns>
         int GetCount();
+
+        /// <summary>
+        /// Gets all installed software with enriched metadata (performs JOIN with SoftwareReference).
+        /// This is the primary method for UI display with complete data.
+        /// Session 14: Repository JOIN helper method.
+        /// </summary>
+        /// <param name="softwareRefRepository">Software reference repository for JOIN</param>
+        /// <returns>List of InstalledSoftware with complete data</returns>
+        List<NoFences.Core.Model.InstalledSoftware> GetAllWithMetadata(ISoftwareReferenceRepository softwareRefRepository);
+
+        /// <summary>
+        /// Gets filtered installed software with enriched metadata (performs JOIN).
+        /// Session 14: Repository JOIN helper method with filtering.
+        /// </summary>
+        /// <param name="softwareRefRepository">Software reference repository for JOIN</param>
+        /// <param name="category">Category filter (optional)</param>
+        /// <param name="source">Source filter (optional)</param>
+        /// <returns>List of filtered InstalledSoftware with complete data</returns>
+        List<NoFences.Core.Model.InstalledSoftware> GetFilteredWithMetadata(
+            ISoftwareReferenceRepository softwareRefRepository,
+            string category = null,
+            string source = null);
     }
 }

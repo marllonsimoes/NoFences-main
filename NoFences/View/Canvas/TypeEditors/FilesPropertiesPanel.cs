@@ -6,6 +6,7 @@ using NoFencesDataLayer.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -419,10 +420,40 @@ namespace NoFences.View.Canvas.TypeEditors
                     service = new InstalledSoftwareService();
                 }
 
-                await service.EnrichUnenrichedEntriesAsync(maxBatchSize: 100);
+                // Loop until all entries are enriched
+                int batchSize = 100;
+                int totalProcessed = 0;
+                int batchCount = 0;
+                const int maxBatches = 50; // Safety limit to prevent infinite loop (5000 entries max)
+
+                while (batchCount < maxBatches)
+                {
+                    batchCount++;
+                    int entriesFound = await service.EnrichUnenrichedEntriesAsync(maxBatchSize: batchSize);
+
+                    if (entriesFound == 0)
+                    {
+                        // No more unenriched entries - we're done!
+                        break;
+                    }
+
+                    totalProcessed += entriesFound;
+
+                    // Small delay between batches to avoid API rate limiting
+                    if (entriesFound == batchSize)
+                    {
+                        // If we got a full batch, there might be more entries
+                        await Task.Delay(1000);
+                    }
+                    else
+                    {
+                        // If we got less than a full batch, we're done
+                        break;
+                    }
+                }
 
                 MessageBox.Show(
-                    "Metadata enrichment completed!\nCheck the log file for details on enriched entries.",
+                    $"Metadata enrichment completed!\n\nProcessed {totalProcessed} entries across {batchCount} batch(es).\n\nCheck the log file for details on enriched entries.",
                     "Enrichment Complete",
                     MessageBoxButton.OK,
                     MessageBoxImage.Information);

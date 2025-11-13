@@ -43,11 +43,11 @@ namespace NoFences
             var hierarchy = (log4net.Repository.Hierarchy.Hierarchy)repository;
 
             log4net.Core.Level log4netLevel = log4net.Core.Level.Debug;
-            ((Logger)hierarchy.GetLogger("NoFencesDataLayer.Services.SteamStoreDetector")).Level = log4netLevel;
-            ((Logger)hierarchy.GetLogger("NoFencesDataLayer.Services.AmazonGamesDetector")).Level = log4netLevel;
-            ((Logger)hierarchy.GetLogger("NoFencesDataLayer.Services.EpicGamesDetector")).Level = log4netLevel;
-            ((Logger)hierarchy.GetLogger("NoFencesDataLayer.Services.UbisoftConnectDetector")).Level = log4netLevel;
-            ((Logger)hierarchy.GetLogger("NoFencesDataLayer.Services.GOGGalaxyDetector")).Level = log4netLevel;
+            //((Logger)hierarchy.GetLogger("NoFencesDataLayer.Services.SteamStoreDetector")).Level = log4netLevel;
+            //((Logger)hierarchy.GetLogger("NoFencesDataLayer.Services.AmazonGamesDetector")).Level = log4netLevel;
+            //((Logger)hierarchy.GetLogger("NoFencesDataLayer.Services.EpicGamesDetector")).Level = log4netLevel;
+            //((Logger)hierarchy.GetLogger("NoFencesDataLayer.Services.UbisoftConnectDetector")).Level = log4netLevel;
+            //((Logger)hierarchy.GetLogger("NoFencesDataLayer.Services.GOGGalaxyDetector")).Level = log4netLevel;
             ((Logger)hierarchy.GetLogger("NoFencesDataLayer.Services.EAAppDetector")).Level = log4netLevel;
             hierarchy.RaiseConfigurationChanged(EventArgs.Empty);
 #endif

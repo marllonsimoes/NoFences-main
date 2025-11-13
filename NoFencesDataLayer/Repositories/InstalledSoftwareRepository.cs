@@ -63,7 +63,7 @@ namespace NoFencesDataLayer.Repositories
         /// To get full data with Name/Publisher/etc, use InstalledSoftwareService.QueryInstalledSoftware()
         /// which performs JOIN with software_ref table.
         /// </summary>
-        public List<InstalledSoftwareEntry> GetAll()
+        public List<LocalInstallation> GetAll()
         {
             EnsureDatabaseCreated();
 
@@ -83,7 +83,7 @@ namespace NoFencesDataLayer.Repositories
             catch (Exception ex)
             {
                 log.Error($"Error getting all installed software: {ex.Message}", ex);
-                return new List<InstalledSoftwareEntry>();
+                return new List<LocalInstallation>();
             }
         }
 
@@ -92,7 +92,7 @@ namespace NoFencesDataLayer.Repositories
         /// Updated for two-tier architecture - only updates local installation data.
         /// Matches by SoftwareRefId + InstallLocation (unique constraint).
         /// </summary>
-        public InstalledSoftwareEntry Upsert(InstalledSoftwareEntry entry)
+        public LocalInstallation Upsert(LocalInstallation entry)
         {
             if (entry == null)
             {
@@ -111,7 +111,7 @@ namespace NoFencesDataLayer.Repositories
                 using (var context = new LocalDBContext())
                 {
                     // Match by SoftwareRefId + InstallLocation (unique constraint)
-                    InstalledSoftwareEntry existing = null;
+                    LocalInstallation existing = null;
 
                     if (!string.IsNullOrEmpty(entry.InstallLocation))
                     {
@@ -169,7 +169,7 @@ namespace NoFencesDataLayer.Repositories
         /// Batch upsert for multiple entries (more efficient than individual upserts).
         /// Updated for two-tier architecture - only updates local installation data.
         /// </summary>
-        public void UpsertBatch(List<InstalledSoftwareEntry> entries)
+        public void UpsertBatch(List<LocalInstallation> entries)
         {
             EnsureDatabaseCreated();
 
@@ -195,7 +195,7 @@ namespace NoFencesDataLayer.Repositories
                         }
 
                         // Match by SoftwareRefId + InstallLocation (unique constraint)
-                        InstalledSoftwareEntry existing = null;
+                        LocalInstallation existing = null;
 
                         if (!string.IsNullOrEmpty(entry.InstallLocation))
                         {
@@ -302,6 +302,96 @@ namespace NoFencesDataLayer.Repositories
                 log.Error($"Error getting count: {ex.Message}", ex);
                 return 0;
             }
+        }
+
+        /// <summary>
+        /// Gets all installed software with enriched metadata (performs JOIN).
+        /// Session 14: Repository JOIN helper method.
+        /// </summary>
+        public List<NoFences.Core.Model.InstalledSoftware> GetAllWithMetadata(ISoftwareReferenceRepository softwareRefRepository)
+        {
+            EnsureDatabaseCreated();
+
+            try
+            {
+                using (var localContext = new LocalDBContext())
+                {
+                    var localInstalls = localContext.InstalledSoftware.ToList();
+
+                    if (localInstalls.Count == 0)
+                    {
+                        log.Debug("No local installations found");
+                        return new List<NoFences.Core.Model.InstalledSoftware>();
+                    }
+
+                    // Get all referenced software IDs
+                    var softwareRefIds = localInstalls.Select(l => l.SoftwareRefId).Distinct().ToList();
+
+                    // Batch fetch all software references
+                    var references = new Dictionary<long, MasterCatalog.Entities.SoftwareReference>();
+                    foreach (var refId in softwareRefIds)
+                    {
+                        var reference = softwareRefRepository.GetById(refId);
+                        if (reference != null)
+                        {
+                            references[refId] = reference;
+                        }
+                    }
+
+                    // Perform in-memory JOIN using factory method
+                    var result = new List<NoFences.Core.Model.InstalledSoftware>();
+                    foreach (var local in localInstalls)
+                    {
+                        if (references.TryGetValue(local.SoftwareRefId, out var reference))
+                        {
+                            var software = NoFences.Core.Model.InstalledSoftware.FromJoin(local, reference);
+                            if (software != null)
+                            {
+                                result.Add(software);
+                            }
+                        }
+                        else
+                        {
+                            log.Warn($"SoftwareReference {local.SoftwareRefId} not found for local installation {local.Id}");
+                        }
+                    }
+
+                    log.Debug($"GetAllWithMetadata: Returned {result.Count} entries with metadata");
+                    return result;
+                }
+            }
+            catch (Exception ex)
+            {
+                log.Error($"Error in GetAllWithMetadata: {ex.Message}", ex);
+                return new List<NoFences.Core.Model.InstalledSoftware>();
+            }
+        }
+
+        /// <summary>
+        /// Gets filtered installed software with enriched metadata (performs JOIN).
+        /// Session 14: Repository JOIN helper method with filtering.
+        /// </summary>
+        public List<NoFences.Core.Model.InstalledSoftware> GetFilteredWithMetadata(
+            ISoftwareReferenceRepository softwareRefRepository,
+            string category = null,
+            string source = null)
+        {
+            // Get all with metadata first
+            var allSoftware = GetAllWithMetadata(softwareRefRepository);
+
+            // Apply filters if specified
+            if (!string.IsNullOrEmpty(category))
+            {
+                allSoftware = allSoftware.Where(s => s.Category.ToString() == category).ToList();
+            }
+
+            if (!string.IsNullOrEmpty(source))
+            {
+                allSoftware = allSoftware.Where(s => s.Source == source).ToList();
+            }
+
+            log.Debug($"GetFilteredWithMetadata: Returned {allSoftware.Count} entries (category={category}, source={source})");
+            return allSoftware;
         }
     }
 }

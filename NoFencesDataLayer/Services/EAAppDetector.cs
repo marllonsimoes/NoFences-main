@@ -111,7 +111,7 @@ namespace NoFencesDataLayer.Services
                     Directory.CreateDirectory(outputDirectory);
 
                 // Sanitize filename
-                string safeGameName = string.Join("  ", gameName.Split(Path.GetInvalidFileNameChars()));
+                string safeGameName = string.Join("", gameName.Split(Path.GetInvalidFileNameChars()));
                 string shortcutPath = Path.Combine(outputDirectory, $"{safeGameName}.url");
 
                 if (File.Exists(shortcutPath))
