@@ -1258,11 +1258,112 @@ private void RefreshMetadataFromDatabase()
         </tr>
     </table>
 
+    <h3>Bug Fix: CI/CD Build Failure (Signing Folder Reference)</h3>
+    <div class="problem">
+        <p><strong>Issue:</strong> CI/CD builds failing due to references to local-only "signing" folder</p>
+        <ul>
+            <li>Location 1: Directory.Build.props referenced $(MSBuildThisFileDirectory)signing\NoFences_cert.pfx</li>
+            <li>Location 2: NoFences.Installer/Program.cs hardcoded ..\signing\NoFences_cert.pfx</li>
+            <li>Impact: Build fails in CI/CD environment where signing folder doesn't exist</li>
+            <li>Note: CI/CD uses secrets (CERTIFICATE_PATH and CERTIFICATE_PASSWORD environment variables)</li>
+        </ul>
+    </div>
+
+    <div class="solution">
+        <p><strong>✅ Fixed Signing Configuration:</strong></p>
+
+        <p><strong>1. Directory.Build.props - Conditional SharedCertPath:</strong></p>
+        <div class="code-block">
+            <pre>// BEFORE (always set, even if folder doesn't exist):
+&lt;SharedCertPath Condition="'$(UseKeyContainer)' != 'true'"&gt;
+    $(MSBuildThisFileDirectory)signing\NoFences_cert.pfx
+&lt;/SharedCertPath&gt;
+
+// AFTER (only set if signing folder exists):
+&lt;SharedCertPath Condition="'$(UseKeyContainer)' != 'true' AND Exists('$(MSBuildThisFileDirectory)signing')"&gt;
+    $(MSBuildThisFileDirectory)signing\NoFences_cert.pfx
+&lt;/SharedCertPath&gt;
+
+// Also check for empty SharedCertPath before using:
+&lt;AssemblyOriginatorKeyFile Condition="... AND '$(SharedCertPath)' != '' AND Exists('$(SharedCertPath)')"&gt;
+    $(SharedCertPath)
+&lt;/AssemblyOriginatorKeyFile&gt;
+
+// Disable signing if no certificate is available:
+&lt;SignAssembly Condition="... AND ('$(SharedCertPath)' == '' OR !Exists('$(SharedCertPath)'))"&gt;
+    false
+&lt;/SignAssembly&gt;</pre>
+        </div>
+
+        <p><strong>2. NoFences.Installer/Program.cs - Check File Exists:</strong></p>
+        <div class="code-block">
+            <pre>// Priority 1: Use CI/CD environment variables
+if (Environment.GetEnvironmentVariable("CERTIFICATE_PATH") != null)
+{
+    // Use CERTIFICATE_PATH and CERTIFICATE_PASSWORD from CI/CD secrets
+}
+// Priority 2: Use local signing folder if it exists
+else if (System.IO.File.Exists(@"..\signing\NoFences_cert.pfx"))
+{
+    // Use local development certificate
+}
+// Priority 3: Skip signing with warning
+else
+{
+    Console.WriteLine("WARNING: No certificate found. MSI will not be signed.");
+}</pre>
+        </div>
+
+        <p><strong>3. NoFences.Tests.csproj - Disable Signing:</strong></p>
+        <div class="code-block">
+            <pre>&lt;PropertyGroup&gt;
+    &lt;!-- Session 12 Continuation: Tests don't need to be signed --&gt;
+    &lt;SignAssembly&gt;false&lt;/SignAssembly&gt;
+&lt;/PropertyGroup&gt;</pre>
+        </div>
+
+        <p><strong>Result:</strong></p>
+        <ul>
+            <li>✅ CI/CD builds work with environment variables (CERTIFICATE_PATH, CERTIFICATE_PASSWORD)</li>
+            <li>✅ Local development works with signing folder if present</li>
+            <li>✅ Local development works WITHOUT signing folder (graceful fallback)</li>
+            <li>✅ Test project explicitly opts out of signing</li>
+            <li>✅ Clear warnings when certificate is not available</li>
+        </ul>
+    </div>
+
+    <h3>Files Modified (Wave 11 - CI/CD Fix)</h3>
+    <table>
+        <tr>
+            <th>File</th>
+            <th>Changes</th>
+        </tr>
+        <tr>
+            <td>Directory.Build.props</td>
+            <td>
+                <strong>1. SharedCertPath:</strong> Added Exists() check for signing folder<br>
+                <strong>2. AssemblyOriginatorKeyFile:</strong> Added empty string check for SharedCertPath<br>
+                <strong>3. SignAssembly:</strong> Disable if no certificate is available
+            </td>
+        </tr>
+        <tr>
+            <td>NoFences.Installer/Program.cs</td>
+            <td>
+                <strong>1. Certificate selection:</strong> Changed else block to else-if with File.Exists() check<br>
+                <strong>2. Fallback:</strong> Added final else block with warning message when no certificate is available
+            </td>
+        </tr>
+        <tr>
+            <td>NoFences.Tests/NoFences.Tests.csproj</td>
+            <td>Added &lt;SignAssembly&gt;false&lt;/SignAssembly&gt; to explicitly disable signing for test project</td>
+        </tr>
+    </table>
+
     <hr>
 
     <p><em>Session 12 Date: November 12, 2025</em></p>
     <p><em>Session 12 Continuation Date: November 13, 2025</em></p>
-    <p><em>Status: ✅ COMPLETE - All compilation errors fixed, metadata system fully operational, auto-enrichment processes all entries, rate limiting implemented, lazy metadata loading on hover</em></p>
-    <p><em>Achievements: <strong>~177/187 tests passing (~95%)</strong>, <strong>Metadata tooltips working</strong>, <strong>Comprehensive DEBUG logging</strong>, <strong>Batch loop enrichment</strong>, <strong>Session 11 documented</strong>, <strong>Once-per-day rate limiting</strong>, <strong>Lazy metadata refresh on hover</strong></em></p>
+    <p><em>Status: ✅ COMPLETE - All compilation errors fixed, metadata system fully operational, auto-enrichment processes all entries, rate limiting implemented, lazy metadata loading on hover, CI/CD signing fixed</em></p>
+    <p><em>Achievements: <strong>~177/187 tests passing (~95%)</strong>, <strong>Metadata tooltips working</strong>, <strong>Comprehensive DEBUG logging</strong>, <strong>Batch loop enrichment</strong>, <strong>Session 11 documented</strong>, <strong>Once-per-day rate limiting</strong>, <strong>Lazy metadata refresh on hover</strong>, <strong>CI/CD builds fixed</strong></em></p>
 </body>
 </html>

@@ -7,6 +7,8 @@
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <!-- Disable auto-generation of assembly attributes since we have manual AssemblyInfo.cs -->
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <!-- Session 12 Continuation: Tests don't need to be signed -->
+    <SignAssembly>false</SignAssembly>
   </PropertyGroup>
 
   <ItemGroup>
