@@ -49,7 +49,10 @@ namespace NoFences.View
             // Populate release information
             if (updateInfo.ReleaseDate != default(DateTime))
             {
-                ReleaseDateText.Text = $"Released: {updateInfo.ReleaseDate.ToLocalTime():MMMM d, yyyy}";
+                // Use DD/MM/YYYY format for international compatibility
+                // or culture-aware format based on user's locale
+                var localDate = updateInfo.ReleaseDate.ToLocalTime();
+                ReleaseDateText.Text = $"Released: {localDate:dd/MM/yyyy}";
             }
             else
             {

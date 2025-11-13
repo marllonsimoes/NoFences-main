@@ -3,7 +3,6 @@
     using System;
     using System.Data.Entity;
     using System.Data.Entity.Migrations;
-    using System.Data.SQLite.EF6.Migrations;
     using System.Linq;
 
     internal sealed class Configuration : DbMigrationsConfiguration<NoFencesService.Repository.LocalDBContext>
@@ -12,7 +11,8 @@
         {
             AutomaticMigrationsEnabled = true;
             AutomaticMigrationDataLossAllowed = true;
-            SetSqlGenerator("System.Data.SQLite", new SQLiteMigrationSqlGenerator());
+            // SQLite provider is configured via App.config - no need to manually set SQL generator
+            // SetSqlGenerator is handled automatically by System.Data.SQLite.EF6 provider
         }
 
         protected override void Seed(NoFencesService.Repository.LocalDBContext context)

@@ -44,6 +44,13 @@ namespace NoFences.Core.Model
         public SoftwareCategory SoftwareCategory { get; set; }
 
         /// <summary>
+        /// Software source to filter by (when FilterType = Software)
+        /// Session 11: Priority 2 - Source filter support
+        /// Examples: "Steam", "GOG", "Epic Games", "Local", "Registry", null (all sources)
+        /// </summary>
+        public string Source { get; set; }
+
+        /// <summary>
         /// Legacy pattern for regex matching (when FilterType = Pattern)
         /// </summary>
         public string Pattern { get; set; }
@@ -59,6 +66,7 @@ namespace NoFences.Core.Model
             Category = FileCategory.All;
             Extensions = new List<string>();
             SoftwareCategory = SoftwareCategory.All;
+            Source = null; // null = all sources
             IncludeSubfolders = false;
         }
 
@@ -149,7 +157,11 @@ namespace NoFences.Core.Model
                     return $"Extensions: {string.Join(", ", Extensions)}";
 
                 case FileFilterType.Software:
-                    return $"Software: {SoftwareCategorizer.GetCategoryDisplayName(SoftwareCategory)}";
+                    // Session 11: Include source in description if specified
+                    string categoryDisplay = SoftwareCategorizer.GetCategoryDisplayName(SoftwareCategory);
+                    if (!string.IsNullOrEmpty(Source))
+                        return $"Software: {categoryDisplay} ({Source})";
+                    return $"Software: {categoryDisplay}";
 
                 case FileFilterType.Pattern:
                     return $"Pattern: {Pattern ?? "(empty)"}";

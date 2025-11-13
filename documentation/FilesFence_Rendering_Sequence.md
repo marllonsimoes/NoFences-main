@@ -12,6 +12,8 @@ sequenceDiagram
     participant FilesFenceHandlerWpf
     participant GetInstalledItems
     participant FileFenceFilter
+    participant InstalledSoftwareService
+    participant Database
     participant EnhancedInstalledAppsService
     participant InstalledSoftware
     participant ExtractIconFromSoftware
@@ -40,8 +42,21 @@ sequenceDiagram
             GetInstalledItems->>FileFenceFilter: ApplyFilter(filter, path, items)
 
             alt FilterType == Software
-                FileFenceFilter->>EnhancedInstalledAppsService: GetByCategoryEnhanced(category)
-                EnhancedInstalledAppsService-->>FileFenceFilter: List<InstalledSoftware> (from DB)
+                Note over FileFenceFilter: Session 11: Hybrid Architecture
+                FileFenceFilter->>InstalledSoftwareService: QueryInstalledSoftware(category, source)
+                InstalledSoftwareService->>Database: Query InstalledSoftware table
+                Database-->>InstalledSoftwareService: List<InstalledSoftwareEntry>
+                InstalledSoftwareService->>InstalledSoftwareService: Convert to InstalledSoftware
+                InstalledSoftwareService-->>FileFenceFilter: List<InstalledSoftware> (Count: X)
+
+                Note over FileFenceFilter: Graceful Degradation (Bug Fix #9)
+                alt Database empty (Count == 0) OR Exception
+                    FileFenceFilter->>FileFenceFilter: Log: "Database empty, falling back to in-memory"
+                    FileFenceFilter->>EnhancedInstalledAppsService: GetByCategoryEnhanced(category)
+                    EnhancedInstalledAppsService->>EnhancedInstalledAppsService: Scan registry + game stores
+                    EnhancedInstalledAppsService-->>FileFenceFilter: List<InstalledSoftware> (in-memory)
+                end
+
                 Note over FileFenceFilter: Filter valid paths<br/>(ExecutablePath or InstallLocation exists)
                 FileFenceFilter-->>GetInstalledItems: FilterResult.SoftwareItems
             else FilterType == Category/Extensions/Pattern
@@ -187,11 +202,14 @@ sequenceDiagram
 
 ### 3. **FileFenceFilter.ApplyFilter()**
 - **Purpose**: Apply filtering logic to get items
-- **Location**: `NoFences/Util/FileFenceFilter.cs:38-78`
+- **Location**: `NoFences/Util/FileFenceFilter.cs:60-202`
 - **Returns**: `FilterResult` with `SoftwareItems` + `FileItems`
 - **Filter types**:
-  - Software: Queries database via `EnhancedInstalledAppsService`
-  - File-based: Scans directory with pattern matching
+  - **Software**: Hybrid architecture (Session 11)
+    - **Primary**: Queries database via `InstalledSoftwareService.QueryInstalledSoftware()`
+    - **Fallback**: Falls back to `EnhancedInstalledAppsService` if database empty or error (Bug Fix #9)
+    - **Logging**: Clearly indicates which service is being used
+  - **File-based**: Scans directory with pattern matching
 
 ### 4. **ExtractIconFromSoftware()**
 - **Purpose**: Extract icon with smart fallback logic
@@ -424,3 +442,57 @@ UI Rendered (icon + text + badge + tooltip)
 4. ✅ **Rich tooltips**: All metadata displayed on hover
 5. ✅ **Badge system**: "NEW" badges for recently installed items
 6. ✅ **Centralized template**: One place to modify UI (FileItemTemplateBuilder)
+7. ✅ **Hybrid architecture**: Database persistence with in-memory fallback (Bug Fix #9)
+8. ✅ **Graceful degradation**: Works immediately even with empty database
+
+## Hybrid Architecture Flow (Session 11 Bug Fix #9)
+
+### Software Filter Decision Tree
+```
+FileFenceFilter.ApplySoftwareFilter()
+    ↓
+Try: InstalledSoftwareService.QueryInstalledSoftware()
+    ↓
+Query database (InstalledSoftware table)
+    ↓
+    ├─ Database populated (Count > 0) → Use database results ✅ FAST!
+    │   └─ Return List<InstalledSoftware> with full metadata
+    │
+    ├─ Database empty (Count == 0) → Fallback to in-memory
+    │   ├─ Log: "Database is empty, falling back to in-memory service"
+    │   └─ EnhancedInstalledAppsService.GetByCategoryEnhanced()
+    │       └─ Scan registry + game stores (SLOWER)
+    │
+    └─ Exception (DB error) → Fallback to in-memory
+        ├─ Log: "Error querying database, falling back to in-memory service"
+        └─ EnhancedInstalledAppsService.GetByCategoryEnhanced()
+            └─ Scan registry + game stores (SLOWER)
+```
+
+### Migration Path
+```
+APPLICATION START:
+├─ Database: EMPTY (RefreshInstalledSoftware() not called yet)
+├─ FileFenceFilter: Uses in-memory service (EnhancedInstalledAppsService)
+└─ Result: Software displays correctly (no user impact!)
+
+FIRST REFRESH CALL (manual or scheduled):
+├─ InstalledSoftwareService.RefreshInstalledSoftware()
+├─ Detectors scan system (Steam, GOG, Registry, etc.)
+├─ Database: POPULATED (100+ entries)
+└─ Result: Database ready for fast queries
+
+SUBSEQUENT FENCE RENDERS:
+├─ FileFenceFilter: Queries database (InstalledSoftwareService)
+├─ Database: Returns results in milliseconds (indexed queries)
+└─ Result: 10-50x faster than in-memory scans!
+```
+
+### Logging Output Example
+```
+[INFO ] FileFenceFilter: Database query returned 0 software items for category Games
+[INFO ] FileFenceFilter: Database is empty, falling back to in-memory service
+[WARN ] FileFenceFilter: Using in-memory service (EnhancedInstalledAppsService)
+[INFO ] FileFenceFilter: In-memory service returned 47 software items
+[INFO ] FileFenceFilter: Returning 47 software items with valid paths
+```

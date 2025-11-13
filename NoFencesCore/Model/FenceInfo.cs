@@ -82,7 +82,7 @@ namespace NoFences.Core.Model
         /// to fit all content (particularly useful for masonry grids).
         /// Default is false (manual sizing).
         /// </summary>
-        public bool AutoHeight { get; set; } = false;
+        public bool AutoHeight { get; set; } = true;
 
         /// <summary>
         /// Gets or sets the minimum column width for masonry grid layout in picture fences.
@@ -117,11 +117,101 @@ namespace NoFences.Core.Model
         public string WeatherApiKey { get; set; } = "";
 
         /// <summary>
+        /// Gets or sets the clock style for clock fences.
+        /// Values: "Digital" (default), "Analog" (future)
+        /// </summary>
+        public string ClockStyle { get; set; } = "Digital";
+
+        /// <summary>
+        /// Gets or sets the time format for clock fences.
+        /// Values: "24h" (default), "12h"
+        /// </summary>
+        public string TimeFormat { get; set; } = "24h";
+
+        /// <summary>
+        /// Gets or sets whether to show seconds in the clock display.
+        /// Default is true.
+        /// </summary>
+        public bool ShowSeconds { get; set; } = true;
+
+        /// <summary>
+        /// Gets or sets whether to show the date in the clock display.
+        /// Default is true.
+        /// </summary>
+        public bool ShowDate { get; set; } = true;
+
+        /// <summary>
+        /// Gets or sets whether to show "feels like" temperature in weather display.
+        /// Default is true.
+        /// </summary>
+        public bool ShowFeelsLike { get; set; } = true;
+
+        /// <summary>
+        /// Gets or sets whether to show humidity in weather display.
+        /// Default is true.
+        /// </summary>
+        public bool ShowHumidity { get; set; } = true;
+
+        /// <summary>
+        /// Gets or sets whether to show cloud coverage in weather display.
+        /// Default is true.
+        /// </summary>
+        public bool ShowClouds { get; set; } = true;
+
+        /// <summary>
+        /// Gets or sets whether to show sunrise time in weather display.
+        /// Default is true.
+        /// </summary>
+        public bool ShowSunrise { get; set; } = true;
+
+        /// <summary>
+        /// Gets or sets whether to show sunset time in weather display.
+        /// Default is true.
+        /// </summary>
+        public bool ShowSunset { get; set; } = true;
+
+        /// <summary>
+        /// Gets or sets whether to show wind information in weather display.
+        /// Default is true.
+        /// </summary>
+        public bool ShowWind { get; set; } = true;
+
+        /// <summary>
+        /// Gets or sets the clock layout style.
+        /// Values: "Horizontal" (default), "Vertical", "PixelPhone"
+        /// </summary>
+        public string ClockLayout { get; set; } = "Horizontal";
+
+        /// <summary>
+        /// Gets or sets the font size for time display.
+        /// Default is 48.
+        /// </summary>
+        public int TimeFontSize { get; set; } = 48;
+
+        /// <summary>
+        /// Gets or sets the font size for date display.
+        /// Default is 16.
+        /// </summary>
+        public int DateFontSize { get; set; } = 16;
+
+        /// <summary>
+        /// Gets or sets the font size for weather information.
+        /// Default is 16.
+        /// </summary>
+        public int WeatherFontSize { get; set; } = 16;
+
+        /// <summary>
+        /// Gets or sets whether to show the location name with weather.
+        /// Default is false.
+        /// </summary>
+        public bool ShowLocation { get; set; } = true;
+
+        /// <summary>
         /// Gets or sets whether the fence should use fade animations when mouse is not hovering.
         /// When enabled, fence fades to 30% opacity when mouse leaves (if has content).
         /// Default is true (fade enabled).
         /// </summary>
-        public bool EnableFadeEffect { get; set; } = true;
+        public bool EnableFadeEffect { get; set; } = false;
 
         /// <summary>
         /// Gets or sets whether the current video should loop continuously.

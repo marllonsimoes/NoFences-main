@@ -21,6 +21,9 @@ namespace NoFences.Core.Settings
         public bool AutoDownloadUpdates { get; set; } = false;
         public string LastSkippedVersion { get; set; } = null;
 
+        // API Keys for Metadata Enrichment
+        public string RawgApiKey { get; set; } = null;
+
         private static readonly string PreferencesPath = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
             "NoFences",

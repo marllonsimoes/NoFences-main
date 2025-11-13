@@ -37,6 +37,13 @@ namespace NoFencesDataLayer.MasterCatalog
         /// </summary>
         public DbSet<ChangeLog> ChangeLogs { get; set; }
 
+        /// <summary>
+        /// Reference table for software/games with enriched metadata.
+        /// Shareable reference data that can be crowdsourced.
+        /// Session 12: Database architecture refactor - normalized reference system.
+        /// </summary>
+        public DbSet<SoftwareReference> SoftwareReferences { get; set; }
+
         private static readonly string serviceDatabase = "master_catalog.db";
 
         private static string basePath = Path.Combine(
@@ -105,6 +112,25 @@ namespace NoFencesDataLayer.MasterCatalog
             modelBuilder.Entity<ChangeLog>()
                 .HasIndex(e => new { e.EntityType, e.EntityId })
                 .HasName("IX_ChangeLog_Entity");
+
+            // Session 12: SoftwareReference indexes
+            // Unique constraint on Source + ExternalId (one entry per platform software)
+            modelBuilder.Entity<SoftwareReference>()
+                .HasIndex(e => new { e.Source, e.ExternalId })
+                .IsUnique()
+                .HasName("IX_SoftwareRef_Source_ExternalId");
+
+            modelBuilder.Entity<SoftwareReference>()
+                .HasIndex(e => e.Name)
+                .HasName("IX_SoftwareRef_Name");
+
+            modelBuilder.Entity<SoftwareReference>()
+                .HasIndex(e => e.Category)
+                .HasName("IX_SoftwareRef_Category");
+
+            modelBuilder.Entity<SoftwareReference>()
+                .HasIndex(e => e.LastEnrichedDate)
+                .HasName("IX_SoftwareRef_LastEnrichedDate");
 
             base.OnModelCreating(modelBuilder);
         }

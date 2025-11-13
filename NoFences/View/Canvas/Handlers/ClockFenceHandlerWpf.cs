@@ -66,33 +66,51 @@ namespace NoFences.View.Canvas.Handlers
                 VerticalAlignment = VerticalAlignment.Center
             };
 
-            // Time display
+            // Time display (respect user preferences including font size)
+            string timeFormat = GetTimeFormat();
             timeTextBlock = new TextBlock
             {
-                Text = DateTime.Now.ToString("HH:mm:ss"),
+                Text = DateTime.Now.ToString(timeFormat),
                 Foreground = textColor,
-                FontSize = 48,
+                FontSize = fenceInfo.TimeFontSize,
                 FontWeight = FontWeights.Bold,
                 TextAlignment = TextAlignment.Center,
                 Margin = new Thickness(0, 20, 0, 10)
             };
-
-            // Date display
-            dateTextBlock = new TextBlock
-            {
-                Text = DateTime.Now.ToString("dddd, MMMM dd, yyyy"),
-                Foreground = textColor,
-                FontSize = 16,
-                TextAlignment = TextAlignment.Center,
-                Margin = new Thickness(0, 0, 0, 10)
-            };
-
             stackPanel.Children.Add(timeTextBlock);
-            stackPanel.Children.Add(dateTextBlock);
+
+            // Date display (only add if ShowDate is enabled)
+            if (fenceInfo.ShowDate)
+            {
+                dateTextBlock = new TextBlock
+                {
+                    Text = DateTime.Now.ToString("dddd, dd/MM/yyyy"),
+                    Foreground = textColor,
+                    FontSize = fenceInfo.DateFontSize,
+                    TextAlignment = TextAlignment.Center,
+                    Margin = new Thickness(0, 0, 0, 10)
+                };
+                stackPanel.Children.Add(dateTextBlock);
+            }
 
             // Weather display (if location is configured)
             if (!string.IsNullOrEmpty(fenceInfo.WeatherLocation))
             {
+                // Show location name if enabled
+                if (fenceInfo.ShowLocation)
+                {
+                    var locationTextBlock = new TextBlock
+                    {
+                        Text = fenceInfo.WeatherLocation,
+                        Foreground = textColor,
+                        FontSize = fenceInfo.WeatherFontSize,
+                        TextAlignment = TextAlignment.Center,
+                        Margin = new Thickness(0, 0, 0, 8),
+                        Opacity = 0.8
+                    };
+                    stackPanel.Children.Add(locationTextBlock);
+                }
+
                 // Create a grid for better weather layout
                 var weatherGrid = new Grid
                 {
@@ -127,99 +145,124 @@ namespace NoFences.View.Canvas.Handlers
                 {
                     Text = "--°C",
                     Foreground = textColor,
-                    FontSize = 20,
+                    FontSize = fenceInfo.WeatherFontSize + 4, // Slightly larger than other weather text
                     FontWeight = FontWeights.Bold,
                     Margin = new Thickness(0, 0, 12, 0),
                     VerticalAlignment = VerticalAlignment.Center
                 };
 
-                feelsLikeTextBlock = new TextBlock
-                {
-                    Text = "(feels like --°C)",
-                    Foreground = textColor,
-                    FontSize = 14,
-                    Opacity = 0.8,
-                    VerticalAlignment = VerticalAlignment.Center
-                };
-
                 row0Panel.Children.Add(weatherIconImage);
                 row0Panel.Children.Add(temperatureTextBlock);
-                row0Panel.Children.Add(feelsLikeTextBlock);
+
+                // Only add "feels like" if enabled
+                if (fenceInfo.ShowFeelsLike)
+                {
+                    feelsLikeTextBlock = new TextBlock
+                    {
+                        Text = "(feels like --°C)",
+                        Foreground = textColor,
+                        FontSize = fenceInfo.WeatherFontSize - 2, // Slightly smaller
+                        Opacity = 0.8,
+                        VerticalAlignment = VerticalAlignment.Center
+                    };
+                    row0Panel.Children.Add(feelsLikeTextBlock);
+                }
                 Grid.SetRow(row0Panel, 0);
                 weatherGrid.Children.Add(row0Panel);
 
-                // Row 1: Humidity + Clouds
-                var row1Panel = new StackPanel
+                // Row 1: Humidity + Clouds (respect visibility settings)
+                if (fenceInfo.ShowHumidity || fenceInfo.ShowClouds)
                 {
-                    Orientation = Orientation.Horizontal,
-                    HorizontalAlignment = HorizontalAlignment.Center,
-                    Margin = new Thickness(0, 0, 0, 8)
-                };
+                    var row1Panel = new StackPanel
+                    {
+                        Orientation = Orientation.Horizontal,
+                        HorizontalAlignment = HorizontalAlignment.Center,
+                        Margin = new Thickness(0, 0, 0, 8)
+                    };
 
-                humidityTextBlock = new TextBlock
+                    if (fenceInfo.ShowHumidity)
+                    {
+                        humidityTextBlock = new TextBlock
+                        {
+                            Text = "💧 --%",
+                            Foreground = textColor,
+                            FontSize = fenceInfo.WeatherFontSize,
+                            Margin = new Thickness(0, 0, 16, 0)
+                        };
+                        row1Panel.Children.Add(humidityTextBlock);
+                    }
+
+                    if (fenceInfo.ShowClouds)
+                    {
+                        cloudsTextBlock = new TextBlock
+                        {
+                            Text = "☁️ --%",
+                            Foreground = textColor,
+                            FontSize = fenceInfo.WeatherFontSize
+                        };
+                        row1Panel.Children.Add(cloudsTextBlock);
+                    }
+
+                    Grid.SetRow(row1Panel, 1);
+                    weatherGrid.Children.Add(row1Panel);
+                }
+
+                // Row 2: Sunrise/Sunset + Wind (respect visibility settings)
+                if (fenceInfo.ShowSunrise || fenceInfo.ShowSunset || fenceInfo.ShowWind)
                 {
-                    Text = "💧 --%",
-                    Foreground = textColor,
-                    FontSize = 16,
-                    Margin = new Thickness(0, 0, 16, 0)
-                };
+                    var row2Panel = new StackPanel
+                    {
+                        Orientation = Orientation.Horizontal,
+                        HorizontalAlignment = HorizontalAlignment.Center
+                    };
 
-                cloudsTextBlock = new TextBlock
-                {
-                    Text = "☁️ --%",
-                    Foreground = textColor,
-                    FontSize = 16
-                };
+                    if (fenceInfo.ShowSunrise)
+                    {
+                        sunriseTextBlock = new TextBlock
+                        {
+                            Text = "🌅 --:--",
+                            Foreground = textColor,
+                            FontSize = fenceInfo.WeatherFontSize,
+                            Margin = new Thickness(0, 0, 12, 0)
+                        };
+                        row2Panel.Children.Add(sunriseTextBlock);
+                    }
 
-                row1Panel.Children.Add(humidityTextBlock);
-                row1Panel.Children.Add(cloudsTextBlock);
-                Grid.SetRow(row1Panel, 1);
-                weatherGrid.Children.Add(row1Panel);
+                    if (fenceInfo.ShowSunset)
+                    {
+                        sunsetTextBlock = new TextBlock
+                        {
+                            Text = "🌇 --:--",
+                            Foreground = textColor,
+                            FontSize = fenceInfo.WeatherFontSize,
+                            Margin = new Thickness(0, 0, 16, 0)
+                        };
+                        row2Panel.Children.Add(sunsetTextBlock);
+                    }
 
-                // Row 2: Sunrise/Sunset + Wind
-                var row2Panel = new StackPanel
-                {
-                    Orientation = Orientation.Horizontal,
-                    HorizontalAlignment = HorizontalAlignment.Center
-                };
+                    if (fenceInfo.ShowWind)
+                    {
+                        windDirectionTextBlock = new TextBlock
+                        {
+                            Text = "🧭",
+                            Foreground = textColor,
+                            FontSize = fenceInfo.WeatherFontSize + 4, // Slightly larger for icon
+                            Margin = new Thickness(0, 0, 4, 0)
+                        };
+                        row2Panel.Children.Add(windDirectionTextBlock);
 
-                sunriseTextBlock = new TextBlock
-                {
-                    Text = "🌅 --:--",
-                    Foreground = textColor,
-                    FontSize = 16,
-                    Margin = new Thickness(0, 0, 12, 0)
-                };
+                        windSpeedTextBlock = new TextBlock
+                        {
+                            Text = "-- km/h",
+                            Foreground = textColor,
+                            FontSize = fenceInfo.WeatherFontSize
+                        };
+                        row2Panel.Children.Add(windSpeedTextBlock);
+                    }
 
-                sunsetTextBlock = new TextBlock
-                {
-                    Text = "🌇 --:--",
-                    Foreground = textColor,
-                    FontSize = 16,
-                    Margin = new Thickness(0, 0, 16, 0)
-                };
-
-                windDirectionTextBlock = new TextBlock
-                {
-                    Text = "🧭",
-                    Foreground = textColor,
-                    FontSize = 20,
-                    Margin = new Thickness(0, 0, 4, 0)
-                };
-
-                windSpeedTextBlock = new TextBlock
-                {
-                    Text = "-- km/h",
-                    Foreground = textColor,
-                    FontSize = 16
-                };
-
-                row2Panel.Children.Add(sunriseTextBlock);
-                row2Panel.Children.Add(sunsetTextBlock);
-                row2Panel.Children.Add(windDirectionTextBlock);
-                row2Panel.Children.Add(windSpeedTextBlock);
-                Grid.SetRow(row2Panel, 2);
-                weatherGrid.Children.Add(row2Panel);
+                    Grid.SetRow(row2Panel, 2);
+                    weatherGrid.Children.Add(row2Panel);
+                }
 
                 stackPanel.Children.Add(weatherGrid);
 
@@ -261,11 +304,30 @@ namespace NoFences.View.Canvas.Handlers
         {
             if (timeTextBlock != null)
             {
-                timeTextBlock.Text = DateTime.Now.ToString("HH:mm:ss");
+                string timeFormat = GetTimeFormat();
+                timeTextBlock.Text = DateTime.Now.ToString(timeFormat);
             }
             if (dateTextBlock != null)
             {
-                dateTextBlock.Text = DateTime.Now.ToString("dddd, MMMM dd, yyyy");
+                dateTextBlock.Text = DateTime.Now.ToString("dddd, dd/MM/yyyy");
+            }
+        }
+
+        /// <summary>
+        /// Gets the time format string based on user preferences.
+        /// </summary>
+        private string GetTimeFormat()
+        {
+            bool is12Hour = fenceInfo.TimeFormat == "12h";
+            bool showSeconds = fenceInfo.ShowSeconds;
+
+            if (is12Hour)
+            {
+                return showSeconds ? "hh:mm:ss tt" : "hh:mm tt";
+            }
+            else
+            {
+                return showSeconds ? "HH:mm:ss" : "HH:mm";
             }
         }
 
@@ -389,11 +451,19 @@ namespace NoFences.View.Canvas.Handlers
             return true;
         }
 
-        // TODO: Add options for:
-        // - Analog vs Digital display
+        // ✅ IMPLEMENTED (Session 11):
         // - 12h vs 24h format
         // - Show/hide seconds
+        // - Show/hide date
+        // - Show/hide individual weather elements (6 controls)
+        // - Font size customization (time, date, weather)
+        // - Show location name
+        //
+        // TODO: Future enhancements:
+        // - Analog vs Digital display (placeholder exists)
+        // - Vertical layout (all elements stacked)
+        // - PixelPhone layout (big weather icon, hour/minute/second on separate lines)
         // - Time zone selection
-        // - Custom colors/styles
+        // - Custom color themes
     }
 }

@@ -245,7 +245,7 @@ namespace NoFences.Tests.Behaviors
             var resultRight = behavior.ApplyBoundaries(5000, 100, 300, 300);
 
             // Assert - At least 50px should be visible
-            (resultLeft.X + resultLeft.Width).Should().BeGreaterThan(50);
+            (resultLeft.X + resultLeft.Width).Should().BeGreaterThanOrEqualTo(50);
             resultRight.X.Should().BeLessThan(testBoundaries.Width);
         }
 

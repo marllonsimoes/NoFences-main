@@ -236,6 +236,22 @@ namespace NoFences.Services.Managers
             serviceStatusItem.Click += (s, e) => OpenServiceStatusWindow();
             contextMenu.Items.Add(serviceStatusItem);
 
+            // Refresh Software Database
+            var refreshDatabaseItem = new ToolStripMenuItem
+            {
+                Text = "Refresh Software Database..."
+            };
+            refreshDatabaseItem.Click += async (s, e) => await RefreshSoftwareDatabase();
+            contextMenu.Items.Add(refreshDatabaseItem);
+
+            // Enrich Software Metadata (Session 11: Metadata enrichment integration)
+            var enrichMetadataItem = new ToolStripMenuItem
+            {
+                Text = "Enrich Software Metadata..."
+            };
+            enrichMetadataItem.Click += async (s, e) => await EnrichSoftwareMetadata();
+            contextMenu.Items.Add(enrichMetadataItem);
+
             // Log viewer with submenu for log level
             var logViewerItem = new ToolStripMenuItem
             {
@@ -564,6 +580,195 @@ namespace NoFences.Services.Managers
                 log.Error($"Failed to open preferences window: {ex.Message}", ex);
                 MessageBox.Show(
                     $"Failed to open settings window: {ex.Message}",
+                    "NoFences - Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
+        }
+
+        /// <summary>
+        /// Refreshes the software database by scanning the system for installed software.
+        /// Session 11: Priority 1 - Database Population Mechanism
+        /// </summary>
+        private async System.Threading.Tasks.Task RefreshSoftwareDatabase()
+        {
+            try
+            {
+                log.Info("Manual software database refresh triggered from tray menu");
+
+                // Show starting message via balloon notification
+                notifyIcon.ShowBalloonTip(
+                    3000,
+                    "NoFences",
+                    "Refreshing software database...",
+                    ToolTipIcon.Info);
+
+                // Run refresh on background thread to avoid blocking UI
+                int entriesWritten = await System.Threading.Tasks.Task.Run(() =>
+                {
+                    try
+                    {
+                        var service = new NoFencesDataLayer.Services.InstalledSoftwareService();
+                        return service.RefreshInstalledSoftware();
+                    }
+                    catch (Exception ex)
+                    {
+                        log.Error($"Error during database refresh: {ex.Message}", ex);
+                        throw;
+                    }
+                });
+
+                if (entriesWritten > 0)
+                {
+                    log.Info($"Software database refresh complete: {entriesWritten} entries");
+
+                    // Show success message via balloon notification
+                    notifyIcon.ShowBalloonTip(
+                        5000,
+                        "NoFences - Database Refresh Complete",
+                        $"Successfully scanned and stored {entriesWritten} software entries.\n\nFilesFences will now use the database for faster queries.",
+                        ToolTipIcon.Info);
+
+                    // Also show a message box for immediate feedback
+                    MessageBox.Show(
+                        $"Software database refreshed successfully!\n\n" +
+                        $"Entries: {entriesWritten}\n" +
+                        $"Status: Database is now populated and ready for use.\n\n" +
+                        $"FilesFences will now query the database for significantly faster performance.",
+                        "NoFences - Database Refresh Complete",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Information);
+                }
+                else
+                {
+                    log.Warn("Software database refresh completed but no entries were written");
+
+                    MessageBox.Show(
+                        "Database refresh completed, but no software was detected.\n\n" +
+                        "This may indicate an issue with the detection system. " +
+                        "Check the logs for more details.",
+                        "NoFences - Database Refresh",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Warning);
+                }
+            }
+            catch (Exception ex)
+            {
+                log.Error($"Failed to refresh software database: {ex.Message}", ex);
+
+                MessageBox.Show(
+                    $"Failed to refresh software database:\n\n{ex.Message}\n\n" +
+                    $"FilesFences will continue using in-memory detection. " +
+                    $"Check the logs for more details.",
+                    "NoFences - Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
+        }
+
+        /// <summary>
+        /// Enriches software metadata from external sources (RAWG, Winget, Wikipedia, CNET).
+        /// Session 11: Metadata enrichment integration.
+        /// </summary>
+        private async System.Threading.Tasks.Task EnrichSoftwareMetadata()
+        {
+            try
+            {
+                log.Info("Manual metadata enrichment triggered from tray menu");
+
+                // Show starting message via balloon notification
+                notifyIcon.ShowBalloonTip(
+                    3000,
+                    "NoFences",
+                    "Enriching software metadata from external sources...",
+                    ToolTipIcon.Info);
+
+                // Run enrichment on background thread to avoid blocking UI
+                var result = await System.Threading.Tasks.Task.Run(async () =>
+                {
+                    try
+                    {
+                        var enrichmentService = new NoFencesDataLayer.Services.Metadata.MetadataEnrichmentService();
+                        var softwareService = new NoFencesDataLayer.Services.InstalledSoftwareService();
+
+                        // Get all software from database
+                        var allSoftware = softwareService.QueryInstalledSoftware(category: null, source: null);
+
+                        if (allSoftware.Count == 0)
+                        {
+                            log.Warn("No software found in database for enrichment");
+                            return new { Success = false, Message = "Database is empty", EnrichedCount = 0, TotalCount = 0 };
+                        }
+
+                        log.Info($"Starting metadata enrichment for {allSoftware.Count} software entries");
+
+                        // Enrich metadata in batch (with database updates)
+                        int enrichedCount = await enrichmentService.EnrichBatchAsync(allSoftware, updateDatabase: true);
+
+                        log.Info($"Metadata enrichment complete: {enrichedCount}/{allSoftware.Count} entries enriched");
+
+                        return new { Success = true, Message = "Success", EnrichedCount = enrichedCount, TotalCount = allSoftware.Count };
+                    }
+                    catch (Exception ex)
+                    {
+                        log.Error($"Error during metadata enrichment: {ex.Message}", ex);
+                        throw;
+                    }
+                });
+
+                if (result.Success)
+                {
+                    // Show success message via balloon notification
+                    notifyIcon.ShowBalloonTip(
+                        5000,
+                        "NoFences - Metadata Enrichment Complete",
+                        $"Enriched {result.EnrichedCount} of {result.TotalCount} software entries with metadata from external sources.",
+                        ToolTipIcon.Info);
+
+                    // Also show a message box for immediate feedback
+                    var providerStats = new NoFencesDataLayer.Services.Metadata.MetadataEnrichmentService().GetProviderStatistics();
+
+                    MessageBox.Show(
+                        $"Metadata enrichment completed successfully!\n\n" +
+                        $"Enriched: {result.EnrichedCount} / {result.TotalCount} entries\n" +
+                        $"Success Rate: {(result.EnrichedCount * 100.0 / result.TotalCount):F1}%\n\n" +
+                        $"Providers Available:\n" +
+                        $"  • Game Providers: {providerStats.GameProvidersAvailable}/{providerStats.GameProvidersTotal}\n" +
+                        $"  • Software Providers: {providerStats.SoftwareProvidersAvailable}/{providerStats.SoftwareProvidersTotal}\n\n" +
+                        $"Enhanced data now includes:\n" +
+                        $"  • Publisher information\n" +
+                        $"  • Descriptions\n" +
+                        $"  • Genres and categories\n" +
+                        $"  • Release dates\n" +
+                        $"  • Ratings and reviews",
+                        "NoFences - Metadata Enrichment Complete",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Information);
+                }
+                else
+                {
+                    log.Warn($"Metadata enrichment completed but database was empty: {result.Message}");
+
+                    MessageBox.Show(
+                        "Cannot enrich metadata: Software database is empty.\n\n" +
+                        "Please use 'Refresh Software Database' first to populate the database, " +
+                        "then try metadata enrichment again.",
+                        "NoFences - Metadata Enrichment",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Warning);
+                }
+            }
+            catch (Exception ex)
+            {
+                log.Error($"Failed to enrich software metadata: {ex.Message}", ex);
+
+                MessageBox.Show(
+                    $"Failed to enrich software metadata:\n\n{ex.Message}\n\n" +
+                    $"Possible causes:\n" +
+                    $"  • Internet connection required for external APIs\n" +
+                    $"  • API keys may need configuration (RAWG)\n" +
+                    $"  • Rate limits may be in effect\n\n" +
+                    $"Check the logs for more details.",
                     "NoFences - Error",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error);

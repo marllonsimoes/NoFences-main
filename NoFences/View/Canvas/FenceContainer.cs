@@ -1977,8 +1977,6 @@ namespace NoFences.View.Canvas
                         fenceInfo.Filter = null;
                         fenceInfo.Items = null;
 
-                        RecreateWpfContent();
-
                         // Add images
                         HandlePicturesFenceDrop(analysis);
                         break;
@@ -1993,8 +1991,6 @@ namespace NoFences.View.Canvas
                         fenceInfo.Filter = null;
                         fenceInfo.Items = null;
 
-                        RecreateWpfContent();
-
                         // Add videos
                         HandleVideoFenceDrop(analysis);
                         break;
@@ -2008,8 +2004,6 @@ namespace NoFences.View.Canvas
                         fenceInfo.Path = null;
                         fenceInfo.Filter = null;
                         fenceInfo.Items = null;
-
-                        RecreateWpfContent();
 
                         // Add all files
                         HandleFilesFenceDrop(analysis);
@@ -2055,6 +2049,7 @@ namespace NoFences.View.Canvas
                         ProcessDroppedFiles(droppedPaths);
                         break;
                 }
+                RecreateWpfContent();
             }
             catch (Exception ex)
             {
