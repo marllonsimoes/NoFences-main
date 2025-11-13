@@ -98,8 +98,6 @@ namespace NoFences.Tests.Core
         [Fact]
         public void RawgApiKey_SavesAndLoadsCorrectly()
         {
-            // NEW - Session 11: Test API key persistence
-
             // Arrange
             var prefs = new UserPreferences
             {
@@ -135,8 +133,6 @@ namespace NoFences.Tests.Core
         [InlineData("   ", null)] // Whitespace only becomes null
         public void RawgApiKey_HandlesWhitespace(string input, string expected)
         {
-            // Session 11: PreferencesWindow trims whitespace and converts empty to null
-
             // Arrange & Act
             string processed = string.IsNullOrWhiteSpace(input) ? null : input.Trim();
 

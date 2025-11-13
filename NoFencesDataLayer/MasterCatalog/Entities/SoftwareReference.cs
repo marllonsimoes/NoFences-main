@@ -7,7 +7,6 @@ namespace NoFencesDataLayer.MasterCatalog.Entities
     /// <summary>
     /// Reference table for software/games with enriched metadata.
     /// Part of master_catalog.db - shareable reference data.
-    /// Session 12: Database architecture refactor for proper separation.
     /// </summary>
     [Table("software_ref")]
     public class SoftwareReference
@@ -118,7 +117,7 @@ namespace NoFencesDataLayer.MasterCatalog.Entities
 
         /// <summary>
         /// Last time we ATTEMPTED to enrich metadata (regardless of success/failure).
-        /// Session 12: Rate limiting - only attempt enrichment once per day.
+        /// Rate limiting - only attempt enrichment once per day.
         /// Used to prevent overwhelming external APIs.
         /// Null if never attempted.
         /// </summary>

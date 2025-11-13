@@ -13,7 +13,6 @@ namespace NoFencesDataLayer.Services.Metadata
     /// CNET scraper for software metadata.
     /// NOTE: CNET doesn't have a public API, so this scrapes their website.
     /// Use respectfully with rate limiting and caching.
-    /// Session 11: Software metadata collection.
     /// </summary>
     public class CnetScraperClient : ISoftwareMetadataProvider
     {

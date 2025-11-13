@@ -12,7 +12,6 @@ namespace NoFencesDataLayer.Services.Metadata
     /// Winget (Windows Package Manager) API client for software metadata.
     /// Uses the winget REST API to search for software information.
     /// API: https://github.com/microsoft/winget-cli-restsource
-    /// Session 11: Software metadata collection.
     /// </summary>
     public class WingetApiClient : ISoftwareMetadataProvider
     {

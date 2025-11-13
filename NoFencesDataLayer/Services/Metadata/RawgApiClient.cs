@@ -13,7 +13,6 @@ namespace NoFencesDataLayer.Services.Metadata
     /// <summary>
     /// RAWG API client for game metadata enrichment.
     /// API Documentation: https://api.rawg.io/docs/
-    /// Session 11: Game metadata collection.
     /// </summary>
     public class RawgApiClient : IGameMetadataProvider
     {
@@ -201,7 +200,7 @@ namespace NoFencesDataLayer.Services.Metadata
                 metadata.AdditionalData["metacritic"] = game["metacritic"]?.ToString() ?? "";
                 metadata.AdditionalData["playtime"] = game["playtime"]?.ToString() ?? "";
 
-                // Session 12: Fix JSON parsing error - check if esrb_rating is an object before accessing child
+                // Check if esrb_rating is an object before accessing child
                 var esrbRating = game["esrb_rating"];
                 if (esrbRating != null && esrbRating.Type == JTokenType.Object)
                 {
@@ -222,7 +221,7 @@ namespace NoFencesDataLayer.Services.Metadata
 
         /// <summary>
         /// Parses game data from RAWG API response.
-        /// Session 12: Now calculates confidence based on name matching quality instead of ratings count.
+        /// Calculates confidence based on name matching quality instead of ratings count.
         /// </summary>
         /// <param name="game">RAWG API game object</param>
         /// <param name="expectedName">Expected game name to match against (null = skip name matching)</param>
@@ -248,7 +247,7 @@ namespace NoFencesDataLayer.Services.Metadata
             // Short description
             metadata.Description = game["short_description"]?.ToString() ?? "";
 
-            // Session 12: Calculate confidence based on name matching quality
+            // Calculate confidence based on name matching quality
             // If expectedName is provided, compare it with the returned game name
             if (!string.IsNullOrEmpty(expectedName) && !string.IsNullOrEmpty(metadata.Name))
             {
@@ -352,7 +351,7 @@ namespace NoFencesDataLayer.Services.Metadata
         /// <summary>
         /// Calculates similarity between two game names using Levenshtein distance.
         /// Returns a score between 0.0 (completely different) and 1.0 (exact match).
-        /// Session 12: Used for confidence scoring based on name matching quality.
+        /// Used for confidence scoring based on name matching quality.
         /// </summary>
         /// <param name="name1">First name (expected)</param>
         /// <param name="name2">Second name (found)</param>

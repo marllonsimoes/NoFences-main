@@ -1,8 +1,8 @@
+using log4net;
 using NoFences.Core.Model;
 using NoFences.Core.Util;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Xml.Serialization;
@@ -20,6 +20,8 @@ namespace NoFencesDataLayer.Repositories
     /// </summary>
     public class XmlFenceRepository : IFenceRepository
     {
+        private static readonly ILog log = LogManager.GetLogger(typeof(XmlFenceRepository));
+
         private const string MetaFileName = "__fence_metadata.xml";
         private const string FencesSubfolder = "Fences";
 
@@ -38,7 +40,7 @@ namespace NoFencesDataLayer.Repositories
 
             serializer = new XmlSerializer(typeof(FenceInfo));
 
-            Debug.WriteLine($"XmlFenceRepository: Initialized with base path: {basePath}");
+            log.Debug($"Initialized with base path: {basePath}");
         }
 
         /// <summary>
@@ -59,7 +61,7 @@ namespace NoFencesDataLayer.Repositories
                 Directory.CreateDirectory(basePath);
             }
 
-            Debug.WriteLine($"XmlFenceRepository: Initialized with custom path: {basePath}");
+            log.Debug($"Initialized with custom path: {basePath}");
         }
 
         public IEnumerable<FenceInfo> GetAll()
@@ -70,7 +72,7 @@ namespace NoFencesDataLayer.Repositories
             {
                 if (!Directory.Exists(basePath))
                 {
-                    Debug.WriteLine("XmlFenceRepository: No fences directory found");
+                    log.Debug("No fences directory found");
                     return fences;
                 }
 
@@ -81,7 +83,7 @@ namespace NoFencesDataLayer.Repositories
                         var metaFile = Path.Combine(dir, MetaFileName);
                         if (!File.Exists(metaFile))
                         {
-                            Debug.WriteLine($"XmlFenceRepository: Skipping {dir} - no metadata file");
+                            log.Debug($"Skipping {dir} - no metadata file");
                             continue;
                         }
 
@@ -93,15 +95,15 @@ namespace NoFencesDataLayer.Repositories
                     }
                     catch (Exception ex)
                     {
-                        Debug.WriteLine($"XmlFenceRepository: Error loading fence from {dir}: {ex.Message}");
+                        log.Error($"Error loading fence from {dir}: {ex.Message}", ex);
                     }
                 }
 
-                Debug.WriteLine($"XmlFenceRepository: Loaded {fences.Count} fences");
+                log.Debug($"Loaded {fences.Count} fences");
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"XmlFenceRepository: Error in GetAll: {ex.Message}");
+                log.Error($"Error in GetAll: {ex.Message}", ex);
             }
 
             return fences;
@@ -116,7 +118,7 @@ namespace NoFencesDataLayer.Repositories
 
                 if (!File.Exists(metaFile))
                 {
-                    Debug.WriteLine($"XmlFenceRepository: Fence {id} not found");
+                    log.Debug($"Fence {id} not found");
                     return null;
                 }
 
@@ -124,7 +126,7 @@ namespace NoFencesDataLayer.Repositories
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"XmlFenceRepository: Error loading fence {id}: {ex.Message}");
+                log.Error($"Error loading fence {id}: {ex.Message}", ex);
                 return null;
             }
         }
@@ -133,7 +135,7 @@ namespace NoFencesDataLayer.Repositories
         {
             if (fence == null)
             {
-                Debug.WriteLine("XmlFenceRepository: Cannot save null fence");
+                log.Warn("Cannot save null fence");
                 return false;
             }
 
@@ -149,12 +151,12 @@ namespace NoFencesDataLayer.Repositories
                     serializer.Serialize(writer, fence);
                 }
 
-                Debug.WriteLine($"XmlFenceRepository: Saved fence {fence.Id} ({fence.Name})");
+                log.Debug($"Saved fence {fence.Id} ({fence.Name})");
                 return true;
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"XmlFenceRepository: Error saving fence {fence.Id}: {ex.Message}");
+                log.Error($"Error saving fence {fence.Id}: {ex.Message}", ex);
                 return false;
             }
         }
@@ -167,17 +169,17 @@ namespace NoFencesDataLayer.Repositories
 
                 if (!Directory.Exists(fencePath))
                 {
-                    Debug.WriteLine($"XmlFenceRepository: Fence {id} not found for deletion");
+                    log.Debug($"Fence {id} not found for deletion");
                     return false;
                 }
 
                 Directory.Delete(fencePath, recursive: true);
-                Debug.WriteLine($"XmlFenceRepository: Deleted fence {id}");
+                log.Debug($"Deleted fence {id}");
                 return true;
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"XmlFenceRepository: Error deleting fence {id}: {ex.Message}");
+                log.Error($"Error deleting fence {id}: {ex.Message}", ex);
                 return false;
             }
         }
@@ -225,7 +227,7 @@ namespace NoFencesDataLayer.Repositories
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"XmlFenceRepository: Error deserializing {filePath}: {ex.Message}");
+                log.Error($"Error deserializing {filePath}: {ex.Message}", ex);
                 return null;
             }
         }

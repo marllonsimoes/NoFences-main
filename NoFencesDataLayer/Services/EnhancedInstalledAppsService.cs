@@ -9,18 +9,18 @@ using System.IO;
 namespace NoFencesDataLayer.Services
 {
     /// <summary>
-    /// Enhanced version of InstalledAppsUtil that uses the master catalog database
-    /// for more accurate categorization.
+    /// Enhanced version of InstalledAppsUtil that uses the two-tier database architecture
+    /// (ref.db + master_catalog.db) for efficient queries with enriched metadata.
     ///
-    /// This wraps the original InstalledAppsUtil from NoFencesCore and enhances
-    /// the categorization by looking up software in the master catalog database first,
-    /// before falling back to heuristic categorization.
+    /// Queries the database first for better performance, falling back to system scan
+    /// if database is empty or unavailable.
     /// </summary>
     public class EnhancedInstalledAppsService
     {
         private static readonly ILog log = LogManager.GetLogger(typeof(EnhancedInstalledAppsService));
 
         private readonly SoftwareCatalogService catalogService;
+        private readonly InstalledSoftwareService installedSoftwareService;
         private readonly bool catalogAvailable;
 
         /// <summary>
@@ -42,20 +42,21 @@ namespace NoFencesDataLayer.Services
             try
             {
                 catalogService = new SoftwareCatalogService();
+                installedSoftwareService = new InstalledSoftwareService();
                 catalogAvailable = catalogService.IsCatalogAvailable();
 
                 if (catalogAvailable)
                 {
-                    log.Debug("Catalog available for enhanced categorization");
+                    log.Debug("Two-tier database architecture available for queries");
                 }
                 else
                 {
-                    log.Debug("Catalog not available, using heuristic categorization only");
+                    log.Debug("Database not available, will fall back to system scan");
                 }
             }
             catch (Exception ex)
             {
-                log.Error($"Error initializing catalog service: {ex.Message}", ex);
+                log.Error($"Error initializing services: {ex.Message}", ex);
                 catalogAvailable = false;
             }
         }
@@ -105,61 +106,96 @@ namespace NoFencesDataLayer.Services
         }
 
         /// <summary>
-        /// Gets installed software filtered by category with enhanced categorization.
+        /// Gets installed software filtered by category.
+        /// Uses two-tier database architecture for fast queries with enriched metadata.
+        /// Falls back to system scan if database is empty or unavailable.
         /// </summary>
         public List<InstalledSoftware> GetByCategory(SoftwareCategory category)
         {
+            // Try database query first (much faster)
+            if (installedSoftwareService != null)
+            {
+                try
+                {
+                    string categoryFilter = category == SoftwareCategory.All ? null : category.ToString();
+                    var dbResults = installedSoftwareService.QueryInstalledSoftware(categoryFilter, source: null);
+
+                    if (dbResults != null && dbResults.Count > 0)
+                    {
+                        log.Debug($"Retrieved {dbResults.Count} items from database for category '{category}'");
+                        return dbResults;
+                    }
+
+                    log.Debug("Database query returned empty results, falling back to system scan");
+                }
+                catch (Exception ex)
+                {
+                    log.Error($"Error querying database, falling back to system scan: {ex.Message}", ex);
+                }
+            }
+
+            // Fallback: Scan system directly (slower but always works)
+            log.Debug("Using system scan fallback");
             return InstalledAppsUtil.GetByCategory(category);
         }
 
         /// <summary>
-        /// Static helper method to get all installed software with enhanced categorization.
-        /// Uses default catalog path.
+        /// Static helper method to get all installed software.
+        /// Queries database first, falls back to system scan if needed.
         /// </summary>
         public static List<InstalledSoftware> GetAllInstalledEnhanced()
         {
             try
             {
-                var catalogPath = SoftwareCatalogService.GetDefaultCatalogPath();
-                if (!File.Exists(catalogPath))
+                // Try database query first
+                var installedSoftwareService = new InstalledSoftwareService();
+                var dbResults = installedSoftwareService.QueryInstalledSoftware(category: null, source: null);
+
+                if (dbResults != null && dbResults.Count > 0)
                 {
-                    log.Info($"Catalog not found at {catalogPath}, using heuristic only");
-                    return InstalledAppsUtil.GetAllInstalled();
+                    log.Info($"Retrieved {dbResults.Count} items from database");
+                    return dbResults;
                 }
 
-                var service = new EnhancedInstalledAppsService(catalogPath);
-                return service.GetAllInstalled();
+                log.Info("Database empty, scanning system");
             }
             catch (Exception ex)
             {
-                log.Error($"Error in static method, falling back to original: {ex.Message}", ex);
-                return InstalledAppsUtil.GetAllInstalled();
+                log.Error($"Error querying database, falling back to system scan: {ex.Message}", ex);
             }
+
+            // Fallback to system scan
+            return InstalledAppsUtil.GetAllInstalled();
         }
 
         /// <summary>
-        /// Static helper method to get installed software by category with enhanced categorization.
-        /// Uses default catalog path.
+        /// Static helper method to get installed software by category.
+        /// Queries database first, falls back to system scan if needed.
         /// </summary>
         public static List<InstalledSoftware> GetByCategoryEnhanced(SoftwareCategory category)
         {
             try
             {
-                var catalogPath = SoftwareCatalogService.GetDefaultCatalogPath();
-                if (!File.Exists(catalogPath))
+                // Try database query first
+                var installedSoftwareService = new InstalledSoftwareService();
+                string categoryFilter = category == SoftwareCategory.All ? null : category.ToString();
+                var dbResults = installedSoftwareService.QueryInstalledSoftware(categoryFilter, source: null);
+
+                if (dbResults != null && dbResults.Count > 0)
                 {
-                    log.Info($"Catalog not found at {catalogPath}, using heuristic only");
-                    return InstalledAppsUtil.GetByCategory(category);
+                    log.Info($"Retrieved {dbResults.Count} items from database for category '{category}'");
+                    return dbResults;
                 }
 
-                var service = new EnhancedInstalledAppsService(catalogPath);
-                return service.GetByCategory(category);
+                log.Info($"Database empty for category '{category}', scanning system");
             }
             catch (Exception ex)
             {
-                log.Error($"Error in static method, falling back to original: {ex.Message}", ex);
-                return InstalledAppsUtil.GetByCategory(category);
+                log.Error($"Error querying database, falling back to system scan: {ex.Message}", ex);
             }
+
+            // Fallback to system scan
+            return InstalledAppsUtil.GetByCategory(category);
         }
     }
 }

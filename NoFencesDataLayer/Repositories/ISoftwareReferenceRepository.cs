@@ -6,13 +6,12 @@ namespace NoFencesDataLayer.Repositories
     /// <summary>
     /// Repository for SoftwareReference table in master_catalog.db.
     /// Manages shareable software/game reference data with enriched metadata.
-    /// Session 12: Database architecture refactor.
     /// </summary>
     public interface ISoftwareReferenceRepository
     {
         /// <summary>
         /// Gets a software reference by its database ID.
-        /// Session 12: Used for JOIN operations when converting to Core model.
+        /// Used for JOIN operations when converting to Core model.
         /// </summary>
         /// <param name="id">Software reference ID</param>
         /// <returns>Software reference or null if not found</returns>

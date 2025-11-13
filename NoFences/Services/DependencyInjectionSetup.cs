@@ -30,23 +30,23 @@ namespace NoFences.Services
         {
             var services = new ServiceCollection();
 
-            // Session 12: Register ALL repositories
+            // Register ALL repositories
             services.AddSingleton<IInstalledSoftwareRepository, InstalledSoftwareRepository>();
-            services.AddSingleton<ISoftwareReferenceRepository, SoftwareReferenceRepository>(); // Session 12: DB refactor
+            services.AddSingleton<ISoftwareReferenceRepository, SoftwareReferenceRepository>();
             services.AddSingleton<IAmazonGamesRepository, AmazonGamesRepository>();
             services.AddSingleton<IFenceRepository, XmlFenceRepository>();
 
-            // Session 12: Register database contexts for DI
+            // Register database contexts for DI
             services.AddSingleton<NoFencesDataLayer.MasterCatalog.MasterCatalogContext>();
             services.AddSingleton<NoFencesService.Repository.LocalDBContext>();
 
-            // Session 12: Register ALL services
+            // Register ALL services
             services.AddSingleton<InstalledSoftwareService>();
             services.AddSingleton<SoftwareCatalogService>();
             services.AddSingleton<EnhancedInstalledAppsService>();
             services.AddSingleton<CatalogDownloadService>();
 
-            // Session 12: Register metadata providers (stateless, use Singleton for efficiency)
+            // Register metadata providers (stateless, use Singleton for efficiency)
             // Game metadata providers
             services.AddSingleton<IGameMetadataProvider, RawgApiClient>();
 
@@ -58,7 +58,7 @@ namespace NoFences.Services
             // Metadata enrichment service (receives IEnumerable<providers> from DI)
             services.AddSingleton<MetadataEnrichmentService>();
 
-            // Session 12: Register game store detectors
+            // Register game store detectors
             services.AddSingleton<IGameStoreDetector, AmazonGamesDetector>();
             services.AddSingleton<IGameStoreDetector, SteamStoreDetector>();
             services.AddSingleton<IGameStoreDetector, GOGGalaxyDetector>();

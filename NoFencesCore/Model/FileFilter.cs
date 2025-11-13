@@ -45,7 +45,6 @@ namespace NoFences.Core.Model
 
         /// <summary>
         /// Software source to filter by (when FilterType = Software)
-        /// Session 11: Priority 2 - Source filter support
         /// Examples: "Steam", "GOG", "Epic Games", "Local", "Registry", null (all sources)
         /// </summary>
         public string Source { get; set; }
@@ -157,7 +156,7 @@ namespace NoFences.Core.Model
                     return $"Extensions: {string.Join(", ", Extensions)}";
 
                 case FileFilterType.Software:
-                    // Session 11: Include source in description if specified
+                    // Include source in description if specified
                     string categoryDisplay = SoftwareCategorizer.GetCategoryDisplayName(SoftwareCategory);
                     if (!string.IsNullOrEmpty(Source))
                         return $"Software: {categoryDisplay} ({Source})";

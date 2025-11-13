@@ -189,7 +189,6 @@ namespace NoFences
         /// <summary>
         /// Automatically initializes the installed software database if it's empty.
         /// Runs on background thread to avoid blocking UI startup.
-        /// Session 11: Automatic database population implementation.
         /// </summary>
         private static void InitializeInstalledSoftwareDatabase()
         {

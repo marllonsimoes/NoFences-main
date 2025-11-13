@@ -4,7 +4,6 @@ namespace NoFencesDataLayer.Services.Metadata
 {
     /// <summary>
     /// Interface for game metadata providers (RAWG, IGDB, etc.).
-    /// Session 11: Game metadata enrichment.
     /// </summary>
     public interface IGameMetadataProvider : IMetadataProvider
     {

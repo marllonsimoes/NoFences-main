@@ -21,7 +21,7 @@ namespace NoFences.Util
 
         /// <summary>
         /// Result of filtering operation containing InstalledSoftware objects.
-        /// Enhanced in Session 11 to preserve all metadata instead of just file paths.
+        /// Preserves all metadata instead of just file paths.
         /// </summary>
         public class FilterResult
         {
@@ -79,7 +79,7 @@ namespace NoFences.Util
 
         /// <summary>
         /// Applies software category filter (e.g., Games, Browsers)
-        /// Session 11: Updated to query database via InstalledSoftwareService (hybrid architecture Q2 answer C).
+        /// Updated to query database via InstalledSoftwareService (hybrid architecture).
         /// Supports source-based categorization with subfilters (Q3 answer priority 1, Q4 answer: same type with subfilter).
         /// Enhanced to return full InstalledSoftware objects instead of just paths.
         /// Falls back to in-memory service if database is empty or unavailable.
@@ -100,7 +100,7 @@ namespace NoFences.Util
                     ? null
                     : filter.SoftwareCategory.ToString();
 
-                // Session 11: Priority 2 - Source filter support
+                // Source filter support
                 // Use filter.Source for advanced filtering (Steam, GOG, etc.)
                 // null = all sources, specific string = filter by that source
                 string sourceFilter = filter.Source; // null or "Steam", "GOG", "Epic Games", etc.
@@ -136,7 +136,7 @@ namespace NoFences.Util
                 log.Warn("FileFenceFilter: Using in-memory service (EnhancedInstalledAppsService)");
                 installedSoftware = EnhancedInstalledAppsService.GetByCategoryEnhanced(filter.SoftwareCategory);
 
-                // Session 11: Priority 2 - Apply source filter to in-memory results if specified
+                // Apply source filter to in-memory results if specified
                 if (!string.IsNullOrEmpty(filter.Source))
                 {
                     int originalCount = installedSoftware.Count;

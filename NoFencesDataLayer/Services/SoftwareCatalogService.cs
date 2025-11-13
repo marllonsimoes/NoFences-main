@@ -26,7 +26,7 @@ namespace NoFencesDataLayer.Services
 
         /// <summary>
         /// Constructor with master catalog path.
-        /// Session 11: Enhanced with graceful fallback when master_catalog.db doesn't exist.
+        /// Enhanced with graceful fallback when master_catalog.db doesn't exist.
         /// </summary>
         /// <param name="masterCatalogPath">Path to master catalog database</param>
         /// <param name="localContext">Local context for installed games tracking (optional)</param>
@@ -34,7 +34,7 @@ namespace NoFencesDataLayer.Services
         {
             try
             {
-                // Session 11: Check if master catalog file exists before creating context
+                // Check if master catalog file exists before creating context
                 string catalogPath = GetDefaultCatalogPath();
                 if (File.Exists(catalogPath))
                 {
@@ -58,7 +58,7 @@ namespace NoFencesDataLayer.Services
 
         /// <summary>
         /// Checks if the software catalog has been imported and is available.
-        /// Session 11: Enhanced with null check for when catalog file doesn't exist.
+        /// Enhanced with null check for when catalog file doesn't exist.
         /// </summary>
         public bool IsCatalogAvailable()
         {
@@ -67,7 +67,7 @@ namespace NoFencesDataLayer.Services
 
             try
             {
-                // Session 11: Check if catalog context is null (file doesn't exist)
+                // Check if catalog context is null (file doesn't exist)
                 if (catalogContext == null)
                 {
                     log.Debug("Catalog context is null - master_catalog.db not found");
@@ -165,7 +165,7 @@ namespace NoFencesDataLayer.Services
         /// <summary>
         /// Looks up a game by Steam AppID.
         /// Searches through platform-agnostic game entries.
-        /// Session 11: Enhanced with null check for catalog availability.
+        /// Enhanced with null check for catalog availability.
         /// </summary>
         public MasterGameEntry LookupGameBySteamAppId(int appId)
         {
@@ -196,7 +196,7 @@ namespace NoFencesDataLayer.Services
 
         /// <summary>
         /// Looks up a game by name.
-        /// Session 11: Enhanced with null check for catalog availability.
+        /// Enhanced with null check for catalog availability.
         /// </summary>
         public MasterGameEntry LookupGameByName(string gameName)
         {
@@ -279,7 +279,7 @@ namespace NoFencesDataLayer.Services
 
         /// <summary>
         /// Gets statistics about the catalog.
-        /// Session 11: Enhanced with null check for catalog availability.
+        /// Enhanced with null check for catalog availability.
         /// </summary>
         public CatalogStatistics GetStatistics()
         {
@@ -287,7 +287,7 @@ namespace NoFencesDataLayer.Services
 
             try
             {
-                // Session 11: Return empty stats if catalog not available
+                // Return empty stats if catalog not available
                 if (!IsCatalogAvailable())
                 {
                     log.Debug("Catalog not available - returning empty statistics");
@@ -321,7 +321,7 @@ namespace NoFencesDataLayer.Services
         /// <summary>
         /// Gets list of available software categories from the catalog database.
         /// Only returns categories that have at least one entry.
-        /// Session 11: Enhanced with fallback to return all categories if catalog unavailable.
+        /// Enhanced with fallback to return all categories if catalog unavailable.
         /// </summary>
         /// <returns>List of SoftwareCategory values that have entries in the catalog</returns>
         public System.Collections.Generic.List<SoftwareCategory> GetAvailableCategories()
@@ -330,7 +330,7 @@ namespace NoFencesDataLayer.Services
 
             try
             {
-                // Session 11: Fallback to all categories if catalog not available
+                // Fallback to all categories if catalog not available
                 if (!IsCatalogAvailable())
                 {
                     log.Debug("Catalog not available - returning all categories");

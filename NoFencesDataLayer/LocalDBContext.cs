@@ -15,7 +15,6 @@ namespace NoFencesService.Repository
     /// Local database context for user-specific application data.
     /// Contains machine-specific installation data only.
     ///
-    /// Session 12: Now includes InstalledSoftware table (moved from master_catalog.db).
     /// Note: Software/game enriched metadata is in master_catalog.db (SoftwareReference table).
     /// </summary>
     [DbConfigurationType(typeof(LocalDBConfiguration))]
@@ -23,12 +22,11 @@ namespace NoFencesService.Repository
     {
         /// <summary>
         /// Local installation data with foreign key to SoftwareReference in master_catalog.db.
-        /// Session 12: Database architecture refactor - moved from master_catalog.db to ref.db.
         /// </summary>
         public DbSet<InstalledSoftwareEntry> InstalledSoftware { get; set; }
 
         /// <summary>
-        /// User's installed Steam games (legacy table from before Session 11).
+        /// User's installed Steam games (legacy table).
         /// Kept for backward compatibility. May be deprecated in future.
         /// </summary>
         public DbSet<InstalledSteamGame> InstalledSteamGames { get; set; }
@@ -53,7 +51,7 @@ namespace NoFencesService.Repository
             // Remove pluralizing convention
             modelBuilder.Conventions.Remove<PluralizingTableNameConvention>();
 
-            // Session 12: InstalledSoftware indexes
+            // InstalledSoftware indexes
             // Index on SoftwareRefId for fast JOIN with master_catalog.software_ref
             modelBuilder.Entity<InstalledSoftwareEntry>()
                 .HasIndex(e => e.SoftwareRefId)

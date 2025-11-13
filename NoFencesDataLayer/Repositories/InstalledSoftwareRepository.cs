@@ -10,7 +10,7 @@ namespace NoFencesDataLayer.Repositories
 {
     /// <summary>
     /// Repository implementation for tracking installed software on the user's machine.
-    /// Session 12: Now uses LocalDBContext with ref.db (was MasterCatalogContext).
+    /// Uses LocalDBContext with ref.db.
     /// Stores machine-specific installation data with foreign key to SoftwareReference.
     /// Part of hybrid architecture: Detectors populate DB, fences query DB.
     /// </summary>
@@ -22,7 +22,7 @@ namespace NoFencesDataLayer.Repositories
 
         /// <summary>
         /// Ensures the local database (ref.db) and InstalledSoftware table exist.
-        /// Session 12: Changed from MasterCatalogContext to LocalDBContext.
+        /// Uses LocalDBContext.
         /// Called before first database operation.
         /// </summary>
         private void EnsureDatabaseCreated()
@@ -59,7 +59,7 @@ namespace NoFencesDataLayer.Repositories
 
         /// <summary>
         /// Gets all installed software entries.
-        /// Session 12: Returns local installation data only (no Name field).
+        /// Returns local installation data only (no Name field).
         /// To get full data with Name/Publisher/etc, use InstalledSoftwareService.QueryInstalledSoftware()
         /// which performs JOIN with software_ref table.
         /// </summary>
@@ -88,47 +88,8 @@ namespace NoFencesDataLayer.Repositories
         }
 
         /// <summary>
-        /// Gets installed software by detection source.
-        /// Session 12: DEPRECATED - Source is no longer in InstalledSoftwareEntry.
-        /// Use software_ref queries via ISoftwareReferenceRepository instead.
-        /// </summary>
-        [Obsolete("Source field moved to SoftwareReference table. Query software_ref instead.")]
-        public List<InstalledSoftwareEntry> GetBySource(string source)
-        {
-            EnsureDatabaseCreated();
-            log.Warn("GetBySource is deprecated - Source field is now in SoftwareReference table");
-            return new List<InstalledSoftwareEntry>();
-        }
-
-        /// <summary>
-        /// Gets installed software by category.
-        /// Session 12: DEPRECATED - Category is no longer in InstalledSoftwareEntry.
-        /// Use software_ref queries via ISoftwareReferenceRepository instead.
-        /// </summary>
-        [Obsolete("Category field moved to SoftwareReference table. Query software_ref instead.")]
-        public List<InstalledSoftwareEntry> GetByCategory(string category)
-        {
-            EnsureDatabaseCreated();
-            log.Warn("GetByCategory is deprecated - Category field is now in SoftwareReference table");
-            return new List<InstalledSoftwareEntry>();
-        }
-
-        /// <summary>
-        /// Gets installed software by combined source and category filter.
-        /// Session 12: DEPRECATED - Source and Category are no longer in InstalledSoftwareEntry.
-        /// Use software_ref queries via ISoftwareReferenceRepository instead.
-        /// </summary>
-        [Obsolete("Source/Category fields moved to SoftwareReference table. Query software_ref instead.")]
-        public List<InstalledSoftwareEntry> GetBySourceAndCategory(string source, string category)
-        {
-            EnsureDatabaseCreated();
-            log.Warn("GetBySourceAndCategory is deprecated - Source/Category fields are now in SoftwareReference table");
-            return new List<InstalledSoftwareEntry>();
-        }
-
-        /// <summary>
         /// Inserts or updates an installed software entry.
-        /// Session 12: Updated for two-tier architecture - only updates local installation data.
+        /// Updated for two-tier architecture - only updates local installation data.
         /// Matches by SoftwareRefId + InstallLocation (unique constraint).
         /// </summary>
         public InstalledSoftwareEntry Upsert(InstalledSoftwareEntry entry)
@@ -149,7 +110,7 @@ namespace NoFencesDataLayer.Repositories
             {
                 using (var context = new LocalDBContext())
                 {
-                    // Session 12: Match by SoftwareRefId + InstallLocation (unique constraint)
+                    // Match by SoftwareRefId + InstallLocation (unique constraint)
                     InstalledSoftwareEntry existing = null;
 
                     if (!string.IsNullOrEmpty(entry.InstallLocation))
@@ -206,7 +167,7 @@ namespace NoFencesDataLayer.Repositories
 
         /// <summary>
         /// Batch upsert for multiple entries (more efficient than individual upserts).
-        /// Session 12: Updated for two-tier architecture - only updates local installation data.
+        /// Updated for two-tier architecture - only updates local installation data.
         /// </summary>
         public void UpsertBatch(List<InstalledSoftwareEntry> entries)
         {
@@ -233,7 +194,7 @@ namespace NoFencesDataLayer.Repositories
                             continue;
                         }
 
-                        // Session 12: Match by SoftwareRefId + InstallLocation (unique constraint)
+                        // Match by SoftwareRefId + InstallLocation (unique constraint)
                         InstalledSoftwareEntry existing = null;
 
                         if (!string.IsNullOrEmpty(entry.InstallLocation))
@@ -341,30 +302,6 @@ namespace NoFencesDataLayer.Repositories
                 log.Error($"Error getting count: {ex.Message}", ex);
                 return 0;
             }
-        }
-
-        /// <summary>
-        /// Gets count by category for statistics.
-        /// Session 12: DEPRECATED - Category is now in SoftwareReference table.
-        /// </summary>
-        [Obsolete("Category field moved to SoftwareReference table")]
-        public Dictionary<string, int> GetCountByCategory()
-        {
-            EnsureDatabaseCreated();
-            log.Warn("GetCountByCategory is deprecated - Category field is now in SoftwareReference table");
-            return new Dictionary<string, int>();
-        }
-
-        /// <summary>
-        /// Gets count by source for statistics.
-        /// Session 12: DEPRECATED - Source is now in SoftwareReference table.
-        /// </summary>
-        [Obsolete("Source field moved to SoftwareReference table")]
-        public Dictionary<string, int> GetCountBySource()
-        {
-            EnsureDatabaseCreated();
-            log.Warn("GetCountBySource is deprecated - Source field is now in SoftwareReference table");
-            return new Dictionary<string, int>();
         }
     }
 }

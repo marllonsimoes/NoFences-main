@@ -4,7 +4,6 @@ namespace NoFencesDataLayer.Services.Metadata
 {
     /// <summary>
     /// Interface for software metadata providers (Winget, CNET, Wikipedia, etc.).
-    /// Session 11: Software metadata enrichment.
     /// </summary>
     public interface ISoftwareMetadataProvider : IMetadataProvider
     {

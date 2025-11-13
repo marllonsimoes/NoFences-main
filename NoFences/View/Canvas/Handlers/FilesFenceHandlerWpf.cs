@@ -35,13 +35,13 @@ namespace NoFences.View.Canvas.Handlers
         private readonly ThumbnailProvider thumbnailProvider = new ThumbnailProvider();
 
         // Icon cache - stores extracted BitmapSource objects for reuse across refreshes
-        // Session 11: Changed from Dictionary<string, string> (path -> iconPath) to Dictionary<string, BitmapSource> (path -> extracted icon)
+        // Changed from Dictionary<string, string> (path -> iconPath) to Dictionary<string, BitmapSource> (path -> extracted icon)
         private Dictionary<string, BitmapSource> extractedIconCache = new Dictionary<string, BitmapSource>();
 
         // Event raised when content changes (for auto-height)
         public event EventHandler ContentChanged;
 
-        // Cached InstalledSoftware items - Session 11: Changed from List<string> to List<InstalledSoftware>
+        // Cached InstalledSoftware items - Changed from List<string> to List<InstalledSoftware>
         private List<InstalledSoftware> installedItems = new List<InstalledSoftware>();
 
         public void Initialize(FenceInfo fenceInfo)
@@ -73,7 +73,7 @@ namespace NoFences.View.Canvas.Handlers
                 VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
                 HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled,
                 Background = contentBg,
-                // Session 11: Increased top padding from 12 to 25 to make room for badges on first row
+                // Increased top padding from 12 to 25 to make room for badges on first row
                 Padding = new System.Windows.Thickness(5, 25, 5, 5) // Left, Top, Right, Bottom
             };
 
@@ -149,7 +149,7 @@ namespace NoFences.View.Canvas.Handlers
 
         /// <summary>
         /// Gets installed items (software or files) based on fence configuration.
-        /// Session 11: Changed from GetFiles() returning List<string> to GetInstalledItems() returning List<InstalledSoftware>.
+        /// Changed from GetFiles() returning List<string> to GetInstalledItems() returning List<InstalledSoftware>.
         /// </summary>
         private List<InstalledSoftware> GetInstalledItems()
         {
@@ -213,7 +213,7 @@ namespace NoFences.View.Canvas.Handlers
 
         /// <summary>
         /// Extracts icon from InstalledSoftware, with smart fallback logic.
-        /// Session 11: Replaced ExtractIcon(FenceEntry) to work with InstalledSoftware objects.
+        /// Replaced ExtractIcon(FenceEntry) to work with InstalledSoftware objects.
         /// </summary>
         private BitmapSource ExtractIconFromSoftware(InstalledSoftware software)
         {
@@ -352,7 +352,7 @@ namespace NoFences.View.Canvas.Handlers
         public string Source { get; set; }
         public SoftwareCategory Category { get; set; }
 
-        // Session 12: Enriched metadata fields
+        // Enriched metadata fields
         public string Description { get; set; }
         public string Genres { get; set; }
         public string Developers { get; set; }
@@ -406,7 +406,7 @@ namespace NoFences.View.Canvas.Handlers
                 if (InstallDate.HasValue)
                     lines.Add($"Installed: {InstallDate.Value:yyyy-MM-dd}");
 
-                // Session 12: Enriched metadata in tooltip
+                // Enriched metadata in tooltip
                 if (HasDevelopers)
                     lines.Add($"Developers: {Developers}");
 
@@ -505,9 +505,8 @@ namespace NoFences.View.Canvas.Handlers
 
         /// <summary>
         /// Factory method to create FileItemViewModel from InstalledSoftware.
-        /// Session 11: Preserves all metadata from database.
-        /// Session 12: Now includes enriched metadata fields.
-        /// Session 12 Continuation: Includes SoftwareRefId for lazy metadata refresh.
+        /// Preserves all metadata from database.
+        /// Includes enriched metadata fields and SoftwareRefId for lazy metadata refresh.
         /// </summary>
         public static FileItemViewModel FromInstalledSoftware(InstalledSoftware software, BitmapSource icon)
         {
@@ -522,7 +521,7 @@ namespace NoFences.View.Canvas.Handlers
                 Source = software.Source,
                 Category = software.Category,
 
-                // Session 12: Enriched metadata fields
+                // Enriched metadata fields
                 Description = software.Description,
                 Genres = software.Genres,
                 Developers = software.Developers,
