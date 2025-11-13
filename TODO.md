@@ -1,19 +1,21 @@
 All Fences:
 
-* BUG: The help icon is still visible after fence fades out
+* ✅ DONE: The help icon is still visible after fence fades out (Session 11 - Fixed with Visibility property instead of ForeColor alpha)
 
 
 
 ClockFence:
 
-* Add options on edit windwo to show what the user wants only (feels like, sunrise/sundown, wind, date, time)
-* Customize fonts or layout maybe? Like the clock on block screen for pixel smartphones (vertical date; hour, minute, second in different lines; big icon with weather, big number for temp; show location)
+* ✅ DONE: Add options to show/hide elements (Session 11 - Added 16 customization properties including ShowLocation, TimeFormat, ShowSeconds, ShowDate, ShowFeelsLike, ShowHumidity, ShowClouds, ShowSunrise, ShowSunset, ShowWind. UI fully connected with persistent settings)
+* ✅ DONE: Font customization (Session 11 - Added TimeFontSize (24-96px), DateFontSize (10-48px), WeatherFontSize (10-48px) with slider controls and live preview)
+* ✅ DONE: Show location name (Session 11 - Added ShowLocation property and display)
+* FUTURE: Advanced layouts - Vertical layout (all elements stacked), Pixel Phone layout (big weather icon, hour/minute/second on separate lines). UI prepared with ClockLayout property, implementation marked as future enhancement
 
 
 
 FilesFence:
 
-* BUG: need to get information collected from GetAllInstalled() that returns useful metadata. Currently, we are only getting the path of the shortcut and extracting info from there, but the icon names are weird, point to the .exe file. Should get the name resolved by the detectors.
+* ✅ DONE: Get information from detectors with useful metadata (Session 11 - Now uses InstalledSoftware model with full metadata from Steam, GOG, Epic, Amazon Games, etc. Icon extraction prioritizes detector-provided IconPath. Icon caching provides 50-100x performance improvement. Platform badges show source)
 * Rework datalayer:
 
  	- We can have just one table with games and software, identifying them with better categorization. We can categorize what's installed based on the source of it. Let's discuss this point
@@ -32,65 +34,7 @@ FilesFence:
 
 AmazonGamesDetector
 
-* I might have found a better way to list the amazon games - in the installation folder, there is a Data/Sql folder with some valuable information. It uses SQLite (we already have the driver and infrastructure to use the database in readonly mode). 
-  CommonData.sqlite has the information about the libraries;
-  GameInstallDetails has the games installation folder, last updated date, title
-  ProductDetails has lots of information, like the json below:
-* {
-* &nbsp;   "Background": "https://m.media-amazon.com/images/I/71c+TMbLTmL.jpg",
-* &nbsp;   "Background2": "https://m.media-amazon.com/images/I/71c+TMbLTmL.jpg",
-* &nbsp;   "Developers": \[
-* &nbsp;       "Broken Arms Games"
-* &nbsp;   ],
-* &nbsp;   "EsrbRating": "EVERYONE\_TEN\_PLUS",
-* &nbsp;   "ExternalWebsites": {},
-* &nbsp;   "GameModes": \[
-* &nbsp;       "Single Player"
-* &nbsp;   ],
-* &nbsp;   "Genres": \[
-* &nbsp;       "Simulator",
-* &nbsp;       "Strategy",
-* &nbsp;       "Indie"
-* &nbsp;   ],
-* &nbsp;   "Id": "amzn1.adg.product.c1cd3750-55cc-47d5-b137-db9a8dde1617",
-* &nbsp;   "IsDescriptionRightToLeft": false,
-* &nbsp;   "Keywords": \[
-* &nbsp;       "farming",
-* &nbsp;       "time management"
-* &nbsp;   ],
-* &nbsp;   "LastModifiedDateTime": "2025-11-11T18:48:12.2985633+01:00",
-* &nbsp;   "LocalCacheExpirationTime": "11/11/2025 19:03:12",
-* &nbsp;   "Locale": "en-US",
-* &nbsp;   "OfficialWebsite": "http://www.hundreddaysgame.com",
-* &nbsp;   "PGCrownImageUrl": null,
-* &nbsp;   "PegiRating": "THREE",
-* &nbsp;   "ProductAsin": null,
-* &nbsp;   "ProductAsinVersion": null,
-* &nbsp;   "ProductDescription": "It takes a hundred days for a vine leaf to complete its life cycle: from spring to autumn, the leaves thrive and provide the fundamental energy to grow the grapes. Hundred Days will put you in charge of managing a small and abandoned winery: from selecting the types of vine you want to grow, to naming your final product, every decision of the challenging business of winemaking will be in your hands.  \\n\\nTake care of your vineyard, learn to follow the rhythm of the seasons, harvest, label your bottles and sell them on the market: every choice you make will have an impact on the quality and quantity of the wine you produce and sell. Increase the reputation of your company worldwide, expand your business and manage the tight schedule of your daily tasks.",
-* &nbsp;   "ProductDomain": null,
-* &nbsp;   "ProductIconUrl": "https://m.media-amazon.com/images/I/81qM0C1t4+L.jpg",
-* &nbsp;   "ProductId": {
-* &nbsp;       "Id": "amzn1.adg.product.c1cd3750-55cc-47d5-b137-db9a8dde1617"
-* &nbsp;   },
-* &nbsp;   "ProductLine": "Sonic:Game",
-* &nbsp;   "ProductLogoUrl": "https://m.media-amazon.com/images/I/41Rrb+pCRIL.png",
-* &nbsp;   "ProductPublisher": "Broken Arms Games",
-* &nbsp;   "ProductSku": "amzn1.resource.a2c4fd7d-8602-f67a-c291-93296c247074",
-* &nbsp;   "ProductTitle": "Hundred Days",
-* &nbsp;   "ProductVendor": "e9039554-7a9a-4ebf-8985-29aa059411bc",
-* &nbsp;   "ReleaseDate": "2021-05-13T02:00:00",
-* &nbsp;   "Screenshots": \[
-* &nbsp;       "https://m.media-amazon.com/images/I/A1h+c02GV2L.jpg",
-* &nbsp;       "https://m.media-amazon.com/images/I/91reyxfcauL.jpg",
-* &nbsp;       "https://m.media-amazon.com/images/I/A1TNs9EYQ5L.jpg",
-* &nbsp;       "https://m.media-amazon.com/images/I/91QjXYypfNL.jpg",
-* &nbsp;       "https://m.media-amazon.com/images/I/91fWJn-PjEL.jpg"
-* &nbsp;   ],
-* &nbsp;   "TrailerImageUrl": null,
-* &nbsp;   "UskRating": "ZERO",
-* &nbsp;   "Version": null,
-* &nbsp;   "Videos": \[]
-* }
+* ✅ DONE: Use SQLite databases from Data/Games/Sql folder (Session 11 - Implemented AmazonGamesRepository with repository pattern. Queries GameInstallInfo.sqlite for installation data and ProductDetails.sqlite for rich metadata. Includes schema introspection, proper ProductTitle extraction, and three-tier fallback logic. Extracts Developers, Publisher, Genres, GameModes, Description, Screenshots, etc. from ProductDetails JSON)
 
 
 

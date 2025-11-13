@@ -325,6 +325,8 @@ IconFile={iconFile}
                 var shortcutDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop));
                 string shortcutPath = FindOrCreateGameShortcut(appId.ToString(), name, shortcutDir, iconPath);
 
+                log.Debug($"Parsed game: {name} (AppID: {appId})");
+
                 return new GameInfo
                 {
                     GameId = appId.ToString(),

@@ -81,6 +81,9 @@ namespace NoFences.View
                     SkippedVersionText.Text = $"Skipped version: {preferences.LastSkippedVersion}";
                 }
 
+                // API Keys
+                RawgApiKeyTextBox.Text = preferences.RawgApiKey ?? string.Empty;
+
                 // General settings
                 ShowWelcomeTipsCheckBox.IsChecked = !preferences.HasSeenWelcomeTips;
 
@@ -238,6 +241,11 @@ namespace NoFences.View
                 // Update preferences
                 preferences.AutoCheckForUpdates = AutoCheckUpdatesCheckBox.IsChecked == true;
                 preferences.CheckFrequencyHours = (int)CheckFrequencyUpDown.Value;
+
+                // Update API Keys
+                preferences.RawgApiKey = string.IsNullOrWhiteSpace(RawgApiKeyTextBox.Text)
+                    ? null
+                    : RawgApiKeyTextBox.Text.Trim();
 
                 // Update welcome tips setting (inverted logic - checkbox is "Show tips")
                 if (ShowWelcomeTipsCheckBox.IsChecked == false)

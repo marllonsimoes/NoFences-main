@@ -37,6 +37,7 @@
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Web" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -59,8 +60,13 @@
     <Compile Include="Repositories\XmlFenceRepository.cs" />
     <Compile Include="Repositories\IAmazonGamesRepository.cs" />
     <Compile Include="Repositories\AmazonGamesRepository.cs" />
+    <Compile Include="Repositories\IInstalledSoftwareRepository.cs" />
+    <Compile Include="Repositories\InstalledSoftwareRepository.cs" />
+    <Compile Include="Repositories\ISoftwareReferenceRepository.cs" />
+    <Compile Include="Repositories\SoftwareReferenceRepository.cs" />
     <Compile Include="Services\EnhancedInstalledAppsService.cs" />
     <Compile Include="Services\InstalledAppsUtil.cs" />
+    <Compile Include="Services\InstalledSoftwareService.cs" />
     <Compile Include="Services\AmazonGamesDetector.cs" />
     <Compile Include="Services\EAAppDetector.cs" />
     <Compile Include="Services\EpicGamesStoreDetector.cs" />
@@ -73,10 +79,20 @@
     <Compile Include="MasterCatalog\Entities\MasterGameEntry.cs" />
     <Compile Include="MasterCatalog\Entities\CatalogVersion.cs" />
     <Compile Include="MasterCatalog\Entities\ChangeLog.cs" />
+    <Compile Include="MasterCatalog\Entities\InstalledSoftwareEntry.cs" />
+    <Compile Include="MasterCatalog\Entities\SoftwareReference.cs" />
     <Compile Include="MasterCatalog\MasterCatalogContext.cs" />
     <Compile Include="MasterCatalog\Services\MasterCatalogImporter.cs" />
     <Compile Include="MasterCatalog\Tools\CatalogImportCommand.cs" />
     <Compile Include="Services\CatalogDownloadService.cs" />
+    <Compile Include="Services\Metadata\IMetadataProvider.cs" />
+    <Compile Include="Services\Metadata\IGameMetadataProvider.cs" />
+    <Compile Include="Services\Metadata\ISoftwareMetadataProvider.cs" />
+    <Compile Include="Services\Metadata\RawgApiClient.cs" />
+    <Compile Include="Services\Metadata\WingetApiClient.cs" />
+    <Compile Include="Services\Metadata\WikipediaApiClient.cs" />
+    <Compile Include="Services\Metadata\CnetScraperClient.cs" />
+    <Compile Include="Services\Metadata\MetadataEnrichmentService.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
@@ -106,11 +122,17 @@
     <PackageReference Include="SQLite.CodeFirst">
       <Version>1.7.0.36</Version>
     </PackageReference>
-    <PackageReference Include="System.Data.SQLite">
+    <PackageReference Include="System.Data.SQLite.Core">
       <Version>1.0.118</Version>
     </PackageReference>
-    <PackageReference Include="System.Data.SQLite.EF6.Migrations">
-      <Version>1.0.113</Version>
+    <PackageReference Include="System.Data.SQLite.EF6">
+      <Version>1.0.118</Version>
+    </PackageReference>
+    <PackageReference Include="System.Data.SQLite.Linq">
+      <Version>1.0.118</Version>
+    </PackageReference>
+    <PackageReference Include="System.Data.SQLite">
+      <Version>1.0.118</Version>
     </PackageReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

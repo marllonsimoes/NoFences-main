@@ -133,7 +133,7 @@
     <div class="stats">
         <h3>📊 Project Statistics</h3>
         <ul>
-            <li><strong>Total Sessions:</strong> 9 major development sessions</li>
+            <li><strong>Total Sessions:</strong> 11 major development sessions</li>
             <li><strong>Date Range:</strong> January 2025 - Current</li>
             <li><strong>Documentation Size:</strong> ~7,300 lines (now modularized)</li>
             <li><strong>Architecture:</strong> WPF + WinForms hybrid with handler-based fence system</li>
@@ -338,6 +338,46 @@
             </ul>
         </div>
         <a href="sessions/session-10-auto-update-system.html" class="session-link">View Session →</a>
+    </div>
+
+    <div class="session-card">
+        <div class="session-title">Session 11: Database Architecture & Metadata Enrichment</div>
+        <div class="session-date">📅 November 2025</div>
+        <div class="session-summary">
+            <strong>Major architecture transformation:</strong> Introduced hybrid dual-database architecture for installed software tracking, comprehensive metadata enrichment system with 4 providers (RAWG, Winget, CNET, Wikipedia), and resolved 14 critical bugs including SQLite platform mismatch. <span class="highlight">~100x performance improvement for FilesFence!</span>
+            <br><br>
+            <strong>Database Architecture (Hybrid System):</strong>
+            <ul>
+                <li><code>ref.db</code> - Machine-specific installation data (LocalDBContext)</li>
+                <li><code>master_catalog.db</code> - Shareable software reference data (MasterCatalogContext)</li>
+                <li>Automatic database population on startup (Bug #11 fix)</li>
+                <li>FilesFence load time: 5-10s → 50ms (~100x faster)</li>
+            </ul>
+            <strong>Metadata Enrichment System:</strong>
+            <ul>
+                <li><code>RawgApiClient</code> - Game metadata with 85% confidence threshold</li>
+                <li><code>WingetApiClient</code> - Official Microsoft software data</li>
+                <li><code>WikipediaApiClient</code> & <code>CnetScraperClient</code> - Fallback providers</li>
+                <li><code>MetadataEnrichmentService</code> - Provider orchestration with priority system</li>
+                <li>Dual-trigger: Automatic (background) + Manual ("Enrich Metadata" button)</li>
+            </ul>
+            <strong>New Features:</strong>
+            <ul>
+                <li>Source filtering (Steam, GOG, Epic, etc.) in FilesFence properties</li>
+                <li>Enhanced ClockFence with 16 customizable properties</li>
+                <li>Amazon Games detection improvements with SQLite integration</li>
+                <li>API keys configuration in Preferences window</li>
+            </ul>
+            <strong>Critical Bugs Fixed:</strong>
+            <ul>
+                <li>Bug #11: Database initialization race condition</li>
+                <li>Bug #14: BadImageFormatException - SQLite x86/x64 mismatch</li>
+                <li>Bug #12: .NET 4.8.1 Dictionary compatibility</li>
+                <li>Amazon Games: 4 bugs (path detection, missing table, name extraction, "Unknown Game")</li>
+            </ul>
+            <strong>Test Infrastructure:</strong> 9 test classes (~50 methods) with xUnit, Moq, FluentAssertions, CI/CD pipeline
+        </div>
+        <a href="sessions/session-11-database-architecture.html" class="session-link">View Session →</a>
     </div>
 
     <h2>🏗️ Architecture Evolution</h2>

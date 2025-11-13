@@ -66,22 +66,37 @@ namespace NoFencesDataLayer.Services
             software.AddRange(games);
             software.Sort((a, b) => a.Name.CompareTo(b.Name));
 
-            // Remove duplicates (same software might appear multiple times)
+            // Session 12: Remove duplicates with priority-based deduplication
+            // Priority: Specialized detectors (Steam, GOG, etc.) > Registry
+            // This ensures game metadata from specialized detectors isn't overwritten by generic registry data
             var uniqueSoftware = software
                 .GroupBy(s => s.Name?.ToLower())
                 .Select(g => {
                     if (g.Count() > 1)
                     {
-                        InstalledSoftware refinedCategory = g.First();
-                        foreach (var item in g)
+                        log.Debug($"Found {g.Count()} duplicates for '{g.First().Name}' - selecting best source");
+
+                        // Priority 1: Entries from specialized detectors (non-Registry source)
+                        var specializedEntry = g.FirstOrDefault(item =>
+                            !string.IsNullOrEmpty(item.Source) &&
+                            item.Source != "Registry");
+                        if (specializedEntry != null)
                         {
-                            if (item.Category != SoftwareCategory.Other)
-                            {
-                                refinedCategory = item;
-                                break;
-                            }
+                            log.Debug($"  → Using specialized detector source: {specializedEntry.Source}");
+                            return specializedEntry;
                         }
-                        return refinedCategory;
+
+                        // Priority 2: Entries with non-Other category (better categorization)
+                        var categorizedEntry = g.FirstOrDefault(item => item.Category != SoftwareCategory.Other);
+                        if (categorizedEntry != null)
+                        {
+                            log.Debug($"  → Using categorized entry: {categorizedEntry.Category}");
+                            return categorizedEntry;
+                        }
+
+                        // Priority 3: First entry as fallback
+                        log.Debug($"  → Using first entry as fallback");
+                        return g.First();
                     }
                     return g.First();
                 })
@@ -175,7 +190,8 @@ namespace NoFencesDataLayer.Services
                     UninstallString = key.GetValue("UninstallString") as string,
                     IconPath = key.GetValue("DisplayIcon") as string,
                     RegistryKey = keyName,
-                    IsWow64 = isWow64
+                    IsWow64 = isWow64,
+                    Source = "Registry" // Session 11: Source-based categorization
                 };
 
                 // Try to parse install date
@@ -230,6 +246,11 @@ namespace NoFencesDataLayer.Services
             // Filter out .NET Framework updates
             if (lowerName.Contains("microsoft .net") && lowerName.Contains("update"))
                 return false;
+
+            // Session 12 Note: No need to filter game store paths here
+            // Priority-based deduplication in GetAllInstalled() handles this elegantly:
+            // Specialized detectors (Steam, GOG, etc.) take precedence over Registry entries
+            // This scales better - no hardcoded paths needed when adding new detectors
 
             return true;
         }
@@ -332,7 +353,8 @@ namespace NoFencesDataLayer.Services
                         Version = null,
                         InstallDate = game.LastUpdated,
                         RegistryKey = $"{detector.PlatformName}:{game.GameId}",
-                        IsWow64 = false
+                        IsWow64 = false,
+                        Source = detector.PlatformName // Session 11: Source-based categorization (Steam, GOG, Epic, etc.)
                     };
 
                     softwareList.Add(software);

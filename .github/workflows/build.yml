@@ -1,25 +1,28 @@
-name: Build and Package
+name: NoFences Build, Test & Release
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [ main, master, develop, 'feature/**', 'bugfix/**', 'revamp/**' ]
   pull_request:
-    branches: [ main, master ]
-  workflow_dispatch:
+    branches: [ main, master, develop ]
+  workflow_dispatch:  # Allow manual trigger
+
+env:
+  SOLUTION_FILE: NoFences.sln
+  BUILD_CONFIGURATION: Release
+  BUILD_PLATFORM: "Any CPU"
+  CI: true  # Required for Directory.Build.props signing logic
 
 jobs:
-  build:
+  build-and-test:
+    name: Build & Test
     runs-on: windows-2022
 
-    env:
-      Solution_Name: NoFences.sln
-      Configuration: Release
-
     steps:
-    - name: Checkout
+    - name: Checkout repository
       uses: actions/checkout@v4
       with:
-        fetch-depth: 0  # Fetch all history for versioning
+        fetch-depth: 0  # Full history for versioning
 
     - name: Determine Version
       id: version
@@ -52,7 +55,7 @@ jobs:
           echo "should_tag=true" >> $env:GITHUB_OUTPUT
           echo "is_release=true" >> $env:GITHUB_OUTPUT
         } else {
-          # Use current version for PRs
+          # Use current version for PRs and other branches
           echo "version=$currentVersion" >> $env:GITHUB_OUTPUT
           echo "should_tag=false" >> $env:GITHUB_OUTPUT
           echo "is_release=false" >> $env:GITHUB_OUTPUT
@@ -75,11 +78,15 @@ jobs:
       shell: pwsh
 
     - name: Setup MSBuild
-      uses: microsoft/setup-msbuild@v1.3.1
-      with:
-        msbuild-architecture: x86
+      uses: microsoft/setup-msbuild@v2
 
-    - name: Setup .NET SDK
+    - name: Setup NuGet
+      uses: NuGet/setup-nuget@v2
+
+    - name: Restore NuGet packages
+      run: nuget restore ${{ env.SOLUTION_FILE }}
+
+    - name: Setup .NET SDK (for WiX)
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: '8.0.x'
@@ -98,23 +105,162 @@ jobs:
 
     - name: Build Solution
       run: |
-        msbuild.exe $env:Solution_Name -t:Restore
-        msbuild.exe $env:Solution_Name /p:Configuration=$env:Configuration /p:Platform="Any CPU" /p:UseSharedCompilation=false
+        msbuild ${{ env.SOLUTION_FILE }} -t:Restore
+        msbuild ${{ env.SOLUTION_FILE }} /p:Configuration=${{ env.BUILD_CONFIGURATION }} /p:Platform="${{ env.BUILD_PLATFORM }}" /m /v:minimal
+
+    - name: Setup VSTest
+      uses: darenm/Setup-VSTest@v1.2
+
+    - name: Run Unit Tests
+      run: |
+        vstest.console.exe "NoFences.Tests\bin\${{ env.BUILD_CONFIGURATION }}\net481\NoFences.Tests.dll" `
+          /TestCaseFilter:"Category!=Integration" `
+          /Logger:"trx;LogFileName=test-results-unit.trx" `
+          /Logger:"console;verbosity=detailed"
+      continue-on-error: false
+
+    - name: Run Integration Tests
+      run: |
+        vstest.console.exe "NoFences.Tests\bin\${{ env.BUILD_CONFIGURATION }}\net481\NoFences.Tests.dll" `
+          /TestCaseFilter:"Category=Integration" `
+          /Logger:"trx;LogFileName=test-results-integration.trx" `
+          /Logger:"console;verbosity=detailed"
+      continue-on-error: true  # Integration tests may fail without API keys
+
+    - name: Upload Test Results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: test-results
+        path: |
+          **/*.trx
+
+    - name: Publish Test Results
+      uses: dorny/test-reporter@v1
+      if: always()
+      with:
+        name: Test Results
+        path: '**/*.trx'
+        reporter: dotnet-trx
+        fail-on-error: false
+
+    - name: Upload Build Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: nofences-build-${{ github.sha }}
+        path: |
+          NoFences/bin/${{ env.BUILD_CONFIGURATION }}/
+          !NoFences/bin/${{ env.BUILD_CONFIGURATION }}/**/*.pdb
+          !NoFences/bin/${{ env.BUILD_CONFIGURATION }}/**/*.xml
+        retention-days: 14
 
     - name: Upload NoFences Installer
       uses: actions/upload-artifact@v4
       with:
         name: NoFences-Installer
         path: NoFences.Installer\bin\Release\NoFences.msi
-    
-    - name: Upload NoFences bootstrap
+
+    - name: Upload NoFences Bootstrap
       uses: actions/upload-artifact@v4
       with:
         name: NoFences-Installer-bootstrap
         path: NoFences.Installer\bin\Release\NoFences.bootstrap.exe
 
+  code-quality:
+    name: Code Quality Analysis
+    runs-on: windows-latest
+    needs: build-and-test
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup MSBuild
+      uses: microsoft/setup-msbuild@v2
+
+    - name: Setup NuGet
+      uses: NuGet/setup-nuget@v2
+
+    - name: Restore NuGet packages
+      run: nuget restore ${{ env.SOLUTION_FILE }}
+
+    - name: Run Code Analysis
+      run: |
+        msbuild ${{ env.SOLUTION_FILE }} /t:Rebuild /p:Configuration=${{ env.BUILD_CONFIGURATION }} /p:RunCodeAnalysis=true /v:minimal
+      continue-on-error: true
+
+  security-scan:
+    name: Security Scan
+    runs-on: windows-latest
+    needs: build-and-test
+    if: github.event_name == 'pull_request' || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Run Dependency Check
+      uses: dependency-check/Dependency-Check_Action@main
+      with:
+        project: 'NoFences'
+        path: '.'
+        format: 'HTML'
+        out: 'dependency-check-report'
+      continue-on-error: true
+
+    - name: Upload Dependency Check Report
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: dependency-check-report
+        path: dependency-check-report/
+
+  release:
+    name: Create Release
+    runs-on: windows-2022
+    needs: [build-and-test, code-quality, security-scan]
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Get Version from build-and-test job
+      id: version
+      run: |
+        # Re-determine version (same logic as build job)
+        $assemblyInfoPath = "NoFences\Properties\AssemblyInfo.cs"
+        $content = Get-Content $assemblyInfoPath -Raw
+
+        if ($content -match 'AssemblyVersion\("(\d+\.\d+\.\d+)\.') {
+          $currentVersion = $matches[1]
+          $versionParts = $currentVersion.Split('.')
+          $major = [int]$versionParts[0]
+          $minor = [int]$versionParts[1]
+          $patch = [int]$versionParts[2] + 1
+          $newVersion = "$major.$minor.$patch"
+
+          Write-Host "Release version: $newVersion"
+          echo "version=$newVersion" >> $env:GITHUB_OUTPUT
+        }
+      shell: pwsh
+
+    - name: Download Installer Artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: NoFences-Installer
+        path: artifacts/installer
+
+    - name: Download Bootstrap Artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: NoFences-Installer-bootstrap
+        path: artifacts/bootstrap
+
     - name: Commit Version Bump
-      if: steps.version.outputs.is_release == 'true'
       run: |
         git config --local user.email "github-actions[bot]@users.noreply.github.com"
         git config --local user.name "github-actions[bot]"
@@ -126,7 +272,6 @@ jobs:
       shell: pwsh
 
     - name: Create Git Tag
-      if: steps.version.outputs.should_tag == 'true'
       run: |
         $version = "v${{ steps.version.outputs.version }}"
 
@@ -137,7 +282,6 @@ jobs:
       shell: pwsh
 
     - name: Create GitHub Release
-      if: steps.version.outputs.is_release == 'true'
       uses: softprops/action-gh-release@v1
       with:
         tag_name: v${{ steps.version.outputs.version }}
@@ -145,8 +289,8 @@ jobs:
         draft: false
         prerelease: false
         files: |
-          NoFences.Installer/bin/Release/NoFences.msi
-          NoFences.Installer/bin/Release/NoFences.bootstrap.exe
+          artifacts/installer/NoFences.msi
+          artifacts/bootstrap/NoFences.bootstrap.exe
         body: |
           ## NoFences v${{ steps.version.outputs.version }}
 
@@ -162,3 +306,19 @@ jobs:
           - `NoFences.msi` - MSI installer (requires .NET Framework 4.8.1 pre-installed)
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  notify:
+    name: Notify Results
+    runs-on: ubuntu-latest
+    needs: [build-and-test, code-quality, security-scan]
+    if: always() && (github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'))
+
+    steps:
+    - name: Check Job Status
+      run: |
+        if [ "${{ needs.build-and-test.result }}" == "success" ]; then
+          echo "✅ Build and tests passed!"
+        else
+          echo "❌ Build or tests failed!"
+          exit 1
+        fi

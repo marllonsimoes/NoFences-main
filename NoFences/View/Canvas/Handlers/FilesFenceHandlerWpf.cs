@@ -337,6 +337,7 @@ namespace NoFences.View.Canvas.Handlers
     /// <summary>
     /// View model for file/folder items displayed in the fence.
     /// Enhanced in Session 11 to include full metadata from InstalledSoftware.
+    /// Session 12 Continuation: Lazy-loads fresh metadata on hover.
     /// </summary>
     public class FileItemViewModel
     {
@@ -351,9 +352,26 @@ namespace NoFences.View.Canvas.Handlers
         public string Source { get; set; }
         public SoftwareCategory Category { get; set; }
 
+        // Session 12: Enriched metadata fields
+        public string Description { get; set; }
+        public string Genres { get; set; }
+        public string Developers { get; set; }
+        public DateTime? ReleaseDate { get; set; }
+        public string CoverImageUrl { get; set; }
+        public double? Rating { get; set; }
+        public string MetadataSource { get; set; }
+
+        // Session 12 Continuation: Track SoftwareRefId for lazy metadata refresh
+        public long SoftwareRefId { get; set; }
+
         // UI helper properties
         public bool HasVersion => !string.IsNullOrEmpty(Version);
         public bool HasPublisher => !string.IsNullOrEmpty(Publisher);
+        public bool HasDescription => !string.IsNullOrEmpty(Description);
+        public bool HasGenres => !string.IsNullOrEmpty(Genres);
+        public bool HasDevelopers => !string.IsNullOrEmpty(Developers);
+        public bool HasRating => Rating.HasValue;
+        public bool HasEnrichedMetadata => HasDescription || HasGenres || HasDevelopers || HasRating;
 
         public bool IsRecentlyInstalled
         {
@@ -373,6 +391,10 @@ namespace NoFences.View.Canvas.Handlers
         {
             get
             {
+                // Session 12 Continuation: Lazy-load metadata on first tooltip display
+                // This ensures fresh data even if enrichment completed after fence was created
+                RefreshMetadataFromDatabase();
+
                 var lines = new List<string> { Name };
 
                 if (HasPublisher)
@@ -384,6 +406,30 @@ namespace NoFences.View.Canvas.Handlers
                 if (InstallDate.HasValue)
                     lines.Add($"Installed: {InstallDate.Value:yyyy-MM-dd}");
 
+                // Session 12: Enriched metadata in tooltip
+                if (HasDevelopers)
+                    lines.Add($"Developers: {Developers}");
+
+                if (HasGenres)
+                    lines.Add($"Genres: {Genres}");
+
+                if (ReleaseDate.HasValue)
+                    lines.Add($"Release Date: {ReleaseDate.Value:yyyy-MM-dd}");
+
+                if (HasRating)
+                    lines.Add($"Rating: {Rating:F1}/5.0");
+
+                if (HasDescription)
+                {
+                    string shortDesc = Description.Length > 100
+                        ? Description.Substring(0, 97) + "..."
+                        : Description;
+                    lines.Add($"Description: {shortDesc}");
+                }
+
+                if (!string.IsNullOrEmpty(MetadataSource))
+                    lines.Add($"Metadata: {MetadataSource}");
+
                 if (!string.IsNullOrEmpty(Source))
                     lines.Add($"Source: {Source}");
 
@@ -394,8 +440,74 @@ namespace NoFences.View.Canvas.Handlers
         }
 
         /// <summary>
+        /// Refreshes metadata from database on-demand (lazy loading).
+        /// Session 12 Continuation: Called when tooltip is first displayed to get fresh metadata.
+        /// Very fast (~microseconds) - single SQLite lookup by ID.
+        /// </summary>
+        private void RefreshMetadataFromDatabase()
+        {
+            try
+            {
+                // Skip if no SoftwareRefId (local files don't have metadata)
+                if (SoftwareRefId <= 0)
+                    return;
+
+                // Query database for fresh metadata
+                using (var context = new NoFencesDataLayer.MasterCatalog.MasterCatalogContext())
+                {
+                    var softwareRef = context.SoftwareReferences.Find(SoftwareRefId);
+                    if (softwareRef != null)
+                    {
+                        // Update enriched metadata fields if they've been filled
+                        if (!string.IsNullOrEmpty(softwareRef.Description))
+                            Description = softwareRef.Description;
+
+                        if (!string.IsNullOrEmpty(softwareRef.Genres))
+                            Genres = softwareRef.Genres;
+
+                        if (!string.IsNullOrEmpty(softwareRef.Developers))
+                            Developers = softwareRef.Developers;
+
+                        if (softwareRef.ReleaseDate.HasValue)
+                            ReleaseDate = softwareRef.ReleaseDate;
+
+                        if (!string.IsNullOrEmpty(softwareRef.CoverImageUrl))
+                            CoverImageUrl = softwareRef.CoverImageUrl;
+
+                        if (!string.IsNullOrEmpty(softwareRef.MetadataSource))
+                            MetadataSource = softwareRef.MetadataSource;
+
+                        // Parse rating from MetadataJson if present
+                        if (!string.IsNullOrEmpty(softwareRef.MetadataJson))
+                        {
+                            try
+                            {
+                                var metadataDict = Newtonsoft.Json.JsonConvert.DeserializeObject<Dictionary<string, object>>(softwareRef.MetadataJson);
+                                if (metadataDict != null && metadataDict.ContainsKey("rating"))
+                                {
+                                    Rating = Convert.ToDouble(metadataDict["rating"]);
+                                }
+                            }
+                            catch
+                            {
+                                // Ignore JSON parsing errors
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // Log error but don't crash - tooltip will show whatever data we have
+                log4net.LogManager.GetLogger(typeof(FileItemViewModel)).Error($"Error refreshing metadata for {Name}: {ex.Message}");
+            }
+        }
+
+        /// <summary>
         /// Factory method to create FileItemViewModel from InstalledSoftware.
         /// Session 11: Preserves all metadata from database.
+        /// Session 12: Now includes enriched metadata fields.
+        /// Session 12 Continuation: Includes SoftwareRefId for lazy metadata refresh.
         /// </summary>
         public static FileItemViewModel FromInstalledSoftware(InstalledSoftware software, BitmapSource icon)
         {
@@ -408,7 +520,18 @@ namespace NoFences.View.Canvas.Handlers
                 Version = software.Version,
                 InstallDate = software.InstallDate,
                 Source = software.Source,
-                Category = software.Category
+                Category = software.Category,
+
+                // Session 12: Enriched metadata fields
+                Description = software.Description,
+                Genres = software.Genres,
+                Developers = software.Developers,
+                ReleaseDate = software.ReleaseDate,
+                CoverImageUrl = software.CoverImageUrl,
+                Rating = software.Rating,
+
+                // Session 12 Continuation: Store SoftwareRefId for lazy refresh
+                SoftwareRefId = software.SoftwareRefId
             };
         }
     }

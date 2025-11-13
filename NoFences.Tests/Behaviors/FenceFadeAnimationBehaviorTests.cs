@@ -17,7 +17,11 @@ namespace NoFences.Tests.Behaviors
         public FenceFadeAnimationBehaviorTests()
         {
             testControl = new Panel { Width = 300, Height = 300 };
-            testFenceInfo = new FenceInfo(Guid.NewGuid()) { Name = "Test Fence" };
+            testFenceInfo = new FenceInfo(Guid.NewGuid())
+            {
+                Name = "Test Fence",
+                EnableFadeEffect = true
+            };
         }
 
         public void Dispose()
@@ -98,8 +102,12 @@ namespace NoFences.Tests.Behaviors
             // Act
             behavior.FadeOut();
 
-            // Allow animation to start
-            Thread.Sleep(50);
+            // Allow animation to start and process Windows Forms timer messages
+            for (int i = 0; i < 5; i++)
+            {
+                Application.DoEvents();
+                Thread.Sleep(20);
+            }
 
             // Assert
             behavior.IsFadedOut.Should().BeTrue();
@@ -140,15 +148,25 @@ namespace NoFences.Tests.Behaviors
 
             // First fade out
             behavior.FadeOut();
-            Thread.Sleep(100); // Allow fade out to progress
+
+            // Process Windows Forms timer messages for fade out
+            for (int i = 0; i < 10; i++)
+            {
+                Application.DoEvents();
+                Thread.Sleep(20);
+            }
 
             double opacityAfterFadeOut = behavior.CurrentOpacity;
 
             // Act
             behavior.FadeIn();
 
-            // Allow fade in to start
-            Thread.Sleep(100);
+            // Process Windows Forms timer messages for fade in
+            for (int i = 0; i < 10; i++)
+            {
+                Application.DoEvents();
+                Thread.Sleep(20);
+            }
 
             // Assert
             behavior.IsFadedOut.Should().BeFalse();

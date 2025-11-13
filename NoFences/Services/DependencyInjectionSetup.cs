@@ -1,9 +1,13 @@
 using CommunityToolkit.Mvvm.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
 using NoFences.Core.Model;
+using NoFences.Core.Util;
 using NoFences.Model;
 using NoFences.Model.Canvas;
 using NoFences.View.Canvas.Handlers;
+using NoFencesDataLayer.Repositories;
+using NoFencesDataLayer.Services;
+using NoFencesDataLayer.Services.Metadata;
 using System;
 using System.Collections.Generic;
 
@@ -26,6 +30,43 @@ namespace NoFences.Services
         {
             var services = new ServiceCollection();
 
+            // Session 12: Register ALL repositories
+            services.AddSingleton<IInstalledSoftwareRepository, InstalledSoftwareRepository>();
+            services.AddSingleton<ISoftwareReferenceRepository, SoftwareReferenceRepository>(); // Session 12: DB refactor
+            services.AddSingleton<IAmazonGamesRepository, AmazonGamesRepository>();
+            services.AddSingleton<IFenceRepository, XmlFenceRepository>();
+
+            // Session 12: Register database contexts for DI
+            services.AddSingleton<NoFencesDataLayer.MasterCatalog.MasterCatalogContext>();
+            services.AddSingleton<NoFencesService.Repository.LocalDBContext>();
+
+            // Session 12: Register ALL services
+            services.AddSingleton<InstalledSoftwareService>();
+            services.AddSingleton<SoftwareCatalogService>();
+            services.AddSingleton<EnhancedInstalledAppsService>();
+            services.AddSingleton<CatalogDownloadService>();
+
+            // Session 12: Register metadata providers (stateless, use Singleton for efficiency)
+            // Game metadata providers
+            services.AddSingleton<IGameMetadataProvider, RawgApiClient>();
+
+            // Software metadata providers (sorted by priority in MetadataEnrichmentService)
+            services.AddSingleton<ISoftwareMetadataProvider, WingetApiClient>();    // Priority 1
+            services.AddSingleton<ISoftwareMetadataProvider, CnetScraperClient>();   // Priority 10
+            services.AddSingleton<ISoftwareMetadataProvider, WikipediaApiClient>(); // Priority 99
+
+            // Metadata enrichment service (receives IEnumerable<providers> from DI)
+            services.AddSingleton<MetadataEnrichmentService>();
+
+            // Session 12: Register game store detectors
+            services.AddSingleton<IGameStoreDetector, AmazonGamesDetector>();
+            services.AddSingleton<IGameStoreDetector, SteamStoreDetector>();
+            services.AddSingleton<IGameStoreDetector, GOGGalaxyDetector>();
+            services.AddSingleton<IGameStoreDetector, EpicGamesStoreDetector>();
+            services.AddSingleton<IGameStoreDetector, EAAppDetector>();
+            services.AddSingleton<IGameStoreDetector, UbisoftConnectDetector>();
+
+            // Register fence handlers
             services.AddTransient<IFenceHandlerWpf, PictureFenceHandlerWpf>();
             services.AddTransient<IFenceHandlerWpf, FilesFenceHandlerWpf>();
             services.AddTransient<IFenceHandlerWpf, VideoFenceHandlerWpf>();

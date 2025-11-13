@@ -11,6 +11,7 @@ using NoFencesDataLayer.MasterCatalog.Tools;
 using NoFencesDataLayer.Services;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Management;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -42,8 +43,12 @@ namespace NoFences
             var hierarchy = (log4net.Repository.Hierarchy.Hierarchy)repository;
 
             log4net.Core.Level log4netLevel = log4net.Core.Level.Debug;
-            ((Logger)hierarchy.GetLogger("NoFencesDataLayer.Repositories")).Level = log4netLevel;
-            ((Logger)hierarchy.GetLogger("NoFencesDataLayer.Services")).Level = log4netLevel;            
+            ((Logger)hierarchy.GetLogger("NoFencesDataLayer.Services.SteamStoreDetector")).Level = log4netLevel;
+            ((Logger)hierarchy.GetLogger("NoFencesDataLayer.Services.AmazonGamesDetector")).Level = log4netLevel;
+            ((Logger)hierarchy.GetLogger("NoFencesDataLayer.Services.EpicGamesDetector")).Level = log4netLevel;
+            ((Logger)hierarchy.GetLogger("NoFencesDataLayer.Services.UbisoftConnectDetector")).Level = log4netLevel;
+            ((Logger)hierarchy.GetLogger("NoFencesDataLayer.Services.GOGGalaxyDetector")).Level = log4netLevel;
+            ((Logger)hierarchy.GetLogger("NoFencesDataLayer.Services.EAAppDetector")).Level = log4netLevel;
             hierarchy.RaiseConfigurationChanged(EventArgs.Empty);
 #endif
 
@@ -162,6 +167,9 @@ namespace NoFences
                 var canvas = fenceManager.Canvas;
                 log.Debug($"Canvas created: Handle={canvas.Handle}, Visible={canvas.Visible}, Bounds={canvas.Bounds}");
 
+                // Initialize installed software database automatically if empty
+                InitializeInstalledSoftwareDatabase();
+
                 log.Info("Showing canvas ===");
                 fenceManager.ShowCanvas();
                 log.Debug($"After ShowCanvas: Visible={canvas.Visible}, IsHandleCreated={canvas.IsHandleCreated}");
@@ -175,6 +183,66 @@ namespace NoFences
                 log.Info($"Starting Application.Run with Canvas ===");
                 log.Debug($"Canvas state before Run: Visible={canvas.Visible}, TopMost={canvas.TopMost}, Opacity={canvas.Opacity}");
                 Application.Run(canvas);
+            }
+        }
+
+        /// <summary>
+        /// Automatically initializes the installed software database if it's empty.
+        /// Runs on background thread to avoid blocking UI startup.
+        /// Session 11: Automatic database population implementation.
+        /// </summary>
+        private static void InitializeInstalledSoftwareDatabase()
+        {
+            try
+            {
+                log.Info("Checking if installed software database needs initialization...");
+
+                // Check if database is empty
+                var service = new InstalledSoftwareService();
+                var existingCount = service.GetInstalledSoftwareCount();
+
+                if (existingCount > 0)
+                {
+                    log.Info($"Installed software database already populated with {existingCount} entries");
+                    return;
+                }
+
+                log.Info("Installed software database is empty - starting automatic population in background");
+
+                // Run database population on background thread to avoid blocking UI
+                var populationThread = new Thread(() =>
+                {
+                    try
+                    {
+                        log.Info("Background thread: Starting installed software detection and database population");
+
+                        int entriesWritten = service.RefreshInstalledSoftware();
+
+                        if (entriesWritten > 0)
+                        {
+                            log.Info($"Background thread: Successfully populated database with {entriesWritten} software entries");
+                        }
+                        else
+                        {
+                            log.Warn("Background thread: No software entries were written to database");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        log.Error($"Background thread: Error during automatic database population: {ex.Message}", ex);
+                    }
+                })
+                {
+                    IsBackground = true,
+                    Name = "InstalledSoftwareDBPopulation"
+                };
+
+                populationThread.Start();
+                log.Info("Background database population thread started");
+            }
+            catch (Exception ex)
+            {
+                log.Error($"Error checking/initializing installed software database: {ex.Message}", ex);
             }
         }
     }

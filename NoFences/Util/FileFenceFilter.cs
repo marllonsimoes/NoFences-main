@@ -79,15 +79,79 @@ namespace NoFences.Util
 
         /// <summary>
         /// Applies software category filter (e.g., Games, Browsers)
-        /// Uses enhanced categorization from software catalog database when available.
-        /// Enhanced in Session 11 to return full InstalledSoftware objects instead of just paths.
+        /// Session 11: Updated to query database via InstalledSoftwareService (hybrid architecture Q2 answer C).
+        /// Supports source-based categorization with subfilters (Q3 answer priority 1, Q4 answer: same type with subfilter).
+        /// Enhanced to return full InstalledSoftware objects instead of just paths.
+        /// Falls back to in-memory service if database is empty or unavailable.
         /// </summary>
         private static FilterResult ApplySoftwareFilter(FileFilter filter)
         {
             var result = new FilterResult();
-            var installedSoftware = EnhancedInstalledAppsService.GetByCategoryEnhanced(filter.SoftwareCategory);
-            log.Info($"FileFenceFilter: Found {installedSoftware.Count} software items for category {filter.SoftwareCategory}");
+            List<InstalledSoftware> installedSoftware = null;
 
+            try
+            {
+                // Try to query database via InstalledSoftwareService (hybrid architecture)
+                var service = new InstalledSoftwareService();
+
+                // Convert SoftwareCategory enum to string for database query
+                // If category is "All", pass null to get all software
+                string categoryFilter = filter.SoftwareCategory == SoftwareCategory.All
+                    ? null
+                    : filter.SoftwareCategory.ToString();
+
+                // Session 11: Priority 2 - Source filter support
+                // Use filter.Source for advanced filtering (Steam, GOG, etc.)
+                // null = all sources, specific string = filter by that source
+                string sourceFilter = filter.Source; // null or "Steam", "GOG", "Epic Games", etc.
+
+                installedSoftware = service.QueryInstalledSoftware(categoryFilter, source: sourceFilter);
+
+                // Log with source information if specified
+                if (!string.IsNullOrEmpty(sourceFilter))
+                {
+                    log.Info($"FileFenceFilter: Database query with category={filter.SoftwareCategory}, source={sourceFilter} returned {installedSoftware.Count} items");
+                }
+                else
+                {
+                    log.Info($"FileFenceFilter: Database query returned {installedSoftware.Count} software items for category {filter.SoftwareCategory}");
+                }
+
+                // If database is empty, fall back to in-memory service
+                if (installedSoftware.Count == 0)
+                {
+                    log.Info("FileFenceFilter: Database is empty, falling back to in-memory service");
+                    installedSoftware = null; // Trigger fallback
+                }
+            }
+            catch (Exception ex)
+            {
+                log.Error($"FileFenceFilter: Error querying database for software filter: {ex.Message}", ex);
+                installedSoftware = null; // Trigger fallback
+            }
+
+            // Fallback to in-memory service if database query failed or returned no results
+            if (installedSoftware == null)
+            {
+                log.Warn("FileFenceFilter: Using in-memory service (EnhancedInstalledAppsService)");
+                installedSoftware = EnhancedInstalledAppsService.GetByCategoryEnhanced(filter.SoftwareCategory);
+
+                // Session 11: Priority 2 - Apply source filter to in-memory results if specified
+                if (!string.IsNullOrEmpty(filter.Source))
+                {
+                    int originalCount = installedSoftware.Count;
+                    installedSoftware = installedSoftware
+                        .Where(s => string.Equals(s.Source, filter.Source, StringComparison.OrdinalIgnoreCase))
+                        .ToList();
+                    log.Info($"FileFenceFilter: In-memory service source filter '{filter.Source}': {originalCount} → {installedSoftware.Count} items");
+                }
+                else
+                {
+                    log.Info($"FileFenceFilter: In-memory service returned {installedSoftware.Count} software items");
+                }
+            }
+
+            // Filter and add items with valid paths
             foreach (var software in installedSoftware)
             {
                 // Only include items with valid paths
@@ -101,7 +165,7 @@ namespace NoFences.Util
                 }
             }
 
-            log.Info($"FileFenceFilter: Returning {result.SoftwareItems.Count} software items with full metadata");
+            log.Info($"FileFenceFilter: Returning {result.SoftwareItems.Count} software items with valid paths");
             return result;
         }
 

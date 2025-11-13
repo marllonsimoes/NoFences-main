@@ -151,6 +151,7 @@ class Script
 
         project.SignAllFiles = true;
 
+        // Session 12 Continuation: Use environment variables for CI/CD certificate
         if (Environment.GetEnvironmentVariable("CERTIFICATE_PATH") != null)
         {
             project.DigitalSignature = new DigitalSignature
@@ -160,7 +161,8 @@ class Script
                 TimeUrl = new UriBuilder("http://timestamp.digicert.com").Uri
             };
         }
-        else
+        // Session 12 Continuation: Only use local signing folder if it exists
+        else if (System.IO.File.Exists(@"..\signing\NoFences_cert.pfx"))
         {
             project.DigitalSignature = new DigitalSignature
             {
@@ -169,6 +171,13 @@ class Script
                 TimeUrl = new UriBuilder("http://timestamp.digicert.com").Uri,
                 HashAlgorithm = HashAlgorithmType.sha256
             };
+        }
+        // Session 12 Continuation: If no certificate is available, skip signing (e.g., in CI without secrets)
+        else
+        {
+            Console.WriteLine("WARNING: No certificate found. MSI will not be signed.");
+            Console.WriteLine("  - For CI/CD: Set CERTIFICATE_PATH and CERTIFICATE_PASSWORD environment variables");
+            Console.WriteLine("  - For local dev: Place certificate in ../signing/NoFences_cert.pfx");
         }
 
         project.GUID = new Guid("5CF1A403-6251-4CB6-A1EA-26A933614DDE");

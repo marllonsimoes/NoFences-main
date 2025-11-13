@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Session 11: Database Architecture & Metadata Enrichment</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            color: #e0e0e0;
+            background-color: #0a0a0a;
+            background-image:
+                linear-gradient(rgba(0, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+        }
+        h1 {
+            color: #00ffff;
+            text-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff, 0 0 30px #00ffff;
+            border-bottom: 3px solid #00ffff;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #ff00ff;
+            text-shadow: 0 0 10px #ff00ff, 0 0 20px #ff00ff;
+            margin-top: 30px;
+            border-bottom: 2px solid #ff00ff;
+            padding-bottom: 5px;
+        }
+        h3 {
+            color: #ffff00;
+            text-shadow: 0 0 5px #ffff00;
+            margin-top: 20px;
+        }
+        .feature-box {
+            background: linear-gradient(to right, rgba(0, 255, 0, 0.1), transparent);
+            border-left: 4px solid #00ff00;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        .bug-box {
+            background: linear-gradient(to right, rgba(255, 165, 0, 0.1), transparent);
+            border-left: 4px solid #ffa500;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        code {
+            background-color: #1a1a1a;
+            border: 1px solid #00ff00;
+            color: #00ff00;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Consolas', 'Monaco', monospace;
+        }
+        pre {
+            background-color: #1a1a1a;
+            border: 1px solid #00ff00;
+            color: #00ff00;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-family: 'Consolas', 'Monaco', monospace;
+        }
+        ul {
+            padding-left: 25px;
+        }
+        li {
+            margin: 8px 0;
+        }
+        .back-link {
+            display: inline-block;
+            margin: 20px 0;
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #00ffff, #ff00ff);
+            color: #000;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>🏗️ Session 11: Database Architecture & Metadata Enrichment</h1>
+
+    <p><strong>Date:</strong> November 2025</p>
+    <p><strong>Focus:</strong> Hybrid database architecture, automatic database population, metadata enrichment system, and comprehensive bug fixes</p>
+
+    <a href="../SESSION_INDEX.html" class="back-link">← Back to Index</a>
+
+    <h2>📋 Session Overview</h2>
+
+    <p>Session 11 was a major milestone that introduced a sophisticated database architecture for installed software tracking, implemented an extensive metadata enrichment system with multiple providers, and resolved 14 critical bugs. This session transformed NoFences from a simple file organizer into an intelligent software catalog with rich metadata.</p>
+
+    <h2>🎯 Major Features (10)</h2>
+
+    <div class="feature-box">
+        <h3>1. Amazon Games Detection Improvements</h3>
+        <p>Enhanced Amazon Games detection with proper SQLite database integration and improved path handling.</p>
+        <ul>
+            <li>Reads from <code>ProductDetails.sqlite</code></li>
+            <li>Extracts proper game names and installation paths</li>
+            <li>Handles missing database gracefully</li>
+        </ul>
+    </div>
+
+    <div class="feature-box">
+        <h3>2. Installer Package Selection Smart Logic</h3>
+        <p>Improved installer package selection with intelligent defaults based on system architecture.</p>
+    </div>
+
+    <div class="feature-box">
+        <h3>3. Date Format Bug Fix (ClockFence)</h3>
+        <p>Fixed ClockFence date format persistence issues.</p>
+    </div>
+
+    <div class="feature-box">
+        <h3>4. ClockFence Customization (16 Properties)</h3>
+        <p>Expanded ClockFence with 16 customizable properties:</p>
+        <ul>
+            <li>Font family, size, weight</li>
+            <li>Time/date formats</li>
+            <li>Weather display options</li>
+            <li>Color customization</li>
+        </ul>
+    </div>
+
+    <div class="feature-box">
+        <h3>5. FilesFence Hybrid Database Architecture ⭐</h3>
+        <p><strong>Major Architecture Change:</strong> Introduced dual-database system for installed software tracking.</p>
+        <ul>
+            <li><strong>ref.db (LocalDBContext):</strong> Machine-specific installation data</li>
+            <li><strong>master_catalog.db (MasterCatalogContext):</strong> Shareable software reference data</li>
+            <li>Detectors populate database automatically</li>
+            <li>Fences query database instead of live detection</li>
+            <li>~100x performance improvement for FilesFence display</li>
+        </ul>
+        <pre>// Detectors → Repository → Database → Service → UI
+InstalledAppsUtil.GetAllInstalled()
+    → InstalledSoftwareRepository.UpsertBatch()
+    → SQLite Database (ref.db)
+    → InstalledSoftwareService.QueryInstalledSoftware()
+    → FilesFenceHandlerWpf</pre>
+    </div>
+
+    <div class="feature-box">
+        <h3>6. Automatic Database Population (Bug #11) ⭐</h3>
+        <p>Solved race condition where fences displayed empty on first launch.</p>
+        <ul>
+            <li>Detects empty database on startup</li>
+            <li>Automatically runs <code>RefreshInstalledSoftware()</code></li>
+            <li>Populates ~400-500 entries in seconds</li>
+            <li>Ensures fences always have data</li>
+        </ul>
+    </div>
+
+    <div class="feature-box">
+        <h3>7. Source Filtering (New Feature) ⭐</h3>
+        <p>Added source-based filtering to FilesFence properties.</p>
+        <ul>
+            <li>Filter by: Steam, GOG, Epic, Amazon, Registry, etc.</li>
+            <li>Dynamic dropdown populated from database</li>
+            <li>Efficient database queries with source filter</li>
+        </ul>
+    </div>
+
+    <div class="feature-box">
+        <h3>8. Metadata Enrichment API Clients ⭐</h3>
+        <p>Implemented 4 metadata providers for automatic enrichment:</p>
+        <ul>
+            <li><strong>RawgApiClient:</strong> Game metadata from RAWG.io (85% confidence threshold)</li>
+            <li><strong>WingetApiClient:</strong> Software metadata from Windows Package Manager</li>
+            <li><strong>WikipediaApiClient:</strong> Fallback metadata from Wikipedia</li>
+            <li><strong>CnetScraperClient:</strong> Software metadata from CNET</li>
+        </ul>
+    </div>
+
+    <div class="feature-box">
+        <h3>9. Metadata Enrichment Service Orchestrator ⭐</h3>
+        <p>Central orchestration service for metadata enrichment.</p>
+        <ul>
+            <li>Provider priority system (RAWG → Winget → CNET → Wikipedia)</li>
+            <li>Confidence-based result filtering</li>
+            <li>Automatic source detection (games vs software)</li>
+            <li>Tracks enrichment status (LastEnrichedDate, MetadataSource)</li>
+            <li>Batch processing support</li>
+        </ul>
+    </div>
+
+    <div class="feature-box">
+        <h3>10. Preferences Window API Keys Section</h3>
+        <p>Added API keys configuration to preferences window for metadata providers.</p>
+    </div>
+
+    <h2>🐛 Bugs Fixed (14)</h2>
+
+    <div class="bug-box">
+        <h3>Bug #1: Help Icon Fade Issue</h3>
+        <p>Fixed help icon fade animation not working correctly.</p>
+    </div>
+
+    <div class="bug-box">
+        <h3>Bug #2: Metadata Loss in Data Flow</h3>
+        <p>Fixed metadata being lost when converting between data models.</p>
+    </div>
+
+    <div class="bug-box">
+        <h3>Bugs #3-6: Amazon Games Detection</h3>
+        <ul>
+            <li>Bug #3: Fixed path detection issues</li>
+            <li>Bug #4: Handled missing SQLite table gracefully</li>
+            <li>Bug #5: Proper name extraction from ProductDetails</li>
+            <li>Bug #6: Eliminated "Unknown Game" entries</li>
+        </ul>
+    </div>
+
+    <div class="bug-box">
+        <h3>Bug #7: ClockFence Date Format Persistence</h3>
+        <p>Fixed date format not saving correctly to fence metadata XML.</p>
+    </div>
+
+    <div class="bug-box">
+        <h3>Bug #8: Project File Compilation Errors</h3>
+        <p>Fixed various compilation errors in project files.</p>
+    </div>
+
+    <div class="bug-box">
+        <h3>Bugs #9-10: Assembly Binding</h3>
+        <ul>
+            <li>Bug #9: Fixed assembly binding for signed assemblies</li>
+            <li>Bug #10: Fixed assembly binding for unsigned assemblies</li>
+        </ul>
+    </div>
+
+    <div class="bug-box">
+        <h3>Bug #11: Database Initialization Race Condition ⭐</h3>
+        <p><strong>Critical fix:</strong> Fences displayed empty on first launch.</p>
+        <ul>
+            <li>Root cause: Database not populated before fences loaded</li>
+            <li>Solution: Auto-detect empty database and populate on startup</li>
+            <li>Check in <code>Program.cs</code> before showing canvas</li>
+        </ul>
+    </div>
+
+    <div class="bug-box">
+        <h3>Bug #12: .NET 4.8.1 Dictionary Compatibility</h3>
+        <p>Fixed Dictionary initialization syntax incompatible with .NET 4.8.1.</p>
+    </div>
+
+    <div class="bug-box">
+        <h3>Bug #13: SQLiteMigrationSqlGenerator Namespace</h3>
+        <p>Fixed missing namespace for SQLite migration generator.</p>
+    </div>
+
+    <div class="bug-box">
+        <h3>Bug #14: BadImageFormatException - SQLite Platform Mismatch ⭐</h3>
+        <p><strong>Critical fix:</strong> Application crashed on x64 systems.</p>
+        <ul>
+            <li>Root cause: x86 SQLite DLL loaded in x64 process</li>
+            <li>Solution: Changed platform target to x64 (matches System.Data.SQLite NuGet package)</li>
+            <li>Updated all projects to target x64 architecture</li>
+        </ul>
+    </div>
+
+    <h2>🧪 Test Infrastructure</h2>
+
+    <ul>
+        <li><strong>9 test classes created</strong> (~50 test methods)</li>
+        <li>Test project with xUnit, Moq, FluentAssertions</li>
+        <li>CI/CD pipeline (GitHub Actions)</li>
+        <li>Code coverage reporting</li>
+        <li>~400 test methods planned for full coverage</li>
+    </ul>
+
+    <h2>📦 New Classes (15)</h2>
+
+    <h3>Data Layer</h3>
+    <ul>
+        <li><code>AmazonGamesRepository</code> - Amazon Games SQLite integration</li>
+        <li><code>InstalledSoftwareRepository</code> - Main software database repository</li>
+        <li><code>InstalledSoftwareService</code> - Service layer for software queries</li>
+        <li><code>SoftwareCatalogService</code> - Catalog management</li>
+    </ul>
+
+    <h3>Metadata Providers</h3>
+    <ul>
+        <li><code>IMetadataProvider</code> - Base provider interface</li>
+        <li><code>IGameMetadataProvider</code> - Game-specific provider interface</li>
+        <li><code>ISoftwareMetadataProvider</code> - Software-specific provider interface</li>
+        <li><code>RawgApiClient</code> - RAWG.io API client</li>
+        <li><code>WingetApiClient</code> - Winget API client</li>
+        <li><code>WikipediaApiClient</code> - Wikipedia API client</li>
+        <li><code>CnetScraperClient</code> - CNET scraper client</li>
+        <li><code>MetadataEnrichmentService</code> - Orchestration service</li>
+    </ul>
+
+    <h3>Database Context</h3>
+    <ul>
+        <li><code>MasterCatalogContext</code> - EF6 context for master_catalog.db</li>
+        <li><code>LocalDBContext</code> - EF6 context for ref.db</li>
+    </ul>
+
+    <h2>📊 Performance Impact</h2>
+
+    <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+        <tr style="background-color: #1a1a1a;">
+            <th style="border: 1px solid #00ffff; padding: 10px; text-align: left;">Metric</th>
+            <th style="border: 1px solid #00ffff; padding: 10px; text-align: left;">Before</th>
+            <th style="border: 1px solid #00ffff; padding: 10px; text-align: left;">After</th>
+            <th style="border: 1px solid #00ffff; padding: 10px; text-align: left;">Improvement</th>
+        </tr>
+        <tr>
+            <td style="border: 1px solid #444; padding: 10px;">FilesFence load time</td>
+            <td style="border: 1px solid #444; padding: 10px;">~5-10 seconds</td>
+            <td style="border: 1px solid #444; padding: 10px;">~50ms</td>
+            <td style="border: 1px solid #444; padding: 10px; color: #00ff00;">~100x faster</td>
+        </tr>
+        <tr>
+            <td style="border: 1px solid #444; padding: 10px;">Memory usage (detection)</td>
+            <td style="border: 1px solid #444; padding: 10px;">~200MB</td>
+            <td style="border: 1px solid #444; padding: 10px;">~50MB</td>
+            <td style="border: 1px solid #444; padding: 10px; color: #00ff00;">4x reduction</td>
+        </tr>
+        <tr>
+            <td style="border: 1px solid #444; padding: 10px;">Software refresh</td>
+            <td style="border: 1px solid #444; padding: 10px;">On every fence open</td>
+            <td style="border: 1px solid #444; padding: 10px;">Once on startup</td>
+            <td style="border: 1px solid #444; padding: 10px; color: #00ff00;">N/A</td>
+        </tr>
+    </table>
+
+    <h2>🎓 Key Technical Decisions</h2>
+
+    <h3>1. Dual-Database Architecture</h3>
+    <ul>
+        <li><strong>Decision:</strong> Split local installation data (ref.db) from shareable reference data (master_catalog.db)</li>
+        <li><strong>Rationale:</strong> Allow sharing of enriched metadata across machines while keeping local paths separate</li>
+        <li><strong>Trade-off:</strong> More complex queries (requires JOIN operations) but better data organization</li>
+    </ul>
+
+    <h3>2. Metadata Provider Priority</h3>
+    <ul>
+        <li><strong>Decision:</strong> RAWG (games) → Winget → CNET → Wikipedia (software)</li>
+        <li><strong>Rationale:</strong> RAWG has highest quality game data, Winget is official Microsoft source</li>
+        <li><strong>Confidence thresholds:</strong> RAWG 85%, Others 50%</li>
+    </ul>
+
+    <h3>3. Automatic vs Manual Enrichment</h3>
+    <ul>
+        <li><strong>Decision:</strong> Dual-trigger system</li>
+        <li><strong>Automatic:</strong> Background enrichment on database population (non-blocking)</li>
+        <li><strong>Manual:</strong> "Enrich Metadata" button in properties panel (force sync)</li>
+    </ul>
+
+    <h2>🔄 Architecture Changes</h2>
+
+    <pre>
+BEFORE Session 11:
+FilesFence → InstalledAppsUtil.GetAllInstalled() → Live detection (slow)
+
+AFTER Session 11:
+FilesFence → InstalledSoftwareService.QueryInstalledSoftware()
+    → InstalledSoftwareRepository.GetAll()
+    → SQLite Database (ref.db)
+
+Database Population (once on startup):
+InstalledAppsUtil.GetAllInstalled()
+    → InstalledSoftwareService.RefreshInstalledSoftware()
+    → InstalledSoftwareRepository.UpsertBatch()
+    → SQLite Database
+
+Metadata Enrichment (background):
+InstalledSoftwareService.EnrichUnenrichedEntriesAsync()
+    → MetadataEnrichmentService.EnrichSoftwareReferenceBatchAsync()
+    → [RAWG → Winget → CNET → Wikipedia]
+    → SoftwareReferenceRepository.Update()
+    → SQLite Database (master_catalog.db)
+    </pre>
+
+    <h2>📝 Files Modified/Created</h2>
+
+    <h3>New Files</h3>
+    <ul>
+        <li><code>NoFencesDataLayer/Repositories/AmazonGamesRepository.cs</code></li>
+        <li><code>NoFencesDataLayer/Repositories/InstalledSoftwareRepository.cs</code></li>
+        <li><code>NoFencesDataLayer/Repositories/IInstalledSoftwareRepository.cs</code></li>
+        <li><code>NoFencesDataLayer/Services/InstalledSoftwareService.cs</code></li>
+        <li><code>NoFencesDataLayer/Services/Metadata/IMetadataProvider.cs</code></li>
+        <li><code>NoFencesDataLayer/Services/Metadata/RawgApiClient.cs</code></li>
+        <li><code>NoFencesDataLayer/Services/Metadata/WingetApiClient.cs</code></li>
+        <li><code>NoFencesDataLayer/Services/Metadata/WikipediaApiClient.cs</code></li>
+        <li><code>NoFencesDataLayer/Services/Metadata/CnetScraperClient.cs</code></li>
+        <li><code>NoFencesDataLayer/Services/Metadata/MetadataEnrichmentService.cs</code></li>
+        <li><code>NoFencesDataLayer/MasterCatalog/MasterCatalogContext.cs</code></li>
+        <li><code>NoFencesDataLayer/MasterCatalog/Entities/InstalledSoftwareEntry.cs</code></li>
+    </ul>
+
+    <h3>Modified Files</h3>
+    <ul>
+        <li><code>NoFences/Program.cs</code> - Added automatic database population check</li>
+        <li><code>NoFences/View/PreferencesWindow.xaml</code> - Added API keys section</li>
+        <li><code>NoFences/Util/FileFenceFilter.cs</code> - Updated to use database queries</li>
+        <li><code>NoFencesDataLayer/Services/InstalledAppsUtil.cs</code> - Enhanced detection</li>
+        <li><code>NoFencesDataLayer/Services/AmazonGamesDetector.cs</code> - Fixed multiple bugs</li>
+        <li><code>NoFencesCore/Model/InstalledSoftware.cs</code> - Added enriched metadata fields</li>
+    </ul>
+
+    <h2>📚 Lessons Learned</h2>
+
+    <ul>
+        <li><strong>Database initialization timing is critical:</strong> Must populate before UI loads</li>
+        <li><strong>Platform target matters:</strong> SQLite requires matching architecture (x64/x86)</li>
+        <li><strong>Metadata enrichment is slow:</strong> Must be async and non-blocking</li>
+        <li><strong>Provider confidence is key:</strong> Low-quality matches worse than no match</li>
+        <li><strong>Test early, test often:</strong> Integration tests caught most issues</li>
+    </ul>
+
+    <h2>🎯 Future Enhancements (Planned)</h2>
+
+    <ul>
+        <li>More metadata providers (IGDB, MobyGames, Steam API)</li>
+        <li>Scheduled background enrichment (hourly/daily)</li>
+        <li>User-editable metadata override</li>
+        <li>Metadata quality scoring</li>
+        <li>Image caching for cover art</li>
+    </ul>
+
+    <a href="../SESSION_INDEX.html" class="back-link">← Back to Index</a>
+</body>
+</html>

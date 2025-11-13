@@ -1,5 +1,8 @@
+using CommunityToolkit.Mvvm.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 using NoFences.Core.Model;
 using NoFences.Model;
+using NoFencesDataLayer.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,6 +25,7 @@ namespace NoFences.View.Canvas.TypeEditors
         // Smart filter controls
         private ComboBox cmbFileCategory;
         private ComboBox cmbSoftwareCategory;
+        private ComboBox cmbSoftwareSource; // Session 11: Priority 2 - Source filter
         private TextBox txtExtension;
         private ListBox lstExtensions;
         private Button btnAddExtension;
@@ -198,13 +202,79 @@ namespace NoFences.View.Canvas.TypeEditors
                 }
 
                 filterOptionsPanel.Children.Add(cmbSoftwareCategory);
+
+                // Session 11: Priority 2 - Software Source Filter
+                filterOptionsPanel.Children.Add(new TextBlock { Text = "Software Source (Optional):", Margin = new Thickness(0, 8, 0, 4) });
+                cmbSoftwareSource = new ComboBox();
+
+                // Add "All Sources" as first option (null value)
+                cmbSoftwareSource.Items.Add("All Sources");
+
+                // Get available sources from database
+                var availableSources = NoFencesDataLayer.Services.InstalledSoftwareService.GetAvailableSources();
+                foreach (var source in availableSources.OrderBy(s => s))
+                {
+                    cmbSoftwareSource.Items.Add(source);
+                }
+
+                cmbSoftwareSource.SelectedIndex = 0; // Default to "All Sources"
+                filterOptionsPanel.Children.Add(cmbSoftwareSource);
+
                 filterOptionsPanel.Children.Add(new TextBlock
                 {
-                    Text = "Shows installed software from the selected category.\nOnly categories with entries in the catalog are shown.",
+                    Text = "Shows installed software from the selected category.\nOptionally filter by source (Steam, GOG, Epic Games, etc.)\nOnly categories with entries in the catalog are shown.",
                     FontSize = 11,
                     Foreground = System.Windows.Media.Brushes.Gray,
                     Margin = new Thickness(0, 4, 0, 0)
                 });
+
+                // Session 12: Manual metadata enrichment button
+                var btnEnrichMetadata = new Button
+                {
+                    Content = "Enrich Metadata (Force Sync)",
+                    Margin = new Thickness(0, 12, 0, 0),
+                    Padding = new Thickness(12, 6, 12, 6)
+                };
+                btnEnrichMetadata.Click += BtnEnrichMetadata_Click;
+                filterOptionsPanel.Children.Add(btnEnrichMetadata);
+
+                filterOptionsPanel.Children.Add(new TextBlock
+                {
+                    Text = "Manually fetch metadata (publisher, description, genres, etc.) from online sources.\nAutomatic enrichment runs in background after database refresh.",
+                    FontSize = 11,
+                    Foreground = System.Windows.Media.Brushes.Gray,
+                    Margin = new Thickness(0, 4, 0, 0)
+                });
+
+                // Session 12: Enriched Metadata Info Panel
+                var metadataInfoPanel = new Border
+                {
+                    Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb(30, 0, 120, 215)),
+                    BorderBrush = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb(100, 0, 120, 215)),
+                    BorderThickness = new Thickness(1),
+                    CornerRadius = new CornerRadius(4),
+                    Margin = new Thickness(0, 12, 0, 0),
+                    Padding = new Thickness(12, 8, 12, 8)
+                };
+
+                var metadataInfoStack = new StackPanel();
+                metadataInfoStack.Children.Add(new TextBlock
+                {
+                    Text = "📊 Enriched Metadata",
+                    FontWeight = System.Windows.FontWeights.SemiBold,
+                    Margin = new Thickness(0, 0, 0, 6)
+                });
+
+                metadataInfoStack.Children.Add(new TextBlock
+                {
+                    Text = "Hover over items to see enriched metadata:\n• Description  • Genres  • Rating  • Release Date\n• Developers  • Metadata Source",
+                    FontSize = 11,
+                    Foreground = System.Windows.Media.Brushes.DarkGray,
+                    TextWrapping = System.Windows.TextWrapping.Wrap
+                });
+
+                metadataInfoPanel.Child = metadataInfoStack;
+                filterOptionsPanel.Children.Add(metadataInfoPanel);
             }
             else if (selectedType == FileFilterType.Pattern.ToString())
             {
@@ -318,6 +388,68 @@ namespace NoFences.View.Canvas.TypeEditors
             }
         }
 
+        /// <summary>
+        /// Session 12: Manual metadata enrichment button handler.
+        /// Enriches all un-enriched installed software with metadata from online sources.
+        /// Uses IoC container to get service instance.
+        /// </summary>
+        private async void BtnEnrichMetadata_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var button = sender as Button;
+                if (button != null)
+                {
+                    button.IsEnabled = false;
+                    button.Content = "Enriching...";
+                }
+
+                // Show progress
+                MessageBox.Show(
+                    "Metadata enrichment started in background.\nThis may take several minutes depending on the number of entries.\nCheck the log file for progress.",
+                    "Metadata Enrichment",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+
+                // Session 12: Get service from IoC container
+                var service = Ioc.Default.GetService<InstalledSoftwareService>();
+                if (service == null)
+                {
+                    // Fallback for cases where IoC is not initialized (shouldn't happen)
+                    service = new InstalledSoftwareService();
+                }
+
+                await service.EnrichUnenrichedEntriesAsync(maxBatchSize: 100);
+
+                MessageBox.Show(
+                    "Metadata enrichment completed!\nCheck the log file for details on enriched entries.",
+                    "Enrichment Complete",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+
+                if (button != null)
+                {
+                    button.IsEnabled = true;
+                    button.Content = "Enrich Metadata (Force Sync)";
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    $"Error during metadata enrichment:\n{ex.Message}",
+                    "Enrichment Error",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+
+                var button = sender as Button;
+                if (button != null)
+                {
+                    button.IsEnabled = true;
+                    button.Content = "Enrich Metadata (Force Sync)";
+                }
+            }
+        }
+
         public override void LoadFromFenceInfo(FenceInfo fenceInfo)
         {
             txtPath.Text = fenceInfo.Path ?? string.Empty;
@@ -360,6 +492,19 @@ namespace NoFences.View.Canvas.TypeEditors
                         {
                             var displayName = SoftwareCategorizer.GetCategoryDisplayName(fenceInfo.Filter.SoftwareCategory);
                             cmbSoftwareCategory.SelectedItem = displayName;
+                        }
+
+                        // Session 11: Priority 2 - Load source filter
+                        if (cmbSoftwareSource != null)
+                        {
+                            if (string.IsNullOrEmpty(fenceInfo.Filter.Source))
+                            {
+                                cmbSoftwareSource.SelectedIndex = 0; // "All Sources"
+                            }
+                            else
+                            {
+                                cmbSoftwareSource.SelectedItem = fenceInfo.Filter.Source;
+                            }
                         }
                         break;
 
@@ -458,6 +603,20 @@ namespace NoFences.View.Canvas.TypeEditors
                                 filter.SoftwareCategory = cat;
                                 break;
                             }
+                        }
+                    }
+
+                    // Session 11: Priority 2 - Save source filter
+                    if (cmbSoftwareSource?.SelectedItem != null)
+                    {
+                        var selectedSource = cmbSoftwareSource.SelectedItem.ToString();
+                        if (selectedSource == "All Sources")
+                        {
+                            filter.Source = null; // null = all sources
+                        }
+                        else
+                        {
+                            filter.Source = selectedSource;
                         }
                     }
                     break;
