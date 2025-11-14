@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Xml;
 
 using NoFences.Core.Util;
 namespace NoFencesDataLayer.Services
@@ -31,7 +32,12 @@ namespace NoFencesDataLayer.Services
 
             try
             {
-                // Scan registry for EA games
+                log.Info("=== EA App Detection START ===");
+                log.Debug("NOTE: EA App games are now detected via pattern matching in InstalledAppsUtil");
+                log.Debug("This method scans registry for legacy Origin games as fallback");
+
+                // Scan registry for EA games (legacy Origin method, fallback for older installations)
+                log.Debug("Scanning EA Games registry for legacy games...");
                 games.AddRange(ScanEARegistry(Registry.LocalMachine, RegistryPath));
                 games.AddRange(ScanEARegistry(Registry.LocalMachine, RegistryPathNoWow));
 
@@ -41,7 +47,8 @@ namespace NoFencesDataLayer.Services
                     .Select(g => g.First())
                     .ToList();
 
-                log.Debug($"Total {uniqueGames.Count} EA games found");
+                log.Info($"=== EA App Detection END === Found {uniqueGames.Count} games via registry (legacy method)");
+                log.Info("Modern EA App games detected via CanDetectFromPath pattern matching");
                 return uniqueGames;
             }
             catch (Exception ex)
@@ -149,6 +156,148 @@ IconFile={iconFile ?? ""}
             catch (Exception ex)
             {
                 log.Error($"Error creating shortcut for {gameName}: {ex.Message}", ex);
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Checks if the given installation path contains an EA App game.
+        /// EA App games have a distinctive "__Installer/installerdata.xml" structure.
+        /// </summary>
+        public bool CanDetectFromPath(string installPath)
+        {
+            if (string.IsNullOrEmpty(installPath) || !Directory.Exists(installPath))
+                return false;
+
+            try
+            {
+                // EA App games have __Installer/installerdata.xml
+                string installerDataPath = Path.Combine(installPath, "__Installer", "installerdata.xml");
+                bool hasPattern = File.Exists(installerDataPath);
+
+                if (hasPattern)
+                {
+                    log.Debug($"EA App pattern detected at: {installPath}");
+                }
+
+                return hasPattern;
+            }
+            catch (Exception ex)
+            {
+                log.Debug($"Error checking EA pattern at {installPath}: {ex.Message}");
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Extracts game information from an EA App installation by parsing installerdata.xml.
+        /// EA App installerdata.xml structure:
+        /// - contentIDs/contentID: Game ID(s)
+        /// - runtime/launcher/name: Game name (with locale)
+        /// - runtime/launcher/filePath: Executable path (may contain registry references)
+        /// </summary>
+        public GameInfo GetGameInfoFromPath(string installPath)
+        {
+            try
+            {
+                string installerDataPath = Path.Combine(installPath, "__Installer", "installerdata.xml");
+
+                if (!File.Exists(installerDataPath))
+                {
+                    log.Warn($"installerdata.xml not found at {installerDataPath}");
+                    return null;
+                }
+
+                log.Debug($"Parsing EA installerdata.xml: {installerDataPath}");
+
+                var xmlDoc = new XmlDocument();
+                xmlDoc.Load(installerDataPath);
+
+                // Extract contentID (game identifier)
+                var contentIdNode = xmlDoc.SelectSingleNode("//contentIDs/contentID");
+                string gameId = contentIdNode?.InnerText;
+
+                // Extract game name (prefer en_US locale, fallback to first available)
+                var nameNode = xmlDoc.SelectSingleNode("//runtime/launcher/name[@locale='en_US']") ??
+                               xmlDoc.SelectSingleNode("//runtime/launcher/name");
+                string gameName = nameNode?.InnerText;
+
+                // Extract executable file path (relative to install dir, may contain registry references)
+                var filePathNode = xmlDoc.SelectSingleNode("//runtime/launcher/filePath");
+                string relativeExePath = filePathNode?.InnerText;
+
+                if (string.IsNullOrEmpty(gameName))
+                {
+                    log.Warn($"Could not extract game name from {installerDataPath}");
+                    return null;
+                }
+
+                log.Info($"Found EA game: {gameName} (ID: {gameId}) at {installPath}");
+
+                // Find actual executable
+                string executablePath = null;
+                if (!string.IsNullOrEmpty(relativeExePath))
+                {
+                    // Remove registry reference if present (e.g., "[HKEY_...]path\game.exe" -> "path\game.exe")
+                    string cleanPath = Regex.Replace(relativeExePath, @"\[HKEY_[^\]]+\]", "");
+                    executablePath = Path.Combine(installPath, cleanPath);
+
+                    if (!File.Exists(executablePath))
+                    {
+                        log.Debug($"Executable not found at {executablePath}, searching install directory");
+                        executablePath = FindGameExecutable(installPath, gameName);
+                    }
+                }
+                else
+                {
+                    executablePath = FindGameExecutable(installPath, gameName);
+                }
+
+                string iconPath = executablePath;
+
+                // Calculate install size
+                long installSize = 0;
+                try
+                {
+                    var dirInfo = new DirectoryInfo(installPath);
+                    installSize = dirInfo.EnumerateFiles("*", SearchOption.AllDirectories)
+                        .Sum(f => f.Length);
+                }
+                catch
+                {
+                    // Size calculation can fail for large directories
+                }
+
+                // Create shortcut for launching via EA protocol
+                string shortcutDir = Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                    "NoFences", "EAShortcuts");
+
+                string shortcutPath = FindOrCreateGameShortcut(gameId, gameName, shortcutDir, iconPath);
+
+                return new GameInfo
+                {
+                    GameId = gameId ?? Path.GetFileName(installPath),
+                    Name = gameName,
+                    InstallDir = installPath,
+                    ExecutablePath = shortcutPath,
+                    IconPath = iconPath,
+                    SizeOnDisk = installSize,
+                    LastUpdated = null,
+                    ShortcutPath = shortcutPath,
+                    Platform = PlatformName,
+                    Metadata = new Dictionary<string, string>
+                    {
+                        ["GameId"] = gameId ?? "",
+                        ["DisplayName"] = gameName,
+                        ["InstallPath"] = installPath,
+                        ["DetectionMethod"] = "PatternBased"
+                    }
+                };
+            }
+            catch (Exception ex)
+            {
+                log.Error($"Error extracting EA game info from {installPath}: {ex.Message}", ex);
                 return null;
             }
         }

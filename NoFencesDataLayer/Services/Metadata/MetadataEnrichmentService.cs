@@ -605,6 +605,9 @@ namespace NoFencesDataLayer.Services.Metadata
                 softwareRef.MetadataJson = Newtonsoft.Json.JsonConvert.SerializeObject(metadataDict);
             }
 
+            // Set SoftwareType based on metadata source and category
+            softwareRef.Type = DetermineSoftwareType(metadata.Source, softwareRef.Category);
+
             // Update enrichment tracking
             softwareRef.LastEnrichedDate = DateTime.UtcNow;
             softwareRef.MetadataSource = metadata.Source;
@@ -614,7 +617,53 @@ namespace NoFencesDataLayer.Services.Metadata
             string descPreview = metadata.Description != null && metadata.Description.Length > 50
                 ? metadata.Description.Substring(0, 50) + "..."
                 : metadata.Description;
-            log.Debug($"Applied metadata to SoftwareReference: Publisher={metadata.Publisher}, Description={descPreview}, Genres={metadata.Genres}, Source={metadata.Source}");
+            log.Debug($"Applied metadata to SoftwareReference: Publisher={metadata.Publisher}, Description={descPreview}, Genres={metadata.Genres}, Source={metadata.Source}, Type={softwareRef.Type}");
+        }
+
+        /// <summary>
+        /// Determines SoftwareType based on metadata source and category.
+        /// Priority:
+        /// 1. Metadata source (RAWG → Game, Winget/CNET/Wikipedia → Application)
+        /// 2. Category (Development → Tool, Utilities → Utility)
+        /// 3. Default → Application
+        /// </summary>
+        private string DetermineSoftwareType(string metadataSource, string category)
+        {
+            // Game metadata providers indicate game software
+            if (!string.IsNullOrEmpty(metadataSource))
+            {
+                if (metadataSource.Equals("RAWG", StringComparison.OrdinalIgnoreCase))
+                {
+                    return NoFences.Core.Model.SoftwareType.Game.ToString();
+                }
+            }
+
+            // Category-based classification
+            if (!string.IsNullOrEmpty(category))
+            {
+                string lowerCategory = category.ToLower();
+
+                // Games category
+                if (lowerCategory.Contains("game"))
+                {
+                    return NoFences.Core.Model.SoftwareType.Game.ToString();
+                }
+
+                // Development tools
+                if (lowerCategory.Contains("development") || lowerCategory.Contains("programming"))
+                {
+                    return NoFences.Core.Model.SoftwareType.Tool.ToString();
+                }
+
+                // System utilities
+                if (lowerCategory.Contains("utilit"))
+                {
+                    return NoFences.Core.Model.SoftwareType.Utility.ToString();
+                }
+            }
+
+            // Default to Application for general software enriched from Winget/CNET/Wikipedia
+            return NoFences.Core.Model.SoftwareType.Application.ToString();
         }
     }
 

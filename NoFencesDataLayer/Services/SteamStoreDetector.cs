@@ -478,5 +478,24 @@ IconFile={iconFile}
             // Remove special characters and spaces, convert to lowercase
             return Regex.Replace(input, @"[^\w]", "").ToLower();
         }
+
+        /// <summary>
+        /// Checks if the given path contains a Steam game.
+        /// Steam games are detected via library scanning, not path pattern matching.
+        /// </summary>
+        public bool CanDetectFromPath(string installPath)
+        {
+            // Steam uses library scanning, not pattern-based detection
+            return false;
+        }
+
+        /// <summary>
+        /// Steam games are detected via library scanning, not path-based extraction.
+        /// </summary>
+        public GameInfo GetGameInfoFromPath(string installPath)
+        {
+            // Not implemented for Steam - uses library scanning instead
+            return null;
+        }
     }
 }

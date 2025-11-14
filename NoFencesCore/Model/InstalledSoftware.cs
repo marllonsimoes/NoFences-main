@@ -56,6 +56,13 @@ namespace NoFences.Core.Model
         public SoftwareCategory Category { get; set; }
 
         /// <summary>
+        /// High-level software type (Game, Application, Tool, Utility, Unknown).
+        /// Only populated when loaded from database (FromJoin/FromReference).
+        /// Null for in-memory/legacy objects.
+        /// </summary>
+        public string Type { get; set; }
+
+        /// <summary>
         /// Registry key where this software was found
         /// </summary>
         public string RegistryKey { get; set; }
@@ -229,6 +236,7 @@ namespace NoFences.Core.Model
                 Name = refDyn.Name,
                 Publisher = refDyn.Publisher,
                 Source = refDyn.Source,
+                Type = refDyn.Type, // High-level software type
                 Description = refDyn.Description,
                 Genres = refDyn.Genres,
                 Developers = refDyn.Developers,
@@ -293,6 +301,7 @@ namespace NoFences.Core.Model
                 Name = refDyn.Name,
                 Publisher = refDyn.Publisher,
                 Source = refDyn.Source,
+                Type = refDyn.Type, // High-level software type
                 Description = refDyn.Description,
                 Genres = refDyn.Genres,
                 Developers = refDyn.Developers,

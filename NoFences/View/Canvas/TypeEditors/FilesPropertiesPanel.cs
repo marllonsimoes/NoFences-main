@@ -38,8 +38,14 @@ namespace NoFences.View.Canvas.TypeEditors
         private Button btnAddPattern;
         private Button btnRemovePattern;
 
+        // Manual items controls (when no path configured)
+        private ListBox lstManualItems;
+        private Button btnRemoveManualItem;
+        private StackPanel manualItemsPanel;
+
         private List<string> patterns = new List<string>();
         private List<string> extensions = new List<string>();
+        private List<string> manualItems = new List<string>();
 
         public FilesPropertiesPanel()
         {
@@ -99,6 +105,37 @@ namespace NoFences.View.Canvas.TypeEditors
                 Margin = new Thickness(0, 0, 0, 4)
             };
             mainStack.Children.Add(chkIncludeSubfolders);
+
+            // Manual Items section (shown when no path configured)
+            manualItemsPanel = new StackPanel { Margin = new Thickness(0, 12, 0, 0) };
+            manualItemsPanel.Children.Add(new TextBlock
+            {
+                Text = "Manually Selected Items:",
+                Margin = new Thickness(0, 0, 0, 4),
+                FontWeight = System.Windows.FontWeights.SemiBold
+            });
+
+            var manualItemsListPanel = new DockPanel();
+            var manualButtonStack = new StackPanel { Width = 80, Margin = new Thickness(8, 0, 0, 0) };
+            btnRemoveManualItem = new Button { Content = "Remove", Margin = new Thickness(0, 0, 0, 4) };
+            btnRemoveManualItem.Click += BtnRemoveManualItem_Click;
+            manualButtonStack.Children.Add(btnRemoveManualItem);
+            DockPanel.SetDock(manualButtonStack, Dock.Right);
+
+            lstManualItems = new ListBox { MinHeight = 100 };
+            manualItemsListPanel.Children.Add(manualButtonStack);
+            manualItemsListPanel.Children.Add(lstManualItems);
+            manualItemsPanel.Children.Add(manualItemsListPanel);
+
+            manualItemsPanel.Children.Add(new TextBlock
+            {
+                Text = "These items were manually added to this fence. Remove unwanted items here.",
+                FontSize = 11,
+                Foreground = System.Windows.Media.Brushes.Gray,
+                Margin = new Thickness(0, 4, 0, 0)
+            });
+
+            mainStack.Children.Add(manualItemsPanel);
 
             Content = mainStack;
         }
@@ -184,23 +221,12 @@ namespace NoFences.View.Canvas.TypeEditors
             }
             else if (selectedType == FileFilterType.Software.ToString())
             {
-                // Show software category dropdown
+                // Show software category dropdown (database-driven)
                 filterOptionsPanel.Children.Add(new TextBlock { Text = "Software Category:", Margin = new Thickness(0, 0, 0, 4) });
                 cmbSoftwareCategory = new ComboBox();
 
-                // Load categories dynamically from database
-                var availableCategories = NoFencesDataLayer.Services.SoftwareCatalogService.GetAvailableCategoriesStatic();
-
-                // Sort categories alphabetically by display name
-                var sortedCategories = availableCategories
-                    .OrderBy(cat => SoftwareCategorizer.GetCategoryDisplayName(cat))
-                    .ToList();
-
-                foreach (var category in sortedCategories)
-                {
-                    var displayName = SoftwareCategorizer.GetCategoryDisplayName(category);
-                    cmbSoftwareCategory.Items.Add(displayName);
-                }
+                // Populate categories from database
+                PopulateSoftwareCategories();
 
                 filterOptionsPanel.Children.Add(cmbSoftwareCategory);
 
@@ -223,25 +249,39 @@ namespace NoFences.View.Canvas.TypeEditors
 
                 filterOptionsPanel.Children.Add(new TextBlock
                 {
-                    Text = "Shows installed software from the selected category.\nOptionally filter by source (Steam, GOG, Epic Games, etc.)\nOnly categories with entries in the catalog are shown.",
+                    Text = "Two-level filtering: Category (what kind) → Source (where from)\nExample: Games → Steam = Shows all Steam games\nCategories are database-driven and will populate as metadata enrichment completes.",
                     FontSize = 11,
                     Foreground = System.Windows.Media.Brushes.Gray,
                     Margin = new Thickness(0, 4, 0, 0)
                 });
 
-                // Manual metadata enrichment button
+                // Manual metadata enrichment buttons
+                var enrichButtonPanel = new DockPanel { Margin = new Thickness(0, 12, 0, 0) };
+
                 var btnEnrichMetadata = new Button
                 {
                     Content = "Enrich Metadata (Force Sync)",
-                    Margin = new Thickness(0, 12, 0, 0),
                     Padding = new Thickness(12, 6, 12, 6)
                 };
                 btnEnrichMetadata.Click += BtnEnrichMetadata_Click;
-                filterOptionsPanel.Children.Add(btnEnrichMetadata);
+                DockPanel.SetDock(btnEnrichMetadata, Dock.Left);
+                enrichButtonPanel.Children.Add(btnEnrichMetadata);
+
+                var btnDiagnostics = new Button
+                {
+                    Content = "Diagnostics",
+                    Padding = new Thickness(12, 6, 12, 6),
+                    Margin = new Thickness(8, 0, 0, 0)
+                };
+                btnDiagnostics.Click += BtnDiagnostics_Click;
+                DockPanel.SetDock(btnDiagnostics, Dock.Left);
+                enrichButtonPanel.Children.Add(btnDiagnostics);
+
+                filterOptionsPanel.Children.Add(enrichButtonPanel);
 
                 filterOptionsPanel.Children.Add(new TextBlock
                 {
-                    Text = "Manually fetch metadata (publisher, description, genres, etc.) from online sources.\nAutomatic enrichment runs in background after database refresh.",
+                    Text = "Manually fetch metadata (publisher, description, genres, etc.) from online sources.\nAutomatic enrichment runs in background after database refresh.\n'Diagnostics' generates a report showing which games are missing metadata and why.",
                     FontSize = 11,
                     Foreground = System.Windows.Media.Brushes.Gray,
                     Margin = new Thickness(0, 4, 0, 0)
@@ -389,6 +429,17 @@ namespace NoFences.View.Canvas.TypeEditors
             }
         }
 
+        // Manual items handlers
+        private void BtnRemoveManualItem_Click(object sender, RoutedEventArgs e)
+        {
+            if (lstManualItems.SelectedItem != null)
+            {
+                var selected = lstManualItems.SelectedItem.ToString();
+                manualItems.Remove(selected);
+                lstManualItems.Items.Remove(lstManualItems.SelectedItem);
+            }
+        }
+
         /// <summary>
         /// Manual metadata enrichment button handler.
         /// Enriches all un-enriched installed software with metadata from online sources.
@@ -481,6 +532,65 @@ namespace NoFences.View.Canvas.TypeEditors
             }
         }
 
+        private void BtnDiagnostics_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var diagnostics = new NoFencesDataLayer.Services.Metadata.MetadataEnrichmentDiagnostics();
+                string report = diagnostics.GenerateDiagnosticReport();
+
+                // Save report to a file
+                string appDataPath = NoFences.Core.Util.AppEnvUtil.GetAppEnvironmentPath();
+                string reportPath = System.IO.Path.Combine(appDataPath, $"enrichment_diagnostics_{DateTime.Now:yyyyMMdd_HHmmss}.txt");
+                System.IO.File.WriteAllText(reportPath, report);
+
+                // Show the report in a window
+                var reportWindow = new Window
+                {
+                    Title = "Metadata Enrichment Diagnostics",
+                    Width = 900,
+                    Height = 700,
+                    WindowStartupLocation = WindowStartupLocation.CenterScreen,
+                    Owner = Window.GetWindow(this)
+                };
+
+                var scrollViewer = new ScrollViewer
+                {
+                    VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+                    HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
+                    Padding = new Thickness(20)
+                };
+
+                var textBlock = new TextBlock
+                {
+                    Text = report,
+                    FontFamily = new System.Windows.Media.FontFamily("Consolas, Courier New, Monospace"),
+                    FontSize = 12,
+                    TextWrapping = TextWrapping.NoWrap
+                };
+
+                scrollViewer.Content = textBlock;
+                reportWindow.Content = scrollViewer;
+
+                reportWindow.ShowDialog();
+
+                // Notify user about saved file
+                MessageBox.Show(
+                    $"Diagnostic report generated and saved to:\n{reportPath}\n\nThe report shows:\n• Overall enrichment statistics\n• Breakdown by source and category\n• Games with failed enrichment\n• Games never attempted\n• Recommendations for improvement",
+                    "Diagnostics Generated",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    $"Error generating diagnostics:\n{ex.Message}",
+                    "Diagnostics Error",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
+        }
+
         public override void LoadFromFenceInfo(FenceInfo fenceInfo)
         {
             txtPath.Text = fenceInfo.Path ?? string.Empty;
@@ -521,8 +631,17 @@ namespace NoFences.View.Canvas.TypeEditors
                     case FileFilterType.Software:
                         if (cmbSoftwareCategory != null)
                         {
-                            var displayName = SoftwareCategorizer.GetCategoryDisplayName(fenceInfo.Filter.SoftwareCategory);
-                            cmbSoftwareCategory.SelectedItem = displayName;
+                            // Prefer CategoryString if available (for genres/dynamic categories)
+                            if (!string.IsNullOrEmpty(fenceInfo.Filter.CategoryString))
+                            {
+                                cmbSoftwareCategory.SelectedItem = fenceInfo.Filter.CategoryString;
+                            }
+                            else
+                            {
+                                // Fall back to enum-based display name
+                                var displayName = SoftwareCategorizer.GetCategoryDisplayName(fenceInfo.Filter.SoftwareCategory);
+                                cmbSoftwareCategory.SelectedItem = displayName;
+                            }
                         }
 
                         // Load source filter
@@ -571,6 +690,21 @@ namespace NoFences.View.Canvas.TypeEditors
                     }
                 }
             }
+
+            // Load manual items
+            manualItems.Clear();
+            lstManualItems.Items.Clear();
+            if (fenceInfo.Items != null && fenceInfo.Items.Count > 0)
+            {
+                foreach (var item in fenceInfo.Items)
+                {
+                    manualItems.Add(item);
+                    lstManualItems.Items.Add(item);
+                }
+            }
+
+            // Show/hide manual items panel based on whether there are items
+            manualItemsPanel.Visibility = manualItems.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
         }
 
         public override void SaveToFenceInfo(FenceInfo fenceInfo)
@@ -626,13 +760,33 @@ namespace NoFences.View.Canvas.TypeEditors
                     if (cmbSoftwareCategory?.SelectedItem != null)
                     {
                         var displayName = cmbSoftwareCategory.SelectedItem.ToString();
-                        // Find matching enum value
-                        foreach (SoftwareCategory cat in Enum.GetValues(typeof(SoftwareCategory)))
+
+                        // Store raw category/genre string in CategoryString property
+                        filter.CategoryString = displayName;
+
+                        // Also try to map to SoftwareCategory enum for backward compatibility
+                        if (displayName == "All")
                         {
-                            if (SoftwareCategorizer.GetCategoryDisplayName(cat) == displayName)
+                            filter.SoftwareCategory = SoftwareCategory.All;
+                        }
+                        else
+                        {
+                            // Try to find matching enum value (for non-game software)
+                            bool found = false;
+                            foreach (SoftwareCategory cat in Enum.GetValues(typeof(SoftwareCategory)))
                             {
-                                filter.SoftwareCategory = cat;
-                                break;
+                                if (SoftwareCategorizer.GetCategoryDisplayName(cat) == displayName)
+                                {
+                                    filter.SoftwareCategory = cat;
+                                    found = true;
+                                    break;
+                                }
+                            }
+
+                            // If not found (e.g., it's a genre like "Action"), set to All
+                            if (!found)
+                            {
+                                filter.SoftwareCategory = SoftwareCategory.All;
                             }
                         }
                     }
@@ -662,6 +816,75 @@ namespace NoFences.View.Canvas.TypeEditors
 
             fenceInfo.Filter = filter;
             fenceInfo.Filters = new List<string>(); // Clear legacy filters when using new system
+
+            // Save manual items
+            fenceInfo.Items = new List<string>(manualItems);
+        }
+
+        /// <summary>
+        /// Populates the Software Category dropdown from database content.
+        /// Shows all unique Category values from the software_ref table.
+        /// Database-driven approach - categories will populate as metadata enrichment completes.
+        /// </summary>
+        private void PopulateSoftwareCategories()
+        {
+            if (cmbSoftwareCategory == null)
+                return;
+
+            var previousSelection = cmbSoftwareCategory.SelectedItem?.ToString();
+            cmbSoftwareCategory.Items.Clear();
+
+            try
+            {
+                var service = new NoFencesDataLayer.Services.InstalledSoftwareService();
+                var softwareRefs = service.GetAllSoftwareReferences();
+
+                log4net.LogManager.GetLogger(typeof(FilesPropertiesPanel))
+                    .Debug($"PopulateSoftwareCategories: Total refs={softwareRefs.Count}");
+
+                // Collect all unique categories from database
+                HashSet<string> categories = new HashSet<string>();
+                foreach (var sw in softwareRefs)
+                {
+                    if (!string.IsNullOrEmpty(sw.Category))
+                    {
+                        categories.Add(sw.Category);
+                    }
+                }
+
+                log4net.LogManager.GetLogger(typeof(FilesPropertiesPanel))
+                    .Debug($"PopulateSoftwareCategories: Found {categories.Count} unique categories");
+
+                // Add "All" option first
+                cmbSoftwareCategory.Items.Add("All");
+
+                // Add sorted categories
+                foreach (var category in categories.OrderBy(c => c))
+                {
+                    cmbSoftwareCategory.Items.Add(category);
+                }
+
+                log4net.LogManager.GetLogger(typeof(FilesPropertiesPanel))
+                    .Debug($"PopulateSoftwareCategories: Final dropdown has {cmbSoftwareCategory.Items.Count} items");
+
+                // Restore previous selection or default to "All"
+                if (!string.IsNullOrEmpty(previousSelection) && cmbSoftwareCategory.Items.Contains(previousSelection))
+                {
+                    cmbSoftwareCategory.SelectedItem = previousSelection;
+                }
+                else
+                {
+                    cmbSoftwareCategory.SelectedIndex = 0; // "All"
+                }
+            }
+            catch (Exception ex)
+            {
+                log4net.LogManager.GetLogger(typeof(FilesPropertiesPanel))
+                    .Error($"Error populating software categories: {ex.Message}", ex);
+                // Fallback to "All"
+                cmbSoftwareCategory.Items.Add("All");
+                cmbSoftwareCategory.SelectedIndex = 0;
+            }
         }
     }
 }

@@ -124,7 +124,7 @@ public class CustomActions
             try
             {
                 // Step 1: Check if service already exists
-                bool serviceExists = Tasks.IsServiceInstalled(serviceName);
+                bool serviceExists = true;// TODO: There are other ways to install services. Tasks.IsServiceInstalled(serviceName);
                 session.Log($"Service exists check: {serviceExists}");
 
                 if (serviceExists)
@@ -148,7 +148,7 @@ public class CustomActions
                     try
                     {
                         session.Log($"Attempting to uninstall existing service {serviceName}");
-                        Tasks.InstallService(serviceExePath, install: false);
+                        Tasks.InstallService(serviceExePath, isInstalling: false);
                         session.Log($"Service {serviceName} uninstalled successfully");
                     }
                     catch (Exception ex)
@@ -160,7 +160,7 @@ public class CustomActions
 
                 // Step 4: Install service
                 session.Log($"Installing service {serviceName}");
-                Tasks.InstallService(serviceExePath, install: true);
+                Tasks.InstallService(serviceExePath, isInstalling: true);
                 session.Log($"Service {serviceName} installed successfully");
 
                 // Step 5: Start service
@@ -190,7 +190,7 @@ public class CustomActions
             try
             {
                 // Step 1: Check if service exists
-                bool serviceExists = Tasks.IsServiceInstalled(serviceName);
+                bool serviceExists = true;// TODO: There are other ways to install services. Tasks.IsServiceInstalled(serviceName);
                 session.Log($"Service exists check: {serviceExists}");
 
                 if (!serviceExists)
@@ -214,7 +214,7 @@ public class CustomActions
 
                 // Step 3: Uninstall service
                 session.Log($"Uninstalling service {serviceName}");
-                Tasks.InstallService(serviceExePath, install: false);
+                Tasks.InstallService(serviceExePath, isInstalling: false);
                 session.Log($"Service {serviceName} uninstalled successfully");
             }
             catch (Exception ex)

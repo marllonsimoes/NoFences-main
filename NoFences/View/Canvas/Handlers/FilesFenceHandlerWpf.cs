@@ -44,6 +44,15 @@ namespace NoFences.View.Canvas.Handlers
         // Cached InstalledSoftware items - Changed from List<string> to List<InstalledSoftware>
         private List<InstalledSoftware> installedItems = new List<InstalledSoftware>();
 
+        // File system watcher for automatic refresh when files change
+        private FileSystemWatcher fileWatcher;
+
+        // Database polling timer for loading state
+        private System.Windows.Threading.DispatcherTimer pollingTimer;
+        private int pollingAttempts = 0;
+        private const int MAX_POLLING_ATTEMPTS = 10; // 10 seconds max
+        private bool isLoadingDatabaseContent = false;
+
         public void Initialize(FenceInfo fenceInfo)
         {
             this.fenceInfo = fenceInfo ?? throw new ArgumentNullException(nameof(fenceInfo));
@@ -53,6 +62,9 @@ namespace NoFences.View.Canvas.Handlers
             installedItems = GetInstalledItems();
 
             thumbnailProvider.IconThumbnailLoaded += ThumbnailProvider_IconThumbnailLoaded;
+
+            // Start file system monitoring if configured
+            InitializeFileWatcher();
 
             log.Debug($"Initialized for fence '{fenceInfo.Name}', loaded {installedItems.Count} items");
         }
@@ -113,6 +125,18 @@ namespace NoFences.View.Canvas.Handlers
             }
 
             log.Debug($"Found {installedItems.Count} installed items to display");
+
+            // Check if database is empty and fence uses software filter
+            if (installedItems.Count == 0 && IsSoftwareFilterFence())
+            {
+                log.Info($"Database appears empty for software fence '{fenceInfo.Name}', starting polling timer");
+                ShowLoadingState();
+                StartDatabasePolling();
+                return; // Don't populate items yet
+            }
+
+            // Stop polling if it's running (data arrived)
+            StopDatabasePolling();
 
             foreach (var software in installedItems)
             {
@@ -321,10 +345,264 @@ namespace NoFences.View.Canvas.Handlers
             }
         }
 
+        /// <summary>
+        /// Initializes FileSystemWatcher for automatic refresh when files change.
+        /// Only monitors when fence is configured with a path and filter type allows file display.
+        /// </summary>
+        private void InitializeFileWatcher()
+        {
+            // Only monitor if fence has a path configured
+            if (string.IsNullOrEmpty(fenceInfo.Path) || !Directory.Exists(fenceInfo.Path))
+            {
+                log.Debug($"File watcher not initialized - no valid path configured");
+                return;
+            }
+
+            // Only monitor for file-based filters (not Software filter)
+            if (fenceInfo.Filter != null && fenceInfo.Filter.FilterType == FileFilterType.Software)
+            {
+                log.Debug($"File watcher not initialized - Software filter doesn't monitor files");
+                return;
+            }
+
+            try
+            {
+                fileWatcher = new FileSystemWatcher(fenceInfo.Path);
+
+                // Watch for all types of changes
+                fileWatcher.NotifyFilter = NotifyFilters.FileName | NotifyFilters.DirectoryName |
+                                          NotifyFilters.LastWrite | NotifyFilters.CreationTime;
+
+                // Monitor all files
+                fileWatcher.Filter = "*.*";
+
+                // Include subdirectories if configured
+                fileWatcher.IncludeSubdirectories = fenceInfo.Filter?.IncludeSubfolders ?? false;
+
+                // Wire up event handlers
+                fileWatcher.Created += OnFileSystemChanged;
+                fileWatcher.Deleted += OnFileSystemChanged;
+                fileWatcher.Renamed += OnFileSystemRenamed;
+                fileWatcher.Changed += OnFileSystemChanged;
+
+                // Start monitoring
+                fileWatcher.EnableRaisingEvents = true;
+
+                log.Info($"File system watcher initialized for path '{fenceInfo.Path}' (IncludeSubdirectories={fileWatcher.IncludeSubdirectories})");
+            }
+            catch (Exception ex)
+            {
+                log.Error($"Error initializing file system watcher for '{fenceInfo.Path}': {ex.Message}", ex);
+                fileWatcher = null;
+            }
+        }
+
+        /// <summary>
+        /// Handles file system change events (Created, Deleted, Changed).
+        /// Refreshes fence content on UI thread.
+        /// </summary>
+        private void OnFileSystemChanged(object sender, FileSystemEventArgs e)
+        {
+            log.Debug($"File system change detected: {e.ChangeType} - {e.Name}");
+
+            // Refresh on UI thread to avoid cross-thread exceptions
+            System.Windows.Application.Current?.Dispatcher.BeginInvoke(new Action(() =>
+            {
+                try
+                {
+                    // Clear cache and refresh
+                    installedItems.Clear();
+                    Refresh();
+                    log.Info($"Fence refreshed due to file system change: {e.ChangeType} - {e.Name}");
+                }
+                catch (Exception ex)
+                {
+                    log.Error($"Error refreshing fence after file system change: {ex.Message}", ex);
+                }
+            }));
+        }
+
+        /// <summary>
+        /// Handles file system rename events.
+        /// Refreshes fence content on UI thread.
+        /// </summary>
+        private void OnFileSystemRenamed(object sender, RenamedEventArgs e)
+        {
+            log.Debug($"File system rename detected: {e.OldName} -> {e.Name}");
+
+            // Refresh on UI thread
+            System.Windows.Application.Current?.Dispatcher.BeginInvoke(new Action(() =>
+            {
+                try
+                {
+                    // Clear cache and refresh
+                    installedItems.Clear();
+                    Refresh();
+                    log.Info($"Fence refreshed due to file rename: {e.OldName} -> {e.Name}");
+                }
+                catch (Exception ex)
+                {
+                    log.Error($"Error refreshing fence after file rename: {ex.Message}", ex);
+                }
+            }));
+        }
+
+        /// <summary>
+        /// Checks if this fence uses a software filter (FilterType = Software).
+        /// Used to determine if database polling is needed.
+        /// </summary>
+        private bool IsSoftwareFilterFence()
+        {
+            return fenceInfo.Filter != null && fenceInfo.Filter.FilterType == FileFilterType.Software;
+        }
+
+        /// <summary>
+        /// Shows loading state message in the fence UI.
+        /// Displays "Loading installed software..." while database populates.
+        /// </summary>
+        private void ShowLoadingState()
+        {
+            if (isLoadingDatabaseContent)
+                return; // Already showing
+
+            isLoadingDatabaseContent = true;
+
+            // Add a loading message item
+            items.Add(new FileItemViewModel
+            {
+                Name = "⏳ Loading installed software...",
+                Path = "",
+                Icon = null
+            });
+
+            log.Debug("Showing loading state message");
+        }
+
+        /// <summary>
+        /// Starts database polling timer to check when data becomes available.
+        /// Polls every 1 second for up to 10 seconds.
+        /// </summary>
+        private void StartDatabasePolling()
+        {
+            if (pollingTimer != null)
+                return; // Already polling
+
+            pollingAttempts = 0;
+
+            pollingTimer = new System.Windows.Threading.DispatcherTimer();
+            pollingTimer.Interval = TimeSpan.FromSeconds(1);
+            pollingTimer.Tick += OnPollingTick;
+            pollingTimer.Start();
+
+            log.Info($"Started database polling timer for fence '{fenceInfo.Name}'");
+        }
+
+        /// <summary>
+        /// Stops database polling timer.
+        /// Called when data arrives or max attempts reached.
+        /// </summary>
+        private void StopDatabasePolling()
+        {
+            if (pollingTimer != null)
+            {
+                pollingTimer.Stop();
+                pollingTimer.Tick -= OnPollingTick;
+                pollingTimer = null;
+                log.Debug("Stopped database polling timer");
+            }
+
+            isLoadingDatabaseContent = false;
+        }
+
+        /// <summary>
+        /// Polling timer tick event - checks if database has data.
+        /// Refreshes fence when data becomes available.
+        /// </summary>
+        private void OnPollingTick(object sender, EventArgs e)
+        {
+            pollingAttempts++;
+
+            log.Debug($"Polling attempt {pollingAttempts}/{MAX_POLLING_ATTEMPTS}");
+
+            try
+            {
+                // Check if database has items now
+                var service = new NoFencesDataLayer.Services.InstalledSoftwareService();
+                int itemCount = service.GetDatabaseItemCount();
+
+                if (itemCount > 0)
+                {
+                    log.Info($"Database populated with {itemCount} items, refreshing fence");
+                    StopDatabasePolling();
+
+                    // Refresh fence with new data
+                    installedItems.Clear();
+                    Refresh();
+                }
+                else if (pollingAttempts >= MAX_POLLING_ATTEMPTS)
+                {
+                    log.Warn($"Database still empty after {MAX_POLLING_ATTEMPTS} seconds, stopping polling");
+                    StopDatabasePolling();
+
+                    // Update message to show timeout
+                    items.Clear();
+                    items.Add(new FileItemViewModel
+                    {
+                        Name = "No software found",
+                        Path = "Database scan may still be in progress",
+                        Icon = null
+                    });
+
+                    ContentChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            catch (Exception ex)
+            {
+                log.Error($"Error during database polling: {ex.Message}", ex);
+                StopDatabasePolling();
+            }
+        }
+
+        /// <summary>
+        /// Cleans up resources including FileSystemWatcher and polling timer.
+        /// Called when the fence is being disposed.
+        /// </summary>
         public void Cleanup()
         {
-            thumbnailProvider.IconThumbnailLoaded -= ThumbnailProvider_IconThumbnailLoaded;
-            items?.Clear();
+            try
+            {
+                // Stop polling timer
+                StopDatabasePolling();
+
+                // Stop and dispose file watcher
+                if (fileWatcher != null)
+                {
+                    fileWatcher.EnableRaisingEvents = false;
+                    fileWatcher.Created -= OnFileSystemChanged;
+                    fileWatcher.Deleted -= OnFileSystemChanged;
+                    fileWatcher.Renamed -= OnFileSystemRenamed;
+                    fileWatcher.Changed -= OnFileSystemChanged;
+                    fileWatcher.Dispose();
+                    fileWatcher = null;
+                    log.Debug("File system watcher disposed");
+                }
+
+                // Dispose thumbnail provider
+                if (thumbnailProvider != null)
+                {
+                    thumbnailProvider.IconThumbnailLoaded -= ThumbnailProvider_IconThumbnailLoaded;
+                }
+
+                // Clear icon cache
+                extractedIconCache.Clear();
+
+                // Clear items
+                items?.Clear();
+            }
+            catch (Exception ex)
+            {
+                log.Error($"Error cleaning up FilesFenceHandlerWpf: {ex.Message}", ex);
+            }
         }
 
         public bool HasContent()

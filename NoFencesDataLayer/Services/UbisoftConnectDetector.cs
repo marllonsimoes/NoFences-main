@@ -351,5 +351,25 @@ IconFile={iconFile ?? ""}
             // Remove special characters and spaces, convert to lowercase
             return Regex.Replace(input, @"[^\w]", "").ToLower();
         }
+
+        /// <summary>
+        /// Checks if the given path contains a game for this platform.
+        /// Currently only implemented for EA App detector.
+        /// </summary>
+        public bool CanDetectFromPath(string installPath)
+        {
+            // Pattern-based detection not implemented for this platform
+            return false;
+        }
+
+        /// <summary>
+        /// Extracts game information from installation path.
+        /// Currently only implemented for EA App detector.
+        /// </summary>
+        public GameInfo GetGameInfoFromPath(string installPath)
+        {
+            // Pattern-based detection not implemented for this platform
+            return null;
+        }
     }
 }

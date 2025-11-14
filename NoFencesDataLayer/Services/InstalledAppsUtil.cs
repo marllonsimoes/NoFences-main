@@ -50,11 +50,75 @@ namespace NoFencesDataLayer.Services
             {
                 software.AddRange(ScanRegistryKey(Registry.CurrentUser, path, false));
             }
-            
+
             log.Info($"Found {software.Count} software entries from registry");
             foreach (var soft in software) {
                 log.Debug($"\t - {soft}");
             }
+
+            // Pattern-based detector claiming: Allow specialized detectors to enhance registry entries
+            // This enables platform-specific detection (e.g., EA App's __Installer/installerdata.xml)
+            var patternDetectors = new List<IGameStoreDetector>
+            {
+                new EAAppDetector(),
+                new SteamStoreDetector(),
+                new EpicGamesStoreDetector(),
+                new GOGGalaxyDetector(),
+                new UbisoftConnectDetector(),
+                new AmazonGamesDetector()
+            };
+
+            log.Info($"Checking {software.Count} registry entries against pattern detectors");
+            for (int i = 0; i < software.Count; i++)
+            {
+                var softwareEntry = software[i];
+
+                // Skip entries without install location
+                if (string.IsNullOrEmpty(softwareEntry.InstallLocation))
+                    continue;
+
+                // Check if any detector can identify this software by its installation structure
+                foreach (var detector in patternDetectors)
+                {
+                    try
+                    {
+                        if (detector.CanDetectFromPath(softwareEntry.InstallLocation))
+                        {
+                            log.Debug($"Pattern match: {detector.PlatformName} detected at {softwareEntry.InstallLocation}");
+
+                            var gameInfo = detector.GetGameInfoFromPath(softwareEntry.InstallLocation);
+                            if (gameInfo != null)
+                            {
+                                // Convert GameInfo to InstalledSoftware, preserving useful registry data
+                                var enhancedEntry = new InstalledSoftware
+                                {
+                                    Name = gameInfo.Name,
+                                    Publisher = detector.PlatformName,
+                                    InstallLocation = gameInfo.InstallDir,
+                                    ExecutablePath = gameInfo.ExecutablePath ?? gameInfo.ShortcutPath,
+                                    IconPath = gameInfo.IconPath,
+                                    Category = SoftwareCategory.Games, // Keep enum for backward compatibility
+                                    Version = softwareEntry.Version, // Preserve registry version if available
+                                    InstallDate = gameInfo.LastUpdated ?? softwareEntry.InstallDate,
+                                    RegistryKey = $"{detector.PlatformName}:{gameInfo.GameId}",
+                                    IsWow64 = softwareEntry.IsWow64,
+                                    Source = detector.PlatformName
+                                };
+
+                                // Replace generic registry entry with enhanced game info
+                                software[i] = enhancedEntry;
+                                log.Info($"Enhanced registry entry '{softwareEntry.Name}' with {detector.PlatformName} data");
+                                break; // First detector that matches wins
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        log.Debug($"Error checking {detector.PlatformName} pattern at {softwareEntry.InstallLocation}: {ex.Message}");
+                    }
+                }
+            }
+
             // Add games from all supported game stores
             var games = GetAllGames();
             log.Info($"Found {games.Count} games entries from registry");

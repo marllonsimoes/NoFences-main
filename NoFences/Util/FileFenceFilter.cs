@@ -94,18 +94,24 @@ namespace NoFences.Util
                 // Try to query database via InstalledSoftwareService (hybrid architecture)
                 var service = new InstalledSoftwareService();
 
-                // Convert SoftwareCategory enum to string for database query
-                // If category is "All", pass null to get all software
-                string categoryFilter = filter.SoftwareCategory == SoftwareCategory.All
-                    ? null
-                    : filter.SoftwareCategory.ToString();
+                // Use CategoryString if available, otherwise fall back to SoftwareCategory enum
+                string categoryFilter = null;
+                if (!string.IsNullOrEmpty(filter.CategoryString))
+                {
+                    // Use raw string from database
+                    categoryFilter = filter.CategoryString == "All" ? null : filter.CategoryString;
+                }
+                else if (filter.SoftwareCategory != SoftwareCategory.All)
+                {
+                    // Fall back to enum value for backward compatibility
+                    categoryFilter = filter.SoftwareCategory.ToString();
+                }
 
-                // Source filter support
-                // Use filter.Source for advanced filtering (Steam, GOG, etc.)
-                // null = all sources, specific string = filter by that source
-                string sourceFilter = filter.Source; // null or "Steam", "GOG", "Epic Games", etc.
+                // Source filter support (Steam, GOG, etc.)
+                string sourceFilter = filter.Source;
 
-                installedSoftware = service.QueryInstalledSoftware(categoryFilter, source: sourceFilter);
+                // Query with simplified 2-parameter signature (category + source)
+                installedSoftware = service.QueryInstalledSoftware(categoryFilter, sourceFilter);
 
                 // Log with source information if specified
                 if (!string.IsNullOrEmpty(sourceFilter))
@@ -117,38 +123,17 @@ namespace NoFences.Util
                     log.Info($"FileFenceFilter: Database query returned {installedSoftware.Count} software items for category {filter.SoftwareCategory}");
                 }
 
-                // If database is empty, fall back to in-memory service
+                // Empty database is valid - UI will show loading state
                 if (installedSoftware.Count == 0)
                 {
-                    log.Info("FileFenceFilter: Database is empty, falling back to in-memory service");
-                    installedSoftware = null; // Trigger fallback
+                    log.Info("FileFenceFilter: Database returned 0 items (may be loading initial data)");
                 }
             }
             catch (Exception ex)
             {
                 log.Error($"FileFenceFilter: Error querying database for software filter: {ex.Message}", ex);
-                installedSoftware = null; // Trigger fallback
-            }
-
-            // Fallback to in-memory service if database query failed or returned no results
-            if (installedSoftware == null)
-            {
-                log.Warn("FileFenceFilter: Using in-memory service (EnhancedInstalledAppsService)");
-                installedSoftware = EnhancedInstalledAppsService.GetByCategoryEnhanced(filter.SoftwareCategory);
-
-                // Apply source filter to in-memory results if specified
-                if (!string.IsNullOrEmpty(filter.Source))
-                {
-                    int originalCount = installedSoftware.Count;
-                    installedSoftware = installedSoftware
-                        .Where(s => string.Equals(s.Source, filter.Source, StringComparison.OrdinalIgnoreCase))
-                        .ToList();
-                    log.Info($"FileFenceFilter: In-memory service source filter '{filter.Source}': {originalCount} → {installedSoftware.Count} items");
-                }
-                else
-                {
-                    log.Info($"FileFenceFilter: In-memory service returned {installedSoftware.Count} software items");
-                }
+                // Return empty list on error - UI will handle this gracefully
+                installedSoftware = new List<InstalledSoftware>();
             }
 
             // Filter and add items with valid paths

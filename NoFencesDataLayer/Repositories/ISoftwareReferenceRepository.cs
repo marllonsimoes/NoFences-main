@@ -73,5 +73,20 @@ namespace NoFencesDataLayer.Repositories
         /// </summary>
         /// <returns>All software references</returns>
         List<SoftwareReference> GetAllEntries();
+
+        /// <summary>
+        /// Gets software references filtered by software type.
+        /// </summary>
+        /// <param name="softwareType">Software type (Game, Application, Tool, Utility)</param>
+        /// <returns>Filtered list of software references</returns>
+        List<SoftwareReference> GetByType(string softwareType);
+
+        /// <summary>
+        /// Gets software references filtered by software type and category.
+        /// </summary>
+        /// <param name="softwareType">Software type</param>
+        /// <param name="category">Category</param>
+        /// <returns>Filtered list of software references</returns>
+        List<SoftwareReference> GetByTypeAndCategory(string softwareType, string category);
     }
 }

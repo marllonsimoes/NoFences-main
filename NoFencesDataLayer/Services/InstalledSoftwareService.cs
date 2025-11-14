@@ -220,6 +220,33 @@ namespace NoFencesDataLayer.Services
         }
 
         /// <summary>
+        /// Gets all software references from master catalog database.
+        /// Used for populating dynamic UI filters (categories, genres, etc.)
+        /// </summary>
+        public List<SoftwareReference> GetAllSoftwareReferences()
+        {
+            return softwareRefRepository.GetAllEntries();
+        }
+
+        /// <summary>
+        /// Gets the total count of installed software items in the database.
+        /// Fast query used by UI polling to detect when initial population is complete.
+        /// </summary>
+        /// <returns>Number of items in ref.db</returns>
+        public int GetDatabaseItemCount()
+        {
+            try
+            {
+                return installedRepository.GetAll().Count;
+            }
+            catch (Exception ex)
+            {
+                log.Error($"Error getting database item count: {ex.Message}", ex);
+                return 0;
+            }
+        }
+
+        /// <summary>
         /// Gets installed software as Core model (InstalledSoftware) for UI consumption.
         /// Converts database entities → Core model objects.
         /// This is the main query method for FileFenceFilter integration.
@@ -251,7 +278,7 @@ namespace NoFencesDataLayer.Services
                         softwareRefs = softwareRefs
                             .Where(r => string.Equals(r.Source, source, StringComparison.OrdinalIgnoreCase))
                             .ToList();
-                        log.Debug($"Step 1a: Filtered by source '{source}': {beforeFilter} -> {softwareRefs.Count} entries");
+                        log.Debug($"Step 1b: Filtered by source '{source}': {beforeFilter} -> {softwareRefs.Count} entries");
 
                         if (softwareRefs.Count > 0 && softwareRefs.Count <= 5)
                         {
@@ -262,6 +289,8 @@ namespace NoFencesDataLayer.Services
                     if (!string.IsNullOrEmpty(category))
                     {
                         var beforeFilter = softwareRefs.Count;
+
+                        // Filter by Category field (simplified - no genre logic)
                         softwareRefs = softwareRefs
                             .Where(r => string.Equals(r.Category, category, StringComparison.OrdinalIgnoreCase))
                             .ToList();

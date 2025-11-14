@@ -99,5 +99,22 @@ namespace NoFences.Core.Util
         /// <param name="iconPath">Optional path to icon file</param>
         /// <returns>Path to the created shortcut</returns>
         string FindOrCreateGameShortcut(string gameId, string gameName, string outputDirectory, string iconPath = null);
+
+        /// <summary>
+        /// Checks if the given installation path matches this detector's pattern.
+        /// Allows detectors to "claim" software based on installation structure.
+        /// For example, EA App games have a "__Installer/installerdata.xml" pattern.
+        /// </summary>
+        /// <param name="installPath">Installation directory path to check</param>
+        /// <returns>True if this detector can identify games at this path</returns>
+        bool CanDetectFromPath(string installPath);
+
+        /// <summary>
+        /// Extracts game information from an installation path that matches this detector's pattern.
+        /// Should only be called if CanDetectFromPath returns true.
+        /// </summary>
+        /// <param name="installPath">Installation directory path containing the game</param>
+        /// <returns>GameInfo extracted from the installation, or null if extraction fails</returns>
+        GameInfo GetGameInfoFromPath(string installPath);
     }
 }

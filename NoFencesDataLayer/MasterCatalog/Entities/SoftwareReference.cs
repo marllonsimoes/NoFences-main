@@ -1,3 +1,4 @@
+using NoFences.Core.Model;
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -54,6 +55,19 @@ namespace NoFencesDataLayer.MasterCatalog.Entities
         [Required]
         [MaxLength(100)]
         public string Category { get; set; }
+
+        /// <summary>
+        /// High-level software type classification.
+        /// Determined automatically based on metadata source:
+        /// - RAWG → Game
+        /// - Winget/CNET/Wikipedia → Application
+        /// - Development category → Tool
+        /// - Utilities category → Utility
+        /// Default: Unknown
+        /// </summary>
+        [Required]
+        [MaxLength(50)]
+        public string Type { get; set; } = SoftwareType.Unknown.ToString();
 
         /// <summary>
         /// Software/game description from metadata enrichment.

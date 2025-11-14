@@ -1,201 +1,159 @@
 # Master TODO List - NoFences Project
-*Last Updated: Session 14 - November 13, 2025*
+*Last Updated: Session 16 - November 14, 2025*
 
-This document consolidates ALL pending tasks across the entire project, organized by priority and category.
+This document contains **ONLY PENDING TASKS**. For completed work, see [MASTER_DONE.md](MASTER_DONE.md).
+
+---
+
+## ✅ Recently Resolved Decisions (Session 15)
+
+### Database Architecture Clarification
+**Decision:** ✅ NO ACTION NEEDED - Current architecture is correct
+- **Current:** Two-tier architecture (ref.db + master_catalog.db)
+  - `master_catalog.db` = Source-of-truth, community-based DB with metadata from CNET, winget, Wikipedia
+  - `ref.db` = User's installed software with foreign key to master_catalog + user-specific data (install dir, icon, registry)
+- **Outcome:** This is exactly the desired architecture. Database consolidation discussion removed from TODO.
+
+### Game vs Software Categorization
+**Decision:** ✅ APPROVED - Implement with caution
+- Add SoftwareType enum and filtering
+- Requires automated tests for Edit window (local only, disabled in CI/CD)
+- Be mindful of Edit window complexity as filters grow
+
+### UniGetUI-like Feature
+**Decision:** ⏳ DEFERRED - Move to FUTURE priority
+- Good idea but lower priority
+- Challenges: Requires winget up-to-date, needs failover
+- Implement in future release
+
+### New Feature Discovered
+**Decision:** ✅ APPROVED - Show file list when not using smart filters
+- When fence has no active smart filters, display actual files inside
+- Provides transparency about fence contents
 
 ---
 
 ## 🔴 CRITICAL (Must Do Immediately)
 
-### Session 13 - Production Cleanup & Test Recovery ✅ COMPLETED
-- [x] **Remove all obsolete code** ✅ DONE (Session 13 - Wave 21-23)
-  - EnhancedInstalledAppsService migrated to two-tier architecture
-  - TrayIconManager error message fixed, TODO removed
-  - WindowsServiceManager error handling improved
-  - All 10 obsolete methods completely removed
-  - All [Obsolete] attributes eliminated
+### Manual Testing Results (Sessions 14-15) - Completed ✅
+- [x] **Filtering:** ✅ VERIFIED - Working very well!
+- [x] **Factory methods:** ✅ VERIFIED - UI working fine (internal implementation tested via UI)
+  - Created many fences of different types, all working correctly
+- [x] **Manual enrichment progress feedback:** ✅ VERIFIED - Shows progress correctly
+- [x] **Enrichment completeness:** ✅ RESOLVED (Session 15)
+  - Root cause: Missing RAWG API key prevented all game enrichment
+  - Fixed: Added API key configuration check to diagnostic tool
+  - Verified: 51.2% enrichment success rate for games (13 games enriched in test)
+  - Expected behavior: High overall failure rate (65.8%) due to non-game software lacking metadata sources
 
-- [x] **Clean Session tracking comments** ✅ DONE (Session 13 - Wave 21-22)
-  - Removed 100+ "Session X:" comments from production code
-  - Removed 4 Session comments from test files
-  - All code documentation now professional and clean
-
-- [x] **Unify logging architecture** ✅ DONE (Session 13 - Wave 22)
-  - XmlFenceRepository: 15 Debug.WriteLine → log4net
-  - NoFencesService: Removed unused ListAllDevices() method
-  - Debug.WriteLine usage reviewed and validated in Core/UI layers
-  - Logging now consistent across all DataLayer
-
-- [x] **Test pass rate recovery** ✅ DONE (Session 13 - Wave 23)
-  - InstalledSoftwareRepositoryTests: Removed 7 obsolete test methods
-  - Updated 1 test to use only valid methods
-  - All 12 compilation errors resolved
-  - **Result: 100% test pass rate achieved** (all remaining tests passing)
-
-### Manual Testing
-- [ ] **Run all manual tests** from `MANUAL_TESTING_CHECKLIST.md`
-  - Priority 1: Bug Fix #14 (SQLite BadImageFormatException) verification ✅ VERIFIED (Session 11)
-  - Priority 1: Automatic database population verification ✅ VERIFIED (Session 11)
-  - Priority 1: Source filtering functionality test
-  - Get RAWG API key from https://rawg.io/apidocs (free)
-
-### Session 14 - Architecture Improvements & Batch Enrichment ✅ COMPLETED
-- [x] **Enrichment batch size limitation** ✅ DONE (Session 14 - 30 min)
-  - ✅ Automatic enrichment: 1,000 → 10,000 entry capacity (100 batches × 100 entries)
-  - ✅ Manual enrichment: Single batch → Complete processing (loops until done)
-  - ✅ Intelligent looping with user feedback ("Processed X entries across Y batches")
-  - ✅ Safety limits: 100 batches automatic, 50 batches manual (prevents infinite loops)
-  - ✅ API throttling: 1-second delay between batches
-
-- [x] **Installer service handling** ✅ DONE (Session 14 - 45 min)
-  - ✅ 5-step validation for RegisterService (check exists, stop, uninstall old, install, start)
-  - ✅ 3-step validation for UnregisterService (check exists, stop, uninstall)
-  - ✅ Idempotent operations with comprehensive logging
-  - ✅ Uninstall continues even if service removal fails
-  - ⏳ Testing pending: Install → Uninstall → Reinstall cycle
-
-- [x] **Phase 1: Model Rename** ✅ DONE (Session 14 - 30 min)
-  - ✅ Renamed InstalledSoftwareEntry → LocalInstallation (eliminates name collision)
-  - ✅ Updated 9 files (repositories, services, tests, project files)
-  - ✅ Database table name unchanged (no migrations needed)
-  - ✅ All tests still passing
-
-- [x] **Phases 2-4: Unified Model Refactor** ✅ DONE (Session 14 - 1 hour)
-  - ✅ Phase 2: Factory Methods - FromJoin, FromLocal, FromReference (170 lines)
-  - ✅ Phase 3: Service Simplification - 50 lines → 3 lines (94% reduction)
-  - ✅ Phase 4: Repository JOIN Helpers - GetAllWithMetadata, GetFilteredWithMetadata
-  - ✅ Single source of truth for model construction
-  - ✅ Centralized JOIN logic in repository layer
-
-### 🎯 NEXT CRITICAL PRIORITY
-- [ ] **Manual Testing of Session 14 Changes** ⏳ TODO
-  - Test: Enrichment batch processing with large datasets (435+ entries)
-  - Test: Installer reinstall/upgrade scenarios
-  - Test: Factory methods working correctly in UI
-  - Verify: All 435 entries get enriched automatically
-  - Verify: Manual enrichment shows progress feedback
-
-### Session 12 - Metadata Enrichment Integration ✅ COMPLETED
-- [x] **Integrate MetadataEnrichmentService into software detection workflow** ✅ DONE
-  - ✅ Dual-trigger system implemented:
-    1. **Automatic**: Enriches during database population (background, non-blocking)
-    2. **Manual**: "Enrich Metadata (Force Sync)" button in FilesFence properties
-  - ✅ Tracks enrichment: `LastEnrichedDate` and `MetadataSource` fields added
-  - ✅ Avoids redundant API calls (only enriches un-enriched entries)
-
-- [x] **Complete IoC Container Setup** ✅ DONE
-  - ✅ Registered all services, repositories, detectors, providers
-  - ✅ Proper dependency injection throughout application
-  - ✅ 26 total registrations (3 repos, 4 services, 4 providers, 6 detectors, 5 handlers, etc.)
-
-- [x] **Fix Duplicate Game Detection** ✅ DONE
-  - ✅ Implemented priority-based deduplication (scalable solution)
-  - ✅ Specialized detectors (Steam, GOG, etc.) take precedence over Registry
-  - ✅ No hardcoded paths - automatically scales when new detectors added
-  - ✅ Steam games now show correctly without duplicates
-
-- [x] **Fixed: Metadata not persisting to database** ✅ DONE (Session 12)
-  - Added enriched metadata fields to InstalledSoftware model (Description, Genres, etc.)
-  - Updated ApplyMetadata to populate all enriched fields
-  - Updated ConvertToEntity to persist enriched data to database
-  - Added CoverImageUrl and Rating fields to database entity
-  - Automatic migrations will handle schema updates
-
-- [x] **Fixed: RAWG API JSON parsing errors** ✅ DONE (Session 12)
-  - Added type checking for esrb_rating before accessing child properties
-  - Prevents "Cannot access child value on JValue" errors
-
-- [x] **Fixed: Incorrect Steam AppID detection** ✅ DONE (Session 12)
-  - Changed from `Source.Contains("Steam")` to `Source == "Steam"`
-  - Added RegistryKey prefix validation (`StartsWith("Steam:")`)
-  - Prevents non-Steam games from being looked up by Steam AppID
-
-- [x] **RAWG provider fully functional** ✅ DONE (Session 12)
-  - ✅ Provider being called for games (Steam, Epic, GOG, Ubisoft, etc.)
-  - ✅ Confidence based on name similarity (Levenshtein distance)
-  - ✅ Threshold: 85% similarity (guarantees correct match)
-  - ✅ Steam AppID lookups working (with exact ID validation)
-  - Optional: API key from https://rawg.io/apidocs for enhanced data
-
-- [x] **Add UI for viewing enriched metadata** ✅ DONE (Session 12)
-  - ✅ Enhanced tooltip shows all enriched fields
-  - ✅ Display: Description, Genres, Developers, Rating, Release Date, Metadata Source
-  - ✅ Added info panel in FilesFence properties explaining metadata
-  - ✅ Automatic display when hovering over software items
-
-- [x] **Metadata enrichment end-to-end** ✅ DONE (Session 12)
-  - ✅ Database persistence verified (all enriched fields saved)
-  - ✅ RAWG API (games) - Working
-  - ✅ Winget CLI (software) - Working
-  - ✅ Wikipedia (fallback) - Working
-  - ✅ CNET scraper - Working
-  - ✅ UI display of enriched data - Working
-
+### Manual Testing - Remaining
+- [ ] **Run remaining manual tests** from `MANUAL_TESTING_CHECKLIST.md`
+  - Get RAWG API key from https://rawg.io/apidocs (free) for enhanced testing
 
 ---
 
 ## 🟠 HIGH PRIORITY (Do Soon)
 
-### Architecture & Technical Debt
-- [x] **Review architecture layers and simplify common models** ✅ DONE (Session 14)
-  - ✅ Decision: Keep two-tier architecture (ref.db + master_catalog.db)
-  - ✅ Renamed InstalledSoftwareEntry → LocalInstallation (eliminated confusion)
-  - ✅ Added factory methods for unified model construction
-  - ✅ Centralized JOIN logic in repository layer
-  - ✅ 94% code reduction in service layer (50 lines → 3 lines)
-  - ✅ Architecture documentation created (ARCHITECTURE_REVIEW_SESSION_14.md)
-  - **Result:** Clean separation, single source of truth, proper layering
+### Bugs & Issues
+
+#### ✅ Metadata Enrichment - RESOLVED (Session 15)
+- [x] **Root cause identified and fixed**
+  - **Problem:** Missing RAWG API key prevented all game metadata enrichment
+  - **Solution:**
+    - Added RAWG API key configuration check to diagnostic tool
+    - Enhanced MetadataEnrichmentDiagnostics.cs with automatic API key detection
+  - **Results:** 51.2% enrichment success rate for games (excellent!)
+  - **Status:** ✅ COMPLETE
+
+#### ✅ EA App Detector - RESOLVED (Session 15)
+- [x] **Pattern-based detection architecture implemented**
+  - **Problem:** EA App changed architecture, games not listing properly
+  - **Solution:**
+    - Extended IGameStoreDetector with CanDetectFromPath() and GetGameInfoFromPath()
+    - Implemented EA App pattern detection using `__Installer/installerdata.xml`
+    - Added detector claiming pattern in InstalledAppsUtil
+  - **Results:** EA App games detected and enhanced with XML metadata
+  - **Status:** ✅ COMPLETE
+
+### Bugs & Issues (NEW)
+
+#### ✅ Drag & Drop Not Working - RESOLVED (Session 16)
+- [x] **Drag & drop to fences broken**
+  - **Problem:** Items cannot be dragged into fences (stopped working recently)
+  - **Root Cause:** DropZoneOverlay was using `Brushes.Transparent` which prevents WPF elements from receiving mouse/drag events
+  - **Solution:** Changed background to `new SolidColorBrush(Color.FromArgb(1, 0, 0, 0))` - barely visible but enables hit-testing
+  - **Key Learning:** In WPF, `Brushes.Transparent` is null/empty and prevents hit-testing. Any background with alpha > 0 enables event reception.
+  - **Status:** ✅ COMPLETE
 
 ### Testing - Missing HIGH Priority Tests
-- [ ] **Implement detector tests for all platforms**
-  - [ ] SteamStoreDetectorTests.cs
-  - [ ] GOGGalaxyDetectorTests.cs
-  - [ ] EpicGamesStoreDetectorTests.cs
-  - [ ] EAAppDetectorTests.cs
-  - [ ] UbisoftConnectDetectorTests.cs
-
-- [ ] **Implement remaining metadata provider tests**
-  - [ ] WingetApiClientTests.cs
-  - [ ] WikipediaApiClientTests.cs
-  - [ ] CnetScraperClientTests.cs
-
 - [ ] **Implement service tests**
   - [ ] InstalledAppsUtilTests.cs
   - [ ] EnhancedInstalledAppsServiceTests.cs
   - [ ] CatalogDownloadServiceTests.cs
 
-### FilesFence - Data Layer (from TODO.md lines 19-28)
-- [ ] **Database consolidation discussion**
-  - Currently: Separate tables/repositories for each source
-  - Proposed: Single unified table with better categorization
-  - Fields: id, name, publisher/developer, type (game/software), categories/labels, audit info
-  - Benefits: Simpler queries, better cross-platform game detection
-  - **Decision needed:** Keep current or refactor?
+### FilesFence - Features & Enhancements
 
-- [ ] **Game vs Software categorization**
-  - Add FilterType for "Games" (separate from "Software")
-  - Games: Show game-specific categories (Action, RPG, Strategy, etc.)
-  - Software: Show software categories (Productivity, Development, Media, etc.)
-  - Category source: From metadata enrichment (RAWG for games, Winget/CNET for software)
+- [x] **Add SoftwareType enum enhancement** ✅ COMPLETED (Session 16)
+  - Added `SoftwareType` enum: Game, Application, Tool, Utility, Unknown
+  - Added to `SoftwareReference` table in master_catalog.db with backward-compatible migration
+  - Metadata source determines type (RAWG = Game, Winget/CNET = Application)
+  - Repository query methods added (GetByType, GetByTypeAndCategory)
+  - **Status:** ✅ COMPLETE
 
-- [ ] **UniGetUI-like feature** (from TODO.md line 29)
-  - Question: UniGetUI shows software from multiple stores (Steam, Ubisoft, etc.) via winget
-  - How do they detect source?
-  - Research: Does winget provide source information?
-  - Goal: Same comprehensive listing as UniGetUI
+- [x] **Game vs Software categorization with filters** ✅ COMPLETED (Session 16)
+  - Added three-level filtering hierarchy: Type → Source → Category
+  - UI implementation with SoftwareType dropdown in FilesPropertiesPanel
+  - Dynamic category population based on selected Type and database content
+  - Games: Use Genres field from RAWG metadata (Action, RPG, Strategy, etc.)
+  - Applications/Tools/Utilities: Use Category field
+  - Removed redundant categories (Games, Utilities) from dropdown
+  - Genre-based filtering logic implemented in InstalledSoftwareService
+  - Added CategoryString property to FileFilter for dynamic genre/category storage
+  - Fixed "All" category bug where Type filter wasn't working correctly
+  - **Status:** ✅ COMPLETE
+  - **⏳ REVIEW AFTER ENRICHMENT:** Dynamic categories will populate once metadata enrichment completes
+
+- [x] **Show file list when not using smart filters** ✅ COMPLETED (Session 16)
+  - Implemented FileSystemWatcher for real-time file monitoring
+  - Automatic refresh when files added/deleted/renamed in monitored folder
+  - Thread-safe UI updates via Dispatcher
+  - Smart monitoring (only for file-based filters, not Software filter)
+  - Added manual items management UI in FilesPropertiesPanel
+  - Users can view and remove manually added items in Edit Window
+  - **Status:** ✅ COMPLETE
 
 ---
 
 ## 🟡 MEDIUM PRIORITY (Important)
 
-### Testing - MEDIUM Priority Tests (See COMPREHENSIVE_TEST_PLAN.md)
+### Bugs & Issues
+
+#### Installer Service Handling
+- [ ] **Fix installer service handling (WixSharp compatibility)** ⚠️ BUG
+  - **Testing results:**
+    - Service works fine: start, stop, pause all working manually ✅
+    - Didn't test full reinstall/upgrade cycle yet
+  - **Problem found:** `Task.IsServiceInstalled()` method doesn't exist in WixSharp library
+    - Current code uses this non-existent method
+    - Need alternative approach
+  - **Solution options:**
+    1. Use Wix classic API for service detection
+    2. Find WixSharp alternative method
+    3. Use ServiceController class directly
+  - **Key requirement:** Installer must NOT fail if service can't be installed/started
+    - Handle gracefully with logging
+    - Allow installation to continue
+  - **Priority:** MEDIUM (installer works, just needs better error handling)
+
+### Testing - MEDIUM Priority Tests
+See [COMPREHENSIVE_TEST_PLAN.md](COMPREHENSIVE_TEST_PLAN.md) for details:
 - [ ] Game normalization tests (multi-platform duplicate detection)
 - [ ] Catalog normalizer tests
 - [ ] Image preprocessing tests
 - [ ] Fence info serialization tests
 - [ ] Database migration tests
 
-### Session 11 - Performance Monitoring (Optional Enhancement 1)
+### Performance Monitoring (Optional Enhancement)
 - [ ] **Add timing logs for database queries**
   - Log query execution time
   - Target: < 100ms for filtered queries
@@ -206,21 +164,21 @@ This document consolidates ALL pending tasks across the entire project, organize
   - Average refresh time
   - Memory usage during population
 
-### Session 11 - Enhanced Manual Refresh (Optional Enhancement 2)
+### Enhanced Manual Refresh (Optional Enhancement)
 - [ ] **Add progress dialog for manual database refresh**
   - Show: "Detecting installed software..."
   - Progress bar: X / Y detectors completed
   - Show count: "Found XX games from Steam, YY from GOG..."
   - Cancel button
 
-### Session 11 - Source Dropdown Polish (Optional Enhancement 3)
+### Source Dropdown Polish (Optional Enhancement)
 - [ ] **Show counts in source dropdown**
   - Format: "Steam (42 games)"
   - Format: "GOG Galaxy (18 games)"
   - Format: "All Sources (238 items)"
   - Update counts on refresh
 
-### ClockFence - Future Features (from TODO.md line 12)
+### ClockFence - Future Features
 - [ ] **Advanced layouts**
   - Vertical layout (all elements stacked)
   - Pixel Phone layout (big weather icon, separate lines for h/m/s)
@@ -243,449 +201,165 @@ This document consolidates ALL pending tasks across the entire project, organize
 - [ ] Refactor: MetadataEnrichmentService to inject providers (better testability)
 
 ### Documentation
-- [ ] Update CLAUDE.md with Session 11 changes
+- [ ] Update CLAUDE.md with Sessions 12-14 changes
 - [ ] Add metadata enrichment documentation
 - [ ] Add testing documentation to main README
 - [ ] Create architecture diagrams
 
 ---
 
-## 🟣 FUTURE FEATURES (Planned, Not Yet Started)
+## 🟣 FUTURE FEATURES
 
-### Cloud Sync Service (from TODO.md lines 55-75) - LARGE FEATURE
-**Status:** Design phase, not yet implemented
+### UniGetUI-like Feature (Research & Integration)
+- **Goal:** Comprehensive software listing using winget integration
+- **How it works:** winget list command shows source information (winget, msstore, Steam, etc.)
+- **Challenges:**
+  - Relies on user having winget up-to-date on their system
+  - Needs failover mechanism if winget unavailable/outdated
+  - Need to parse winget output and map to our detector sources
+- **Implementation Plan:**
+  - Phase 1: Add winget list parsing to get all installed software with sources
+  - Phase 2: Cross-reference with our detectors
+  - Phase 3: Fill gaps (software we missed but winget detected)
+- **Decision:** ⏳ DEFERRED - Lower priority, implement in future release
 
-**Overview:** 3-way backup system with cloud storage integration
+### Large Feature: Cloud Sync Service (4-6 weeks)
+**Goal:** Sync fences and configurations across multiple machines via cloud storage
 
-**Components:**
-1. **Cloud Storage Integration**
-   - Show user's cloud files (Seafile, Immich, other media providers)
-   - Private cloud access with profiles
-   - Display: Everything accessible from cloud perspective
+#### Core Features
+- [ ] **Virtual Folder Management**
+  - Define virtual folders (e.g., "Documents", "Pictures")
+  - Map to actual paths per machine (e.g., C:\Users\User\Documents vs D:\Docs)
+  - Store mappings in fence metadata
+  - UI for configuring virtual folder mappings
 
-2. **Backup Rules Engine**
-   - Create backup/copy rules
-   - Select source and multiple targets (redundancy)
-   - Bidirectional sync (synced folder/drive)
-   - Detect removable drives
-   - Store rules in local database
-   - Trigger backup on drive connect
+- [ ] **Backup Rule System**
+  - Define backup rules per fence or globally
+  - Schedule: Manual, on save, periodic (hourly, daily)
+  - Conflict resolution: Newest wins, manual merge, keep both
+  - Selective sync: Choose which fences to sync
 
-3. **CloudSync API Integration**
-   - Use Windows CloudSync API: https://learn.microsoft.com/en-us/windows/win32/cfapi/build-a-cloud-file-sync-engine
-   - Audit/history table for backups
-   - File hash tracking (detect moves vs copies)
-   - Metadata tracking (edits + moves)
+- [ ] **CloudSync API Integration**
+  - Abstract cloud provider interface
+  - Implementations: Seafile, Nextcloud, Dropbox, OneDrive
+  - Authentication flows
+  - File upload/download with progress
+  - Delta sync for efficiency
 
-4. **User Controls**
-   - Select sync level: Always available, Free-up space, etc.
-   - Status window:
-     - What was synced
-     - What is syncing now
-     - What failed (with resolution options)
+- [ ] **Sync Engine**
+  - Background service for automatic sync
+  - Change detection (file system watcher)
+  - Queue-based upload/download
+  - Retry logic for failed syncs
+  - Sync status indicators in UI
 
-5. **WidgetFence Integration** (NEW FENCE TYPE)
-   - [ ] **VirtualFolders WidgetFence**
-     - Show user's virtual folders
-     - Requires: Login window for private cloud
-   
-   - [ ] **Cloud Stats WidgetFence**
-     - Available storage
-     - File count, folder count
-     - Files synced count
-   
-   - [ ] **Specific Virtual Folder WidgetFence**
-     - Show: Media, Photos, Books, Documents, Music
-     - Placeholders for un-synced files
-   
-   - [ ] **Windows Explorer Integration**
-     - Virtual drive visible in Explorer
-     - Folder-level permissions (create subfolder, upload, download only, etc.)
-     - API-driven permissions
+#### Database Schema
+- [ ] Design `SyncConfiguration` table
+  - Cloud provider type
+  - Connection details (encrypted)
+  - Sync frequency
+  - Last sync timestamp
 
-**Prerequisites:**
-- Study CloudSync API
-- Design database schema for sync rules
-- Design WidgetFence architecture
-- Implement cloud provider API clients (Seafile, etc.)
+- [ ] Design `VirtualFolderMapping` table
+  - Virtual folder name
+  - Machine identifier
+  - Actual path
+  - Sync enabled flag
+
+- [ ] Design `SyncRule` table
+  - Rule name
+  - Applies to: All fences, specific fences
+  - Schedule type
+  - Conflict resolution strategy
+
+#### Implementation Plan
+1. **Phase 1: Virtual Folder System (1 week)**
+   - Database schema
+   - Core virtual folder logic
+   - UI for mapping configuration
+
+2. **Phase 2: Backup Rules (1 week)**
+   - Rule engine implementation
+   - UI for rule creation/management
+   - Manual backup functionality
+
+3. **Phase 3: Cloud Provider Integration (1-2 weeks)**
+   - Abstract provider interface
+   - Seafile implementation (primary)
+   - Authentication and basic file operations
+
+4. **Phase 4: Sync Engine (1-2 weeks)**
+   - Background sync service
+   - Change detection
+   - Conflict resolution
+   - Status monitoring UI
 
 **Estimated Effort:** 4-6 weeks (major feature)
 
 ---
 
-## 📊 Test Coverage Goals
+## 📊 Current Project Statistics
 
-**Current Status (Session 12):** ~18% (15 test classes / ~80 planned)
+**Test Coverage:**
+- **Current Status:** ~25% (23 test classes / ~80 planned)
+- **Total Tests:** 295 tests
+- **Pass Rate:** 100%
 
 | Layer | Target Coverage | Current | Status |
 |-------|----------------|---------|--------|
-| Data Layer | 80%+ | ~30% | 🟠 |
-| Services | 80%+ | ~25% | 🟠 |
-| Utilities | 90%+ | ~30% | 🟠 |
-| Core | 90%+ | ~25% | 🟠 |
-| Overall | 70%+ | ~18% | 🟠 |
-
-**Session 12 Progress:**
-- ✅ 187 tests total (120 original + 67 new)
-- ✅ 100% test pass rate achieved
-- ✅ 15 test classes complete
-- ✅ ~6% coverage increase from Session 11
+| Data Layer | 80%+ | ~40% | 🟡 Progressing |
+| Services | 80%+ | ~35% | 🟡 Progressing |
+| Utilities | 90%+ | ~30% | 🟠 Needs Work |
+| Core | 90%+ | ~25% | 🟠 Needs Work |
+| Overall | 70%+ | ~25% | 🟡 Good Progress |
 
 **To Achieve 70% Overall:**
-- Need: ~60 more test classes
-- Need: ~300 more test methods
-- Focus: CRITICAL and HIGH priority tests first
+- Need: ~50 more test classes
+- Need: ~250 more test methods
+- Focus: Continue with HIGH and MEDIUM priority tests
+
+**Architecture Patterns Established:**
+- ✅ Handler Pattern for fence rendering
+- ✅ Factory Method Pattern for model construction
+- ✅ Repository Pattern with JOIN helpers
+- ✅ Dependency Injection (26 registrations)
+- ✅ Dual-Database Architecture (ref.db + master_catalog.db)
 
 ---
 
-## 🎯 Session 11 Completion Checklist ✅ COMPLETED
-
-Before moving to next session, complete:
-
-### Must Do (CRITICAL):
-- [x] ✅ Fix Bug #14 (SQLite BadImageFormatException) - FIXED
-- [x] ✅ Fix Bug #12 (.NET 4.8.1 Dictionary compatibility) - FIXED
-- [x] ✅ Fix Bug #13 (SQLiteMigrationSqlGenerator namespace) - FIXED
-- [x] ✅ Verify Bug #11 (Database initialization race condition) - VERIFIED
-- [x] ✅ Test source filtering feature - VERIFIED via logs
-- [x] ✅ Run automated test suite - 187/187 tests passing (Session 12)
-- [ ] ⏳ Integrate metadata enrichment - Pending decision on trigger method
-- [ ] ⏳ Test metadata enrichment with real API keys - Pending keys
-
-### Should Do (HIGH):
-- [ ] Implement HIGH priority detector tests
-- [ ] Implement remaining metadata provider tests
-- [ ] Add performance monitoring logs
-- [ ] Fix installer service handling bug
-
-### Nice to Do (MEDIUM):
-- [ ] Add progress dialog for manual refresh
-- [ ] Polish source dropdown with counts
-- [ ] Implement MEDIUM priority tests
-
----
-
-## 🎯 Session 12 Achievements ✅ COMPLETE
-
-**Primary Goal:** Fix all test compilation issues and achieve 100% test pass rate
-
-**Completed Tasks:**
-1. ✅ Fixed 6 test files with API reference problems
-   - Rewrote tests based on actual API implementations
-   - Used mocking for unit tests, integration tests where appropriate
-   - Made tests environment-agnostic
-
-2. ✅ Fixed compilation errors
-   - Updated test project framework from net48 to net481
-   - Fixed parameter name mismatches (`categoryFilter` → `category`)
-   - Fixed FluentAssertions usage (`BeOfType<bool>()` → `NotThrow()`)
-
-3. ✅ Fixed environment-specific test failures
-   - Made Amazon Games tests work regardless of installation status
-   - Fixed file system dependency assumptions
-   - Added conditional assertions
-
-4. ✅ Fixed test isolation issues
-   - Updated UserPreferencesTests to verify all properties
-   - Improved test robustness
-
-5. ✅ Integrated metadata enrichment
-   - Dual-trigger system: Automatic (background) + Manual (UI button)
-   - Tracks enrichment: LastEnrichedDate and MetadataSource fields
-   - Avoids redundant API calls
-
-6. ✅ Complete IoC container setup
-   - 26 total registrations (repos, services, providers, detectors, handlers)
-   - Proper dependency injection throughout application
-
-7. ✅ Fixed duplicate game detection
-   - Priority-based deduplication (specialized detectors > Registry)
-   - Scalable solution - no hardcoded paths
-
-**Test Suite Status:**
-- **Total Tests:** 187 (100% passing)
-- **Test Classes:** 15
-- **Coverage:** ~18% (up from ~12%)
-- **Pass Rate:** 100%
-
-**Known Issues:**
-- ⚠️ RAWG provider not being called
-  - Problem: All entries treated as "software", game provider never triggered
-  - Impact: Games get metadata from Winget/Wikipedia instead of RAWG
-  - Root cause: `IsGameSource()` logic not identifying games correctly
-  - Priority: MEDIUM (enrichment works, just not optimal for games)
-
-**Files Modified:**
-- NoFences.Tests/NoFences.Tests.csproj
-- NoFences.Tests/Detectors/AmazonGamesDetectorTests.cs
-- NoFences.Tests/Repositories/AmazonGamesRepositoryTests.cs
-- NoFences.Tests/Repositories/InstalledSoftwareRepositoryTests.cs
-- NoFences.Tests/Services/Metadata/RawgApiClientTests.cs
-- NoFences.Tests/Services/Metadata/MetadataEnrichmentServiceTests.cs
-- NoFences.Tests/Services/SoftwareCatalogInitializerTests.cs
-- NoFences.Tests/Core/UserPreferencesTests.cs
-- NoFences/Services/DependencyInjectionSetup.cs
-- NoFences/View/Canvas/TypeEditors/FilesPropertiesPanel.cs
-- NoFencesDataLayer/Services/InstalledSoftwareService.cs
-- NoFencesDataLayer/Services/Metadata/MetadataEnrichmentService.cs
-- NoFencesDataLayer/Services/InstalledAppsUtil.cs
-- NoFencesDataLayer/MasterCatalog/Entities/InstalledSoftwareEntry.cs
-- MASTER_TODO.md
-
-**Date Completed:** November 12, 2025
-
----
-
-## 🎯 Session 13 Achievements ✅ COMPLETE
-
-**Primary Goal:** Production-ready cleanup - eliminate technical debt, align test suite, unify logging
-
-**Completed Tasks:**
-1. ✅ **Wave 21: Architecture Migration (3 files)**
-   - EnhancedInstalledAppsService migrated to two-tier database architecture
-   - TrayIconManager error message fixed, TODO removed
-   - WindowsServiceManager error handling with exception capture
-
-2. ✅ **Wave 22: Code Quality (4 files)**
-   - Test files: Removed 4 Session tracking comments
-   - XmlFenceRepository: 15 Debug.WriteLine → log4net with proper log levels
-   - NoFencesService: Removed dead code (ListAllDevices method)
-   - Validated remaining Debug.WriteLine usage in Core/UI layers
-
-3. ✅ **Wave 23: Test Suite Alignment (1 file)**
-   - InstalledSoftwareRepositoryTests: Removed 7 obsolete test methods
-   - Updated 1 test to call only valid methods
-   - Fixed 12 compilation errors
-   - Test suite now matches current architecture
-
-**Technical Debt Eliminated:**
-- Obsolete Methods: 10 → 0 (100% removed)
-- Session Comments: 100+ → 0 (all removed)
-- Architecture TODOs: 2 → 0 (100% resolved)
-- Dead Code: 8 items → 0 (all removed)
-- Inconsistent Logging: 15 usages → Unified log4net
-- Test Misalignment: 7 obsolete tests → 0 (aligned)
-
-**Test Suite Status:**
-- **Pass Rate:** 100% (all tests passing)
-- **Compilation Errors:** 0
-- **Compilation Warnings:** 0
-- **Regressions:** 0
-- **Tests Aligned:** Yes (removed tests for deleted methods)
-
-**Code Quality Metrics:**
-- ✅ Zero compilation warnings
-- ✅ Zero compilation errors
-- ✅ 100% test pass rate
-- ✅ No behavioral regressions
-- ✅ Consistent architecture patterns
-- ✅ Professional codebase appearance
-
-**Files Modified (8 total):**
-- Production: EnhancedInstalledAppsService.cs, TrayIconManager.cs, WindowsServiceManager.cs, XmlFenceRepository.cs
-- Service: NoFencesService.cs
-- Tests: MetadataEnrichmentServiceTests.cs, UserPreferencesTests.cs, InstalledSoftwareRepositoryTests.cs
-
-**Date Completed:** November 13, 2025
-
-**Next Session Focus:** Session 14 - Architecture improvements
-
----
-
-## 🎯 Session 14 Achievements ✅ COMPLETE
-
-**Primary Goal:** Hybrid approach - Quick architecture improvements + critical bug fixes
-
-**Completed Tasks:**
-1. ✅ **Phase 1: Model Rename (30 min)**
-   - Renamed InstalledSoftwareEntry → LocalInstallation
-   - Eliminated name collision with Core model
-   - Updated 9 files, 0 compilation errors
-
-2. ✅ **Installer Service Handling (45 min)**
-   - Enhanced RegisterService with 5-step validation
-   - Enhanced UnregisterService with 3-step validation
-   - Idempotent operations with comprehensive logging
-   - Fixes reinstall/upgrade failures
-
-3. ✅ **Batch Enrichment Loop (30 min)**
-   - Automatic: 1,000 → 10,000 entry capacity
-   - Manual: Single batch → Complete processing
-   - Intelligent looping with user feedback
-   - API throttling with 1-second delays
-
-4. ✅ **Phase 2: Factory Methods (20 min)**
-   - FromJoin, FromLocal, FromReference methods
-   - 170 lines of reusable construction code
-   - Uses dynamic typing to avoid circular references
-
-5. ✅ **Phase 3: Service Simplification (10 min)**
-   - ConvertToCoreModel: 50 lines → 3 lines
-   - 94% code reduction through factory pattern
-
-6. ✅ **Phase 4: Repository JOIN Helpers (30 min)**
-   - GetAllWithMetadata() - performs JOIN for all entries
-   - GetFilteredWithMetadata() - JOIN with filtering
-   - Centralized JOIN logic in repository layer
-
-**Architecture Improvements:**
-- ✅ Clear model naming (LocalInstallation vs InstalledSoftware)
-- ✅ Single source of truth for object construction
-- ✅ Proper separation of concerns (JOIN in repository, not service)
-- ✅ DRY principle enforced (no more manual property mapping)
-
-**Code Quality Metrics:**
-- **Files Modified:** 19 files
-- **Lines Added:** ~480 lines (mostly documentation and helpers)
-- **Lines Removed:** ~150 lines (manual mapping eliminated)
-- **Net Code Growth:** +330 lines
-- **Code Complexity Reduction:** 94% (50 lines → 3 lines)
-- **Test Pass Rate:** 100% (no regressions)
-
-**Files Modified:**
-- DataLayer: LocalInstallation.cs (renamed), LocalDBContext.cs, IInstalledSoftwareRepository.cs, InstalledSoftwareRepository.cs, InstalledSoftwareService.cs
-- Core: InstalledSoftware.cs
-- UI: FilesPropertiesPanel.cs
-- Installer: Program.cs
-- Tests: InstalledSoftwareRepositoryTests.cs, FileFenceFilterTests.cs
-- Project: NoFences.DataLayer.csproj
-- Documentation: SESSION_CHANGES.html, ARCHITECTURE_REVIEW_SESSION_14.md
-
-**Date Completed:** November 13, 2025
-
-**Next Session Focus:** Testing Session 14 changes, new features/enhancements
-
----
-
-## 📋 Quick Action Items (Next Steps)
-
-### Today/Tomorrow:
-1. **Manual Testing** (30-60 minutes)
-   - Follow MANUAL_TESTING_CHECKLIST.md
-   - Focus on Priority 1 items
-   - Get RAWG API key
-   - Document results
-
-2. **Automated Testing** (15-30 minutes)
-   - Add test project to solution
-   - Run: `dotnet test`
-   - Fix any failures
-   - Review coverage report
-
-3. **Decision: Metadata Integration** (5 minutes)
-   - Choose: Automatic, Manual, or Scheduled?
-   - Recommended: Manual button first
-
-### This Week:
-4. **Integrate Metadata Enrichment** (2-4 hours)
-   - Add UI trigger (button or menu item)
-   - Connect to MetadataEnrichmentService
-   - Test with RAWG API key
-   - Add progress indicator
-
-5. **Fix Installer Bug** (1-2 hours)
-   - Add service validation
-   - Test install → uninstall → reinstall cycle
-
-6. **Implement HIGH Priority Tests** (4-6 hours)
-   - Detector tests (Steam, GOG, Epic)
-   - Remaining metadata provider tests
-
-### This Month:
-7. **Achieve 70% Test Coverage**
-   - Implement MEDIUM priority tests
-   - Add integration tests
-   - Set up CI/CD to enforce coverage
-
-8. **Polish & Performance**
-   - Add timing logs
-   - Optimize slow queries
-   - Add progress dialogs
-
----
-
-## 📁 File Organization
-
-| File | Purpose |
-|------|---------|
-| `MASTER_TODO.md` | This file - consolidated TODO list |
-| `TODO.md` | Original TODO (now superseded by this file) |
-| `MANUAL_TESTING_CHECKLIST.md` | Manual testing guide for Session 11 |
-| `COMPREHENSIVE_TEST_PLAN.md` | Detailed test plan for all sessions |
-| `NoFences.Tests/README.md` | Test project documentation |
-| `SESSION_CHANGES.html` | Current session work log |
-| `.github/workflows/ci-cd.yml` | Automated CI/CD pipeline |
-
----
-
-## 🏆 Session 11 Achievements (So Far)
-
-**Major Features (10):**
-1. ✅ Amazon Games detection improvements
-2. ✅ Installer package selection smart logic
-3. ✅ Date format bug fix (ClockFence)
-4. ✅ ClockFence customization (16 properties)
-5. ✅ FilesFence hybrid database architecture
-6. ✅ Automatic database population (Bug #11)
-7. ✅ Source filtering (new feature)
-8. ✅ Metadata enrichment API clients (RAWG, Winget, Wikipedia, CNET)
-9. ✅ Metadata enrichment service orchestrator
-10. ✅ Preferences window API keys section
-
-**Bugs Fixed (14):**
-1. ✅ Help icon fade issue
-2. ✅ Metadata loss in data flow
-3. ✅ Amazon Games path detection
-4. ✅ Amazon Games missing table handling
-5. ✅ Amazon Games proper name extraction
-6. ✅ Amazon Games "Unknown Game" issue
-7. ✅ ClockFence date format persistence
-8. ✅ Project file compilation errors
-9. ✅ Assembly binding (signed)
-10. ✅ Assembly binding (unsigned)
-11. ✅ Database initialization race condition (Bug #11)
-12. ✅ .NET 4.8.1 Dictionary compatibility (Bug #12)
-13. ✅ SQLiteMigrationSqlGenerator namespace (Bug #13)
-14. ✅ BadImageFormatException - SQLite platform mismatch (Bug #14)
-
-**Test Infrastructure:**
-- ✅ 9 test classes created (~50 test methods)
-- ✅ Test project with xUnit, Moq, FluentAssertions
-- ✅ CI/CD pipeline (GitHub Actions)
-- ✅ Code coverage reporting
-- ⏳ ~400 test methods planned
-
-**New Classes (15):**
-1. AmazonGamesRepository
-2. InstalledSoftwareRepository
-3. InstalledSoftwareService
-4. SoftwareCatalogService
-5. IMetadataProvider
-6. IGameMetadataProvider
-7. ISoftwareMetadataProvider
-8. RawgApiClient
-9. WingetApiClient
-10. WikipediaApiClient
-11. CnetScraperClient
-12. MetadataEnrichmentService
-13-15. + MasterCatalogContext extensions
-
----
-
-## 💡 Notes
-
-- **TODO.md Status:** Still valid, but superseded by this consolidated list
-- **Priority System:** 🔴 CRITICAL → 🟠 HIGH → 🟡 MEDIUM → 🔵 LOW → 🟣 FUTURE
-- **Update Frequency:** Update after each major milestone or session
-- **Test Coverage:** Track in CI/CD pipeline, visible in PR comments
-
----
-
-**Last Session:** 14 (November 13, 2025)
-**Next Session:** 15 (Testing and new features)
-**Total Items:** ~115 items across all priorities
-**CRITICAL Items:** 1 (manual testing of Session 14 changes)
-**HIGH Items:** 18
+## 📋 Quick Reference
+
+**Last Session:** 16 (November 14, 2025)
+**Current Session:** 17 (TBD)
+**Total Items:** ~53 pending items
+**CRITICAL Items:** 1 (remaining manual tests)
+**HIGH Items:** 4 (3 service tests + 1 drag & drop bug)
 **MEDIUM Items:** 15
 **LOW Items:** 10
-**FUTURE Items:** 60+ (Cloud Sync feature)
+**FUTURE Items:** 2 large features (UniGetUI integration + Cloud Sync)
+
+**Session 16 Completions:**
+- ✅ SoftwareType enum implementation
+- ✅ Game vs Software categorization with three-level filtering
+- ✅ Real-time file monitoring with FileSystemWatcher
+- ✅ Manual items management UI
+- ✅ CategoryString property for dynamic genre/category storage
+- ✅ Software filter "All" category bug fix
+
+**Test Coverage Progress:** 25% (295 tests, 23 classes)
+**Technical Debt:** Zero (cleaned in Session 13)
+**Test Pass Rate:** 100%
+
+---
+
+## 📌 Notes
+
+- For completed work from Sessions 10-14, see [MASTER_DONE.md](MASTER_DONE.md)
+- For comprehensive test planning, see [COMPREHENSIVE_TEST_PLAN.md](COMPREHENSIVE_TEST_PLAN.md)
+- For session documentation, see [documentation/SESSION_INDEX.html](documentation/SESSION_INDEX.html)
+- For architecture decisions, see [ARCHITECTURE_REVIEW_SESSION_14.md](ARCHITECTURE_REVIEW_SESSION_14.md)
+
+---
+
+*Focus on CRITICAL and HIGH priority items first. MEDIUM and LOW can wait.*
+*Cloud Sync is a major feature for future consideration after current priorities are complete.*

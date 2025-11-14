@@ -699,7 +699,8 @@ namespace NoFences.View.Canvas
             {
                 Dock = DockStyle.Fill,
                 BackColor = Color.Transparent, // Transparent background for WPF content
-                Padding = new Padding(0, 0, 0, 0) // No padding - borders handle spacing
+                Padding = new Padding(0, 0, 0, 0), // No padding - borders handle spacing
+                AllowDrop = true // Enable drag & drop for WPF content
             };
             log.Debug($"ElementHost created with transparent background");
 
