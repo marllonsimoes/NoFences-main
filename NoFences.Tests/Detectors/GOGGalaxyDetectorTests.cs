@@ -51,6 +51,7 @@ namespace NoFences.Tests.Detectors
         }
 
         [Fact]
+        [Trait("Category", "Integration")]
         public void GetInstalledGames_WhenGOGInstalled_GamesHaveGOGPlatform()
         {
             var detector = new GOGGalaxyDetector();

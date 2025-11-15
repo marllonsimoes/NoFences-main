@@ -50,6 +50,7 @@ namespace NoFences.Tests.Detectors
         }
 
         [Fact]
+        [Trait("Category", "Integration")]
         public void GetInstalledGames_WhenEpicInstalled_GamesHaveEpicPlatform()
         {
             var detector = new EpicGamesStoreDetector();

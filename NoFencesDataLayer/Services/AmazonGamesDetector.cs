@@ -92,7 +92,7 @@ namespace NoFencesDataLayer.Services
                 }
 
                 // Create shortcut for launching via Amazon Games protocol
-                string shortcutDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop));
+                string shortcutDir = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
                 string shortcutPath = FindOrCreateGameShortcut(game.GameId, game.Name, shortcutDir, game.IconPath);
 
                 game.ExecutablePath = shortcutPath;

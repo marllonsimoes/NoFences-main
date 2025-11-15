@@ -47,7 +47,7 @@ jobs:
           $versionParts = $currentVersion.Split('.')
           $major = [int]$versionParts[0]
           $minor = [int]$versionParts[1]
-          $patch = [int]$versionParts[2] + 1
+          $patch = [int]$versionParts[2]
           $newVersion = "$major.$minor.$patch"
 
           Write-Host "New version: $newVersion"

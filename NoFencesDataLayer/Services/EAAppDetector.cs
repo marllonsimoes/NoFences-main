@@ -269,10 +269,7 @@ IconFile={iconFile ?? ""}
                 }
 
                 // Create shortcut for launching via EA protocol
-                string shortcutDir = Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                    "NoFences", "EAShortcuts");
-
+                string shortcutDir = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
                 string shortcutPath = FindOrCreateGameShortcut(gameId, gameName, shortcutDir, iconPath);
 
                 return new GameInfo

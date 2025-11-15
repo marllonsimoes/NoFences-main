@@ -235,8 +235,11 @@ class Script
         Compiler.SignAllFilesOptions.SignEmbeddedAssemblies = false;
         Compiler.SignAllFilesOptions.SkipSignedFiles = true;
 
+        var currentVersion = FileVersionInfo.GetVersionInfo(@"..\NoFences\bin\Release\NoFences.exe");
+        Console.WriteLine("Current Version: " + currentVersion.FileVersion);
+
         var project = new ManagedProject(
-            "NoFences",
+            $"NoFences - {currentVersion.FileVersion}",
             new Dir(
                 @"%ProgramFiles%\TinySoft\NoFences",
                 new Files(@"..\NoFences\bin\Release\*.*"))
@@ -279,6 +282,7 @@ class Script
         }
 
         project.GUID = new Guid("5CF1A403-6251-4CB6-A1EA-26A933614DDE");
+        project.Version = new Version(currentVersion.FileVersion);
         project.OutDir = "bin\\Release";
         project.LicenceFile = @"LICENSE.rtf";
 

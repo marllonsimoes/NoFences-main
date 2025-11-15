@@ -50,6 +50,7 @@ namespace NoFences.Tests.Detectors
         }
 
         [Fact]
+        [Trait("Category", "Integration")]
         public void GetInstalledGames_WhenEAInstalled_GamesHaveEAPlatform()
         {
             var detector = new EAAppDetector();

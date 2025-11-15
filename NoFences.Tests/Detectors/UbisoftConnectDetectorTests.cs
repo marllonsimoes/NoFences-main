@@ -50,6 +50,7 @@ namespace NoFences.Tests.Detectors
         }
 
         [Fact]
+        [Trait("Category", "Integration")]
         public void GetInstalledGames_WhenUbisoftInstalled_GamesHaveUbisoftPlatform()
         {
             var detector = new UbisoftConnectDetector();
