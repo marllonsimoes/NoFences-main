@@ -7,6 +7,38 @@ using System.Linq;
 namespace NoFences.Core.Model
 {
     /// <summary>
+    /// High-level type classification for software based on metadata source and purpose.
+    /// This is distinct from SoftwareCategory which provides detailed categorization.
+    /// </summary>
+    public enum SoftwareType
+    {
+        /// <summary>
+        /// Video games (typically enriched from RAWG API)
+        /// </summary>
+        Game,
+
+        /// <summary>
+        /// General applications (typically enriched from Winget, CNET, Wikipedia)
+        /// </summary>
+        Application,
+
+        /// <summary>
+        /// Developer tools and SDKs
+        /// </summary>
+        Tool,
+
+        /// <summary>
+        /// System utilities and helpers
+        /// </summary>
+        Utility,
+
+        /// <summary>
+        /// Unknown or not yet determined
+        /// </summary>
+        Unknown
+    }
+
+    /// <summary>
     /// Categories for installed software
     /// </summary>
     public enum SoftwareCategory

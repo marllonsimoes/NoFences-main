@@ -1,3 +1,4 @@
+using NoFences.Core.Util;
 using System;
 using System.IO;
 using System.Xml.Serialization;
@@ -24,10 +25,7 @@ namespace NoFences.Core.Settings
         // API Keys for Metadata Enrichment
         public string RawgApiKey { get; set; } = null;
 
-        private static readonly string PreferencesPath = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-            "NoFences",
-            "UserPreferences.xml");
+        private static readonly string PreferencesPath = Path.Combine(AppEnvUtil.BasePath,"UserPreferences.xml");
 
         /// <summary>
         /// Loads user preferences from disk or creates default if not found

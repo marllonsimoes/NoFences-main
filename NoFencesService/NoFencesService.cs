@@ -301,21 +301,6 @@ namespace NoFencesService
 
         }
 
-        private void ValidateFolderStructureIntegrity()
-        {
-
-        }
-
-        private void RegisterChanges()
-        {
-
-        }
-
-        private void RegisterInconsistencies()
-        {
-
-        }
-
         private void CreateFolderWatchers()
         {
 

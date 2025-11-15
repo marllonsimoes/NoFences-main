@@ -23,7 +23,7 @@ namespace NoFencesService.Repository
         /// <summary>
         /// Local installation data with foreign key to SoftwareReference in master_catalog.db.
         /// </summary>
-        public DbSet<InstalledSoftwareEntry> InstalledSoftware { get; set; }
+        public DbSet<LocalInstallation> InstalledSoftware { get; set; }
 
         /// <summary>
         /// User's installed Steam games (legacy table).
@@ -53,18 +53,18 @@ namespace NoFencesService.Repository
 
             // InstalledSoftware indexes
             // Index on SoftwareRefId for fast JOIN with master_catalog.software_ref
-            modelBuilder.Entity<InstalledSoftwareEntry>()
+            modelBuilder.Entity<LocalInstallation>()
                 .HasIndex(e => e.SoftwareRefId)
                 .HasName("IX_InstalledSoftware_SoftwareRefId");
 
             // Index on LastDetected for cleanup queries
-            modelBuilder.Entity<InstalledSoftwareEntry>()
+            modelBuilder.Entity<LocalInstallation>()
                 .HasIndex(e => e.LastDetected)
                 .HasName("IX_InstalledSoftware_LastDetected");
 
             // Unique constraint: SoftwareRefId + InstallLocation
             // Same software can be installed in multiple locations on same machine
-            modelBuilder.Entity<InstalledSoftwareEntry>()
+            modelBuilder.Entity<LocalInstallation>()
                 .HasIndex(e => new { e.SoftwareRefId, e.InstallLocation })
                 .IsUnique()
                 .HasName("IX_InstalledSoftware_SoftwareRefId_InstallLocation");

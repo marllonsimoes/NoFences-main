@@ -370,6 +370,11 @@ namespace NoFencesService.Sync
             {
                 var xml = SerializeMessage(message);
 
+                if (!pipe.IsConnected)
+                {
+                    await pipe.WaitForConnectionAsync();
+                }
+
                 using (var writer = new StreamWriter(pipe, Encoding.UTF8, 4096, leaveOpen: true))
                 {
                     await writer.WriteAsync(xml);

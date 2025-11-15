@@ -79,9 +79,10 @@
     <Compile Include="MasterCatalog\Entities\MasterGameEntry.cs" />
     <Compile Include="MasterCatalog\Entities\CatalogVersion.cs" />
     <Compile Include="MasterCatalog\Entities\ChangeLog.cs" />
-    <Compile Include="MasterCatalog\Entities\InstalledSoftwareEntry.cs" />
+    <Compile Include="MasterCatalog\Entities\LocalInstallation.cs" />
     <Compile Include="MasterCatalog\Entities\SoftwareReference.cs" />
     <Compile Include="MasterCatalog\MasterCatalogContext.cs" />
+    <Compile Include="MasterCatalog\MasterCatalogMigrations.cs" />
     <Compile Include="MasterCatalog\Services\MasterCatalogImporter.cs" />
     <Compile Include="MasterCatalog\Tools\CatalogImportCommand.cs" />
     <Compile Include="Services\CatalogDownloadService.cs" />
@@ -93,6 +94,7 @@
     <Compile Include="Services\Metadata\WikipediaApiClient.cs" />
     <Compile Include="Services\Metadata\CnetScraperClient.cs" />
     <Compile Include="Services\Metadata\MetadataEnrichmentService.cs" />
+    <Compile Include="Services\Metadata\MetadataEnrichmentDiagnostics.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

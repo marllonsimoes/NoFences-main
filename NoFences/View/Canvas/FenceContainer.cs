@@ -318,7 +318,7 @@ namespace NoFences.View.Canvas
                 this,
                 () => this.Parent?.ClientRectangle ?? Rectangle.Empty,
                 () => !fenceInfo.Locked,
-                150);
+                450); // min size
 
             resizeBehavior.RegisterBorders(
                 borderLeft,
@@ -699,7 +699,8 @@ namespace NoFences.View.Canvas
             {
                 Dock = DockStyle.Fill,
                 BackColor = Color.Transparent, // Transparent background for WPF content
-                Padding = new Padding(0, 0, 0, 0) // No padding - borders handle spacing
+                Padding = new Padding(0, 0, 0, 0), // No padding - borders handle spacing
+                AllowDrop = true // Enable drag & drop for WPF content
             };
             log.Debug($"ElementHost created with transparent background");
 
@@ -792,7 +793,7 @@ namespace NoFences.View.Canvas
                 int newHeight = Math.Min(contentDesiredHeight, availableHeight);
 
                 // Set minimum height (at least title bar + some content)
-                const int MinHeight = 100;
+                const int MinHeight = 300;
                 newHeight = Math.Max(MinHeight, newHeight);
 
                 // Always update height, even if it's shrinking
@@ -2830,7 +2831,7 @@ namespace NoFences.View.Canvas
 
             // Constrain height to fit on screen
             if (y + height > screenBounds.Bottom)
-                height = Math.Max(150, screenBounds.Bottom - y);
+                height = Math.Max(450, screenBounds.Bottom - y);
 
             return new Rectangle(x, y, width, height);
         }

@@ -13,7 +13,7 @@ namespace NoFences.Tests.Repositories
     /// Note: These are integration tests that use the real database.
     ///
     /// Tests use two-tier architecture.
-    /// InstalledSoftwareEntry requires SoftwareRefId (FK to SoftwareReference).
+    /// LocalInstallation requires SoftwareRefId (FK to SoftwareReference).
     /// Name, Source, Category fields are in SoftwareReference table.
     /// </summary>
     public class InstalledSoftwareRepositoryTests
@@ -44,7 +44,7 @@ namespace NoFences.Tests.Repositories
         [Fact]
         public void Upsert_WithValidSoftwareRefId_ShouldSucceed()
         {
-            // InstalledSoftwareEntry requires SoftwareRefId (FK to SoftwareReference)
+            // LocalInstallation requires SoftwareRefId (FK to SoftwareReference)
 
             // Arrange
             var repository = new InstalledSoftwareRepository();
@@ -58,7 +58,7 @@ namespace NoFences.Tests.Repositories
                 category: "Games"
             );
 
-            var entry = new InstalledSoftwareEntry
+            var entry = new LocalInstallation
             {
                 SoftwareRefId = softwareRef.Id,
                 InstallLocation = @"C:\Program Files\TestGame",

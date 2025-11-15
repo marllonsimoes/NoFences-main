@@ -40,6 +40,7 @@ namespace NoFences.Core.Model
 
         /// <summary>
         /// Software category to filter by (when FilterType = Software)
+        /// Legacy enum support - prefer using CategoryString for new code
         /// </summary>
         public SoftwareCategory SoftwareCategory { get; set; }
 
@@ -48,6 +49,14 @@ namespace NoFences.Core.Model
         /// Examples: "Steam", "GOG", "Epic Games", "Local", "Registry", null (all sources)
         /// </summary>
         public string Source { get; set; }
+
+        /// <summary>
+        /// Category string for software filtering (database-driven).
+        /// Examples: "Games", "RPG", "Action", "Productivity", "IDE", "Office"
+        /// null or empty = all categories
+        /// Replaces the need for SoftwareType + genre logic
+        /// </summary>
+        public string CategoryString { get; set; }
 
         /// <summary>
         /// Legacy pattern for regex matching (when FilterType = Pattern)
@@ -66,6 +75,7 @@ namespace NoFences.Core.Model
             Extensions = new List<string>();
             SoftwareCategory = SoftwareCategory.All;
             Source = null; // null = all sources
+            CategoryString = null; // null = all categories
             IncludeSubfolders = false;
         }
 
@@ -156,8 +166,12 @@ namespace NoFences.Core.Model
                     return $"Extensions: {string.Join(", ", Extensions)}";
 
                 case FileFilterType.Software:
-                    // Include source in description if specified
-                    string categoryDisplay = SoftwareCategorizer.GetCategoryDisplayName(SoftwareCategory);
+                    // Use CategoryString (database-driven) or fall back to enum for backward compatibility
+                    string categoryDisplay = !string.IsNullOrEmpty(CategoryString)
+                        ? CategoryString
+                        : SoftwareCategorizer.GetCategoryDisplayName(SoftwareCategory);
+
+                    // Build description with category and source
                     if (!string.IsNullOrEmpty(Source))
                         return $"Software: {categoryDisplay} ({Source})";
                     return $"Software: {categoryDisplay}";

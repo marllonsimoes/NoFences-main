@@ -58,6 +58,22 @@ namespace NoFencesDataLayer.MasterCatalog
         {
             Configuration.LazyLoadingEnabled = false;
             Configuration.ProxyCreationEnabled = false;
+
+            // Ensure database is created first (triggers OnModelCreating and table creation)
+            // This must happen BEFORE migrations
+            Database.Initialize(force: false);
+
+            // Apply database migrations for backward compatibility
+            // This runs AFTER tables are created by Entity Framework
+            try
+            {
+                MasterCatalogMigrations.ApplyMigrations(Database.Connection.ConnectionString);
+            }
+            catch (System.Exception ex)
+            {
+                // Log but don't throw - allow database to initialize even if migrations fail
+                System.Diagnostics.Debug.WriteLine($"Migration warning: {ex.Message}");
+            }
         }
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
@@ -130,6 +146,10 @@ namespace NoFencesDataLayer.MasterCatalog
             modelBuilder.Entity<SoftwareReference>()
                 .HasIndex(e => e.LastEnrichedDate)
                 .HasName("IX_SoftwareRef_LastEnrichedDate");
+
+            modelBuilder.Entity<SoftwareReference>()
+                .HasIndex(e => e.Type)
+                .HasName("IX_SoftwareRef_Type");
 
             base.OnModelCreating(modelBuilder);
         }

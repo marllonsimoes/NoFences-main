@@ -409,6 +409,63 @@ namespace NoFencesDataLayer.Repositories
         }
 
         /// <summary>
+        /// Gets software references filtered by software type.
+        /// </summary>
+        public List<SoftwareReference> GetByType(string softwareType)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(softwareType))
+                {
+                    return GetAllEntries();
+                }
+
+                var filtered = context.SoftwareReferences
+                    .Where(s => s.Type == softwareType)
+                    .ToList();
+
+                log.Debug($"Retrieved {filtered.Count} software references with type '{softwareType}'");
+                return filtered;
+            }
+            catch (Exception ex)
+            {
+                log.Error($"Error getting software references by type: {ex.Message}", ex);
+                return new List<SoftwareReference>();
+            }
+        }
+
+        /// <summary>
+        /// Gets software references filtered by software type and category.
+        /// Useful for drilling down: e.g., "Games" type → "Action" category
+        /// </summary>
+        public List<SoftwareReference> GetByTypeAndCategory(string softwareType, string category)
+        {
+            try
+            {
+                var query = context.SoftwareReferences.AsQueryable();
+
+                if (!string.IsNullOrEmpty(softwareType))
+                {
+                    query = query.Where(s => s.Type == softwareType);
+                }
+
+                if (!string.IsNullOrEmpty(category))
+                {
+                    query = query.Where(s => s.Category == category);
+                }
+
+                var filtered = query.ToList();
+                log.Debug($"Retrieved {filtered.Count} software references with type '{softwareType}' and category '{category}'");
+                return filtered;
+            }
+            catch (Exception ex)
+            {
+                log.Error($"Error getting software references by type/category: {ex.Message}", ex);
+                return new List<SoftwareReference>();
+            }
+        }
+
+        /// <summary>
         /// Gets count of software references grouped by category.
         /// Replacement for InstalledSoftwareRepository.GetCountByCategory().
         /// </summary>

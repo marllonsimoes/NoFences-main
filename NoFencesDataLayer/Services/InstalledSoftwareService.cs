@@ -74,7 +74,7 @@ namespace NoFencesDataLayer.Services
                     return 0;
                 }
 
-                var localEntries = new List<InstalledSoftwareEntry>();
+                var localEntries = new List<LocalInstallation>();
                 var newSoftwareRefIds = new List<long>(); // Track new software for enrichment
 
                 // Phase 2: For each detected software, create/find reference and save local data
@@ -100,7 +100,7 @@ namespace NoFencesDataLayer.Services
                         }
 
                         // Step 3: Create local installation entry with FK
-                        var localEntry = new InstalledSoftwareEntry
+                        var localEntry = new LocalInstallation
                         {
                             SoftwareRefId = softwareRef.Id, // Foreign key!
                             InstallLocation = software.InstallLocation,
@@ -214,9 +214,36 @@ namespace NoFencesDataLayer.Services
         /// <summary>
         /// Gets all installed software from database (query layer for fences).
         /// </summary>
-        public List<InstalledSoftwareEntry> GetAll()
+        public List<LocalInstallation> GetAll()
         {
             return installedRepository.GetAll();
+        }
+
+        /// <summary>
+        /// Gets all software references from master catalog database.
+        /// Used for populating dynamic UI filters (categories, genres, etc.)
+        /// </summary>
+        public List<SoftwareReference> GetAllSoftwareReferences()
+        {
+            return softwareRefRepository.GetAllEntries();
+        }
+
+        /// <summary>
+        /// Gets the total count of installed software items in the database.
+        /// Fast query used by UI polling to detect when initial population is complete.
+        /// </summary>
+        /// <returns>Number of items in ref.db</returns>
+        public int GetDatabaseItemCount()
+        {
+            try
+            {
+                return installedRepository.GetAll().Count;
+            }
+            catch (Exception ex)
+            {
+                log.Error($"Error getting database item count: {ex.Message}", ex);
+                return 0;
+            }
         }
 
         /// <summary>
@@ -251,7 +278,7 @@ namespace NoFencesDataLayer.Services
                         softwareRefs = softwareRefs
                             .Where(r => string.Equals(r.Source, source, StringComparison.OrdinalIgnoreCase))
                             .ToList();
-                        log.Debug($"Step 1a: Filtered by source '{source}': {beforeFilter} -> {softwareRefs.Count} entries");
+                        log.Debug($"Step 1b: Filtered by source '{source}': {beforeFilter} -> {softwareRefs.Count} entries");
 
                         if (softwareRefs.Count > 0 && softwareRefs.Count <= 5)
                         {
@@ -262,6 +289,8 @@ namespace NoFencesDataLayer.Services
                     if (!string.IsNullOrEmpty(category))
                     {
                         var beforeFilter = softwareRefs.Count;
+
+                        // Filter by Category field (simplified - no genre logic)
                         softwareRefs = softwareRefs
                             .Where(r => string.Equals(r.Category, category, StringComparison.OrdinalIgnoreCase))
                             .ToList();
@@ -320,10 +349,11 @@ namespace NoFencesDataLayer.Services
         }
 
         /// <summary>
-        /// Converts InstalledSoftwareEntry (database entity) → InstalledSoftware (Core model).
+        /// Converts LocalInstallation (database entity) → InstalledSoftware (Core model).
         /// JOINs with SoftwareReference to get enriched metadata.
+        /// Session 14: Simplified using factory method pattern.
         /// </summary>
-        private InstalledSoftware ConvertToCoreModel(InstalledSoftwareEntry entry)
+        private InstalledSoftware ConvertToCoreModel(LocalInstallation entry)
         {
             if (entry == null)
                 return null;
@@ -338,39 +368,8 @@ namespace NoFencesDataLayer.Services
                     return null;
                 }
 
-                // Parse category enum from software_ref
-                SoftwareCategory categoryEnum = SoftwareCategory.Other;
-                if (!string.IsNullOrEmpty(softwareRef.Category))
-                {
-                    Enum.TryParse(softwareRef.Category, out categoryEnum);
-                }
-
-                return new InstalledSoftware
-                {
-                    // Local installation data from ref.db
-                    InstallLocation = entry.InstallLocation,
-                    ExecutablePath = entry.ExecutablePath,
-                    IconPath = entry.IconPath,
-                    Version = entry.Version,
-                    InstallDate = entry.InstallDate,
-                    RegistryKey = entry.RegistryKey, // Full key stored: "Steam:440", "HKLM\\SOFTWARE\\..."
-
-                    // Enriched metadata from master_catalog.db (software_ref)
-                    Name = softwareRef.Name,
-                    Publisher = softwareRef.Publisher,
-                    Source = softwareRef.Source,
-                    Category = categoryEnum,
-                    Description = softwareRef.Description,
-                    Genres = softwareRef.Genres,
-                    Developers = softwareRef.Developers,
-                    ReleaseDate = softwareRef.ReleaseDate,
-                    CoverImageUrl = softwareRef.CoverImageUrl,
-                    SoftwareRefId = softwareRef.Id, // FK for reference
-
-                    // Not stored in database
-                    UninstallString = null,
-                    IsWow64 = false
-                };
+                // Use factory method for clean conversion
+                return InstalledSoftware.FromJoin(entry, softwareRef);
             }
             catch (Exception ex)
             {
@@ -429,7 +428,7 @@ namespace NoFencesDataLayer.Services
 
                 int totalEnriched = 0;
                 int batchNumber = 0;
-                int batchSize = 50; // Process 50 entries per batch
+                int batchSize = 100; // Process 100 entries per batch (increased from 50)
 
                 while (true)
                 {
@@ -453,10 +452,11 @@ namespace NoFencesDataLayer.Services
 
                     log.Info($"Batch #{batchNumber}: Enriched {enrichedCount}/{unenrichedEntries.Count} entries (total so far: {totalEnriched})");
 
-                    // Safety check: don't process more than 20 batches (1000 entries) in one session
-                    if (batchNumber >= 20)
+                    // Safety check: don't process more than 100 batches (10,000 entries) in one session
+                    // This is increased from 20 batches to handle larger software catalogs
+                    if (batchNumber >= 100)
                     {
-                        log.Warn($"Reached maximum batch limit (20 batches, ~1000 entries). Stopping automatic enrichment.");
+                        log.Warn($"Reached maximum batch limit (100 batches, ~10,000 entries). Stopping automatic enrichment.");
                         log.Warn($"Use 'Enrich Metadata (Force Sync)' button to continue enrichment.");
                         break;
                     }
@@ -479,8 +479,8 @@ namespace NoFencesDataLayer.Services
         /// Runs in background to avoid blocking UI.
         /// </summary>
         /// <param name="maxBatchSize">Maximum number of entries to enrich in one batch (default: 50)</param>
-        /// <returns>Task that completes when enrichment is done</returns>
-        public async Task EnrichUnenrichedEntriesAsync(int maxBatchSize = 50)
+        /// <returns>Number of entries found for enrichment (0 if no more entries to enrich)</returns>
+        public async Task<int> EnrichUnenrichedEntriesAsync(int maxBatchSize = 50)
         {
             try
             {
@@ -492,7 +492,7 @@ namespace NoFencesDataLayer.Services
                 if (unenrichedEntries.Count == 0)
                 {
                     log.Info("No un-enriched entries found - all entries already have metadata");
-                    return;
+                    return 0;
                 }
 
                 log.Info($"Found {unenrichedEntries.Count} un-enriched entries (limit: {maxBatchSize})");
@@ -512,10 +512,12 @@ namespace NoFencesDataLayer.Services
                 int enrichedCount = await enrichmentService.EnrichSoftwareReferenceBatchAsync(unenrichedEntries);
 
                 log.Info($"=== EnrichUnenrichedEntriesAsync END === {enrichedCount}/{unenrichedEntries.Count} entries enriched successfully");
+                return unenrichedEntries.Count; // Return count of entries found (not enriched count)
             }
             catch (Exception ex)
             {
                 log.Error($"Error during automatic metadata enrichment: {ex.Message}", ex);
+                return 0;
             }
         }
     }

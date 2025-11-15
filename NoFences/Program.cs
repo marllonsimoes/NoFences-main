@@ -43,12 +43,25 @@ namespace NoFences
             var hierarchy = (log4net.Repository.Hierarchy.Hierarchy)repository;
 
             log4net.Core.Level log4netLevel = log4net.Core.Level.Debug;
-            ((Logger)hierarchy.GetLogger("NoFencesDataLayer.Services.SteamStoreDetector")).Level = log4netLevel;
-            ((Logger)hierarchy.GetLogger("NoFencesDataLayer.Services.AmazonGamesDetector")).Level = log4netLevel;
-            ((Logger)hierarchy.GetLogger("NoFencesDataLayer.Services.EpicGamesDetector")).Level = log4netLevel;
-            ((Logger)hierarchy.GetLogger("NoFencesDataLayer.Services.UbisoftConnectDetector")).Level = log4netLevel;
-            ((Logger)hierarchy.GetLogger("NoFencesDataLayer.Services.GOGGalaxyDetector")).Level = log4netLevel;
+
+            // Game Store Detectors
+            //((Logger)hierarchy.GetLogger("NoFencesDataLayer.Services.SteamStoreDetector")).Level = log4netLevel;
+            //((Logger)hierarchy.GetLogger("NoFencesDataLayer.Services.AmazonGamesDetector")).Level = log4netLevel;
+            //((Logger)hierarchy.GetLogger("NoFencesDataLayer.Services.EpicGamesDetector")).Level = log4netLevel;
+            //((Logger)hierarchy.GetLogger("NoFencesDataLayer.Services.UbisoftConnectDetector")).Level = log4netLevel;
+            //((Logger)hierarchy.GetLogger("NoFencesDataLayer.Services.GOGGalaxyDetector")).Level = log4netLevel;
             ((Logger)hierarchy.GetLogger("NoFencesDataLayer.Services.EAAppDetector")).Level = log4netLevel;
+
+            // Metadata Enrichment Classes (for debugging enrichment issues)
+            //((Logger)hierarchy.GetLogger("NoFencesDataLayer.Services.Metadata.MetadataEnrichmentService")).Level = log4netLevel;
+            //((Logger)hierarchy.GetLogger("NoFencesDataLayer.Services.Metadata.RawgApiClient")).Level = log4netLevel;
+            //((Logger)hierarchy.GetLogger("NoFencesDataLayer.Repositories.SoftwareReferenceRepository")).Level = log4netLevel;
+            //((Logger)hierarchy.GetLogger("NoFencesDataLayer.Services.InstalledSoftwareService")).Level = log4netLevel;
+
+            // Dragndrop related classes
+            
+            ((Logger)hierarchy.GetLogger("NoFences.View.Canvas.Handlers")).Level = log4netLevel;
+            ((Logger)hierarchy.GetLogger("NoFences.View.Canvas")).Level = log4netLevel;
             hierarchy.RaiseConfigurationChanged(EventArgs.Empty);
 #endif
 

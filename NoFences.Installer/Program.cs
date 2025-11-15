@@ -115,8 +115,65 @@ public class CustomActions
     {
         return session.HandleErrors(() =>
         {
-            Tasks.InstallService(session.Property("INSTALLDIR") + "NoFences.Service.exe", true);
-            Tasks.StartService("NoFencesService", false);
+            string serviceExePath = session.Property("INSTALLDIR") + "NoFences.Service.exe";
+            string serviceName = "NoFencesService";
+
+            session.Log($"RegisterService: Begin service installation for {serviceName}");
+            session.Log($"Service executable path: {serviceExePath}");
+
+            try
+            {
+                // Step 1: Check if service already exists
+                bool serviceExists = true;// TODO: There are other ways to install services. Tasks.IsServiceInstalled(serviceName);
+                session.Log($"Service exists check: {serviceExists}");
+
+                if (serviceExists)
+                {
+                    session.Log($"Service {serviceName} already exists - performing cleanup before reinstall");
+
+                    // Step 2: Stop service if it's running
+                    try
+                    {
+                        session.Log($"Attempting to stop service {serviceName}");
+                        Tasks.StopService(serviceName, throwOnError: false);
+                        session.Log($"Service {serviceName} stopped successfully (or was not running)");
+                    }
+                    catch (Exception ex)
+                    {
+                        session.Log($"Warning: Could not stop service: {ex.Message}");
+                        // Continue anyway - service might not be running
+                    }
+
+                    // Step 3: Uninstall old service
+                    try
+                    {
+                        session.Log($"Attempting to uninstall existing service {serviceName}");
+                        Tasks.InstallService(serviceExePath, isInstalling: false);
+                        session.Log($"Service {serviceName} uninstalled successfully");
+                    }
+                    catch (Exception ex)
+                    {
+                        session.Log($"Warning: Could not uninstall existing service: {ex.Message}");
+                        // Log but continue - we'll try to install anyway
+                    }
+                }
+
+                // Step 4: Install service
+                session.Log($"Installing service {serviceName}");
+                Tasks.InstallService(serviceExePath, isInstalling: true);
+                session.Log($"Service {serviceName} installed successfully");
+
+                // Step 5: Start service
+                session.Log($"Starting service {serviceName}");
+                Tasks.StartService(serviceName, throwOnError: false);
+                session.Log($"Service {serviceName} started successfully");
+            }
+            catch (Exception ex)
+            {
+                session.Log($"ERROR in RegisterService: {ex.Message}");
+                session.Log($"Stack trace: {ex.StackTrace}");
+                throw;
+            }
         });
     }
 
@@ -125,7 +182,48 @@ public class CustomActions
     {
         return session.HandleErrors(() =>
         {
-            Tasks.InstallService(session.Property("INSTALLDIR") + "NoFences.Service.exe", false);
+            string serviceExePath = session.Property("INSTALLDIR") + "NoFences.Service.exe";
+            string serviceName = "NoFencesService";
+
+            session.Log($"UnregisterService: Begin service uninstallation for {serviceName}");
+
+            try
+            {
+                // Step 1: Check if service exists
+                bool serviceExists = true;// TODO: There are other ways to install services. Tasks.IsServiceInstalled(serviceName);
+                session.Log($"Service exists check: {serviceExists}");
+
+                if (!serviceExists)
+                {
+                    session.Log($"Service {serviceName} does not exist - nothing to uninstall");
+                    return; // Nothing to do
+                }
+
+                // Step 2: Stop service if running
+                try
+                {
+                    session.Log($"Attempting to stop service {serviceName}");
+                    Tasks.StopService(serviceName, throwOnError: false);
+                    session.Log($"Service {serviceName} stopped successfully");
+                }
+                catch (Exception ex)
+                {
+                    session.Log($"Warning: Could not stop service: {ex.Message}");
+                    // Continue anyway - we still want to uninstall
+                }
+
+                // Step 3: Uninstall service
+                session.Log($"Uninstalling service {serviceName}");
+                Tasks.InstallService(serviceExePath, isInstalling: false);
+                session.Log($"Service {serviceName} uninstalled successfully");
+            }
+            catch (Exception ex)
+            {
+                session.Log($"ERROR in UnregisterService: {ex.Message}");
+                session.Log($"Stack trace: {ex.StackTrace}");
+                // Don't throw - we don't want uninstall to fail if service removal fails
+                session.Log("Uninstall will continue despite service unregistration error");
+            }
         });
     }
 }
@@ -137,8 +235,11 @@ class Script
         Compiler.SignAllFilesOptions.SignEmbeddedAssemblies = false;
         Compiler.SignAllFilesOptions.SkipSignedFiles = true;
 
+        var currentVersion = FileVersionInfo.GetVersionInfo(@"..\NoFences\bin\Release\NoFences.exe");
+        Console.WriteLine("Current Version: " + currentVersion.FileVersion);
+
         var project = new ManagedProject(
-            "NoFences",
+            $"NoFences - {currentVersion.FileVersion}",
             new Dir(
                 @"%ProgramFiles%\TinySoft\NoFences",
                 new Files(@"..\NoFences\bin\Release\*.*"))
@@ -181,6 +282,7 @@ class Script
         }
 
         project.GUID = new Guid("5CF1A403-6251-4CB6-A1EA-26A933614DDE");
+        project.Version = new Version(currentVersion.FileVersion);
         project.OutDir = "bin\\Release";
         project.LicenceFile = @"LICENSE.rtf";
 
